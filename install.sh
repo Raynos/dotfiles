@@ -113,11 +113,11 @@ fi
 echo ""
 echo "Checking node@0.10.32"
 
-if [ "$(node -v 2>/dev/null)" != "v0.10.48" ]; then
-    echo " - Fetching node@0.10.48"
+if [ "$(node -v 2>/dev/null)" != "v10.15.3" ]; then
+    echo " - Fetching node@10.15.3"
     . ~/projects/nvm/nvm.sh
-    nvm install v0.10.48
-    nvm use v0.10.48
+    nvm install v10.15.3
+    nvm use v10.15.3
 else
     echo " - Already installed node@0.10.48";
 fi
@@ -250,25 +250,11 @@ else
     cd ~/projects
     git clone git@github.com:nodejs/node
     cd node
-    git checkout v0.10.48
+    git checkout v10.15.3
     ./configure
     make -j 5
     sudo make install
     cd ..
-fi
-
-echo ""
-echo "Checking npm@2.7.4"
-
-if ( hash npm 2>/dev/null ); then
-    if ( npm -v | grep "2.15" 1>/dev/null ); then
-        echo " - Already installed npm"
-    else
-        npm i npm@2.15 -g
-    fi
-else
-    echo "npm is needed to npm install npm"
-    exit 1
 fi
 
 echo ""
