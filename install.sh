@@ -144,22 +144,10 @@ if ( hash code 2>/dev/null ); then
 else
     echo " - Fetching vs code"
     wget https://vscode-update.azurewebsites.net/1.9.1/linux-deb-x64/stable
+    sudo apt-get install libgconf-2-4
     sudo dpkg -i stable
     sudo apt-get -f install
     rm stable
-fi
-
-
-echo ""
-echo "Checking Sublime Text 3"
-
-if ( hash subl 2>/dev/null ); then
-    echo " - Already installed Sublime Text 3"
-else
-    echo " - Fetching Sublime Text 3"
-    sudo add-apt-repository -y ppa:webupd8team/sublime-text-3
-    sudo apt-get update
-    sudo apt-get install -y sublime-text-installer
 fi
 
 echo ""
@@ -282,21 +270,6 @@ if ( hash nano 2>/dev/null ); then
     fi
 else
     __install_nano
-fi
-
-echo ""
-echo "Install sublime package control"
-
-if [ ! -e ~/.config/sublime-text-3/Installed\ Packages/Package\ Control.sublime-package ]; then
-    echo  " - Fetching sublime package control"
-    if [ ! -e ~/.config/sublime-text-3/Installed\ Packages ]; then
-        mkdir ~/.config/sublime-text-3/Installed\ Packages
-    fi    
-
-    cd ~/.config/sublime-text-3/Installed\ Packages
-    wget "https://sublime.wbond.net/Package%20Control.sublime-package"
-else 
-    echo " - Already installed sublime package control"
 fi
 
 echo ""
