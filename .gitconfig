@@ -28,7 +28,7 @@
 
 	ffm = "!f() { git fetch --all; git merge --ff-only $1; }; f"
 
-	squash = "!f(){ git reset --soft HEAD~${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f"
+	squash = "!f(){ git reset --soft ${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..{1})\"; };f"
 
 	gb = "!f() { git grep -n \"$@\" | perl -F':' -anpe '$_=`git blame -f  -L$F[1],+1 $F[0]`'; }; f"
 
