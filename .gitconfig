@@ -28,6 +28,8 @@
 
 	ffm = "!f() { git fetch --all; git merge --ff-only $1; }; f"
 
+	squash = "!f(){ git reset --soft HEAD~${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f"
+
 	gb = "!f() { git grep -n \"$@\" | perl -F':' -anpe '$_=`git blame -f  -L$F[1],+1 $F[0]`'; }; f"
 
 	gjb = "!f() { git grep -n \"$@\" | perl -F':' -anpe '$_=`git blame -f  -L$F[1],+1 $F[0]`' | awk '{ commit=$1; (\"basename -s .java -z \" $2 ) | getline fbasename; $1=$2=\"\"; printf(\"%s %-40s %s \\n\", commit, fbasename, $0) }'; }; f"
