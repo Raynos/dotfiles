@@ -17,8 +17,6 @@
 	wip = "!f() { git add -A; git commit -n -m \"wip $1\"; }; f"
 	yolo = "!f() { git add -A; git commit -n -m \"wip yolo\"; }; f"
 	br = "!f() { git for-each-ref --sort=-committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'; git for-each-ref --sort=-committerdate refs/remotes/origin --format='%(HEAD) %(color:green)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'; }; f"
-	squash="!f() { git fetch; git reset --mixed $1; git merge --squash HEAD@{1} }; f"
-
 
 	addw = add--interactive-words --patch=stage --
 
@@ -30,7 +28,7 @@
 
 	ffm = "!f() { git fetch --all; git merge --ff-only $1; }; f"
 
-	squash = "!f(){ git reset --soft ${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..{1})\"; };f"
+	squash = "!f(){ git reset --soft ${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f"
 
 	gb = "!f() { git grep -n \"$@\" | perl -F':' -anpe '$_=`git blame -f  -L$F[1],+1 $F[0]`'; }; f"
 
