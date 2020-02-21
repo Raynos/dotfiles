@@ -8,6 +8,9 @@ if [ -z "$PS1" ]; then
     return
 fi
 
+# Core please
+ulimit -c unlimited
+
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
