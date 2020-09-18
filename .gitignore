@@ -1,3 +1,7 @@
+node_modules
+secrets/secrets.json
+package-lock.json
+
 .extra
 .DS_Store
 sublime/User/Package Control.cache
