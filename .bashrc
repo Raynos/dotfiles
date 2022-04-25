@@ -2,22 +2,8 @@ set +h
 
 [[ $- == *i* ]] || return
 
-# test if the prompt var is not set
-if [ -z "$PS1" ]; then
-    # prompt var is not set, so this is *not* an interactive shell
-    return
-fi
-
 # Core please
 ulimit -c unlimited
-
-# Load the shell dotfiles, and then some:
-# * ~/.path can be used to extend `$PATH`.
-# * ~/.extra can be used for other settings you don’t want to commit.
-for file in ~/.{extra,path,bash_prompt,exports,aliases,functions}; do
-    [ -r "$file" ] && source "$file"
-done
-unset file
 
 # Run nvm so that it's accessible
 if [ -e ~/projects/nvm ]; then
@@ -26,6 +12,29 @@ if [ -e ~/projects/nvm ]; then
     # Tell nvm to use the latest node 0.8 branch
     nvm use $node_version
 fi
+
+# Load the shell dotfiles, and then some:
+# * ~/.path can be used to extend `$PATH`.
+# * ~/.extra can be used for other settings you don’t want to commit.
+for file in ~/.{extra,path}; do
+    [ -r "$file" ] && source "$file"
+done
+unset file
+
+# test if the prompt var is not set
+if [ -z "$PS1" ]; then
+    # prompt var is not set, so this is *not* an interactive shell
+    return
+fi
+
+# Load the shell dotfiles, and then some:
+# * ~/.path can be used to extend `$PATH`.
+# * ~/.extra can be used for other settings you don’t want to commit.
+for file in ~/.{bash_prompt,exports,aliases,functions}; do
+    [ -r "$file" ] && source "$file"
+done
+unset file
+
 
 # init z   https://github.com/rupa/z
 if [ -e ~/projects/z ]; then
