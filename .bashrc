@@ -1,5 +1,9 @@
 set +h
 
+
+[[ $- == *i* ]] || return
+
+
 # Core please
 ulimit -c unlimited
 
