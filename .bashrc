@@ -15,6 +15,8 @@ if [ -e ~/projects/nvm ]; then
     nvm use $node_version
 fi
 
+eval "$(nodenv init -)"
+
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
