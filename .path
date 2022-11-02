@@ -4,6 +4,8 @@ export PATH="$HOME/bin:$PATH"
 export PATH="node_modules/.bin:$PATH"
 # Add `~/.local/bin` to the `$PATH`
 export PATH="$HOME/.local/bin:$PATH"
+# Add ~/.nodenv/bin` to the `$PATH`
+export PATH="$HOME/.nodenv/bin:$PATH"
 
 export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:/opt/gradle/gradle-4.4.1/bin
