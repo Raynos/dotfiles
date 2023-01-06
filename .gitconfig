@@ -85,3 +85,8 @@
 	pushInsteadOf = "git://gist.github.com/"
 [url "git://gist.github.com/"]
 	insteadOf = "gist:"
+
+
+[submodule]
+	recurse = true
+	fetchJobs = 4
