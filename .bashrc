@@ -80,8 +80,6 @@ else
     colorflag="-G"
 fi
 
-# Configure npm
-npm config set loglevel http
 
 # Always use color output for `ls`
 alias ls="command ls ${colorflag}"
