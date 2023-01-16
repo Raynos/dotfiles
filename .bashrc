@@ -81,7 +81,6 @@ else
 fi
 
 # Configure npm
-npm config set spin false
 npm config set loglevel http
 
 # Always use color output for `ls`
