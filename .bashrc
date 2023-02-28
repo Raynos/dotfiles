@@ -10,7 +10,7 @@ ulimit -c unlimited
 # Run nvm so that it's accessible
 if [ -e ~/projects/nvm ]; then
     . ~/projects/nvm/nvm.sh
-    node_version=${NVM_NODE_VERSION:-"v16.15.1"}
+    node_version=${NVM_NODE_VERSION:-"v16.17.0"}
     # Tell nvm to use the latest node 0.8 branch
     nvm use $node_version
 fi
