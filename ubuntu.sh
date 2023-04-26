@@ -1,5 +1,8 @@
 # Set the launcher to auto hide
-dconf write /org/compiz/profiles/unity/plugins/unityshell/launcher-hide-mode 1;
+gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false
+gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false
+gsettings set org.gnome.shell.extensions.dash-to-dock autohide true
+
 
 # Set the number of workspace to 4x4
 dconf write /org/compiz/profiles/unity/plugins/core/vsize 4;
