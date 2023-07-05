@@ -1,6 +1,3 @@
 [submodule ".nano"]
 	path = .nano
 	url = git@github.com:scopatz/nanorc
-[submodule ".config/sublime-text-3/Packages/Theme - Nexus"]
-	path = .config/sublime-text-3/Packages/Theme - Nexus
-	url = git@github.com:Raynos/nexus-theme
