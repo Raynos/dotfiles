@@ -8,7 +8,6 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:/opt/gradle/gradle-4.4.1/bin
 
-
 mkdir -p "$HOME/gocode"
 export GOPATH="$HOME/gocode"
 export PATH="$PATH:$GOPATH/bin"

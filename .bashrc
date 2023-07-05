@@ -18,11 +18,7 @@ fi
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
-for file in ~/.{path}; do
-    [ -r "$file" ] && source "$file"
-done
-unset file
-
+source ~/.path
 [[ $- == *i* ]] || return
 
 # test if the prompt var is not set

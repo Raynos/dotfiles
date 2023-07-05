@@ -110,16 +110,17 @@ else
     echo " - Already installed creationix/nvm"
 fi
 
-echo ""
-echo "Checking node@0.10.32"
 
-if [ "$(node -v 2>/dev/null)" != "v10.15.3" ]; then
-    echo " - Fetching node@10.15.3"
+echo ""
+echo "Checking node@18.16.1"
+
+if [ "$(node -v 2>/dev/null)" != "v18.16.1" ]; then
+    echo " - Fetching node@18.16.1"
     . ~/projects/nvm/nvm.sh
-    nvm install v10.15.3
-    nvm use v10.15.3
+    nvm install v18.16.1
+    nvm use v18.16.1
 else
-    echo " - Already installed node@0.10.48";
+    echo " - Already installed node@18.16.1";
 fi
 
 
@@ -143,11 +144,17 @@ if ( hash code 2>/dev/null ); then
     echo " - Already installed vs code"
 else
     echo " - Fetching vs code"
-    wget https://vscode-update.azurewebsites.net/1.9.1/linux-deb-x64/stable
-    sudo apt-get install libgconf-2-4
-    sudo dpkg -i stable
-    sudo apt-get -f install
-    rm stable
+
+    sudo apt-get install wget gpg
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+    sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+    rm -f packages.microsoft.gpg
+
+
+    sudo apt install apt-transport-https
+    sudo apt update
+    sudo apt install code # or code-insiders
 fi
 
 echo ""
@@ -167,7 +174,7 @@ if ( hash pygmentize 2>/dev/null ); then
     echo " - Already installed pygmentize"
 else
     echo " - Fetching pygmentize"
-    sudo apt-get install python-pygments
+    sudo apt-get install python3 -pygments
 fi
 
 echo ""
@@ -177,8 +184,8 @@ if ( hash go 2>/dev/null ); then
     echo " - Already installed go"
 else
     echo " - Fetching go"
-    wget https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.7.5.linux-amd64.tar.gz
+    wget https://storage.googleapis.com/golang/go1.20.5.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
 fi
 
 
@@ -199,9 +206,9 @@ if ( hash hub 2>/dev/null ); then
     echo " - Already installed github/hub"
 else
     echo " - Fetching hub"
-    wget https://github.com/github/hub/releases/download/v2.2.3/hub-linux-amd64-2.2.3.tgz
-    tar -C ~/projects -xzf hub-linux-amd64-2.2.3.tgz
-    mv ~/projects/hub-linux-amd64-2.2.3 ~/projects/hub
+    wget https://github.com/github/hub/releases/download/v2.14.2/hub-linux-amd64-2.14.2.tgz
+    tar -C ~/projects -xzf hub-linux-amd64-2.14.2.tgz
+    mv ~/projects/hub-linux-amd64-2.14.2 ~/projects/hub
     ln -s ~/projects/hub/bin/hub ~/bin/hub
 fi
 
@@ -215,18 +222,33 @@ else
     sudo apt-get install g++
 fi
 
-echo ""
-echo "Checking gimp"
+# echo ""
+# echo "Checking nano"
 
-if ( hash gimp 2>/dev/null ); then
-    echo " - Already installed gimp"
-else
-    echo " - Fetching gimp"
+# function __install_nano() {
+#     echo " - Fetching nano"
+#     sudo apt-get install libncurses5-dev
+#     cd ~/projects
+#     wget "http://www.nano-editor.org/dist/v2.3/nano-2.3.2.tar.gz"
+#     tar -zxvf nano-2.3.2.tar.gz
+#     cd nano-2.3.2
+#     ./configure
+#     make
+#     sudo make install
+#     cd ..
+#     rm nano-2.3.2.tar.gz
+# }
 
-    sudo add-apt-repository ppa:otto-kesselgulasch/gimp
-    sudo apt-get update
-    sudo apt-get install gimp
-fi
+# if ( hash nano 2>/dev/null ); then
+#     if ( nano -V | grep "2.3.2" 1>/dev/null ); then
+#         echo " - Already installed nano"
+#     else 
+#         __install_nano
+#     fi
+# else
+#     __install_nano
+# fi
+
 
 echo ""
 echo "Install node"
@@ -245,32 +267,6 @@ else
     cd ..
 fi
 
-echo ""
-echo "Checking nano"
-
-function __install_nano() {
-    echo " - Fetching nano"
-    sudo apt-get install libncurses5-dev
-    cd ~/projects
-    wget "http://www.nano-editor.org/dist/v2.3/nano-2.3.2.tar.gz"
-    tar -zxvf nano-2.3.2.tar.gz
-    cd nano-2.3.2
-    ./configure
-    make
-    sudo make install
-    cd ..
-    rm nano-2.3.2.tar.gz
-}
-
-if ( hash nano 2>/dev/null ); then
-    if ( nano -V | grep "2.3.2" 1>/dev/null ); then
-        echo " - Already installed nano"
-    else 
-        __install_nano
-    fi
-else
-    __install_nano
-fi
 
 echo ""
 echo "All finished"
