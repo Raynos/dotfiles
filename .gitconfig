@@ -6,7 +6,7 @@
 	pom = pull origin master
 	pgi = pull github integration
 	poi = pull origin integration
-	gone = "!f() { git fetch --all --prune; git branch -vv | awk '/: gone]/{print $1}' | xarg │ s git branch -D; }; f"
+	gone = "!f() { git fetch --all --prune; git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D; }; f"
 	dc = diff --cached
 	a = add --all
 	st = status
