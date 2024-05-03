@@ -12,7 +12,7 @@ gsettings set org.gnome.shell.extensions.dash-to-dock autohide true
 dconf write /org/gnome/desktop/background/picture-uri "'file:///home/raynos/projects/dotfiles/ubuntu-wallpaper.jpg'";
 
 
-wget https://github.com/mzur/gnome-shell-wsmatrix/releases/download/v7.3/wsmatrix@martin.zurowietz.de.zip
+wget https://github.com/mzur/gnome-shell-wsmatrix/releases/download/v10.0/wsmatrix@martin.zurowietz.de.zip
 mkdir -p ~/.local/share/gnome-shell/extensions/wsmatrix@martin.zurowietz.de
 unzip wsmatrix@martin.zurowietz.de.zip -d ~/.local/share/gnome-shell/extensions/wsmatrix@martin.zurowietz.de
 rm wsmatrix@martin.zurowietz.de.zip

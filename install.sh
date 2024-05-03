@@ -258,9 +258,11 @@ if ( which /usr/local/bin/node 1>/dev/null ); then
 else
     echo " - Fetching node"
     cd ~/projects
-    git clone git@github.com:nodejs/node
+    if [ ! -e ~/projects/node ]; then
+        git clone git@github.com:nodejs/node
+    fi
     cd node
-    git checkout v10.15.3
+    git checkout v20.12.2
     ./configure
     make -j 5
     sudo make install
