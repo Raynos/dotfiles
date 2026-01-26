@@ -67,6 +67,8 @@ if [ -f ~/.git-completion.bash ]; then
   source ~/.git-completion.bash
 fi
 
+source ~/.pnpm-completion.bash
+
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then
     colorflag="--color"
