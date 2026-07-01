@@ -69,6 +69,9 @@ fi
 
 source ~/.pnpm-completion.bash
 
+# Add tab completion for the `claude` CLI (Claude Code)
+[ -f ~/.claude-completion.bash ] && source ~/.claude-completion.bash
+
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then
     colorflag="--color"
