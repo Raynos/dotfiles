@@ -35,3 +35,6 @@ _claude_complete() {
     COMPREPLY=( $(compgen -f -- "$cur") )
 }
 complete -F _claude_complete claude
+# Same completion for the `claude-personal` alias (personal profile; see ~/.extra).
+# Bash keys completion off the word as typed, so the alias needs its own registration.
+complete -F _claude_complete claude-personal
