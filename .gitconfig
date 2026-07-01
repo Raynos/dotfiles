@@ -91,3 +91,18 @@
 [submodule]
 	recurse = true
 	fetchJobs = 4
+
+[user]
+	name = Jake Verbaten
+	email = raynos2@gmail.com
+	# SSH commit signing key. GitHub requires verified signatures,
+	# so keep this here or bootstrap.sh will wipe signing again.
+	signingkey = ~/.ssh/id_ed25519.pub
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	# allowed_signers holds the PUBLIC KEY CONTENTS (not a path):
+	#   <email> namespaces="git" ssh-ed25519 <pubkey> <email>
+	allowedSignersFile = ~/.ssh/allowed_signers
+[commit]
+	gpgsign = true
