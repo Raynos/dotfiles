@@ -65,4 +65,15 @@ mkdir -p "$CLAUDE_DIR"
 for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
+
+# Reinstall plugins declaratively from plugins.json (VS Code-extensions style).
+if command -v claude >/dev/null && command -v jq >/dev/null; then
+  echo ""
+  echo "Syncing plugins from plugins.json"
+  "$REPO_DIR/sync-plugins.sh" install
+else
+  echo ""
+  echo "note: skipping plugin sync (need 'claude' + 'jq'); run ./sync-plugins.sh install later"
+fi
+
 echo "Done."

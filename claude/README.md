@@ -38,28 +38,31 @@ must never enter git: `.claude.json` (session/project state, auth), `history.jso
 `settings.local.json` is a tiny per-machine permission allowlist that Claude
 rewrites automatically — left machine-local on purpose.
 
-## Plugins — reinstall list (declarative, not the live state file)
+## Plugins — declarative sync (the VS Code model)
 
-The live `plugins/installed_plugins.json` is a churn-y state file full of
-machine-specific absolute paths, timestamps, and git SHAs that Claude rewrites on
-every update — versioning it would just be noise. What's actually portable is the
-*list* of what to install. On a fresh machine, add the marketplaces and plugins:
+Claude Code has a headless plugin CLI (`claude plugin list/install`,
+`claude plugin marketplace add`) — the exact analog of VS Code's
+`code --list-extensions` / `code --install-extension`. So plugins sync the same
+way VS Code extensions do in a dotfiles repo: **version the derived list, not the
+install dir.**
 
-```
-# Marketplaces
-/plugin marketplace add anthropics/claude-plugins-official
-/plugin marketplace add ChromeDevTools/chrome-devtools-mcp
+- **`plugins.json`** — the committed list (marketplace `name`+`repo`, plugin
+  `id`+`scope`), derived from the CLI. This is the source of truth.
+- **`sync-plugins.sh`** — the two-way tool:
 
-# Plugins (all from claude-plugins-official)
-/plugin install chrome-devtools-mcp@claude-plugins-official
-/plugin install playwright@claude-plugins-official
-/plugin install context7@claude-plugins-official
-/plugin install code-review@claude-plugins-official
-/plugin install hookify@claude-plugins-official
-/plugin install claude-md-management@claude-plugins-official
-/plugin install typescript-lsp@claude-plugins-official
-/plugin install frontend-design@claude-plugins-official   # installed per-project
-```
+  ```bash
+  ./sync-plugins.sh export     # snapshot installed plugins -> plugins.json (commit it)
+  ./sync-plugins.sh diff       # preview what a fresh install would add
+  ./sync-plugins.sh install    # add marketplaces + install every plugin in the list
+  ```
 
-Keep this list in sync when you add/remove a plugin (`/plugin` to see the
-current set).
+`install.sh` runs `sync-plugins.sh install` automatically, so a fresh machine
+gets the plugins after the symlinks. **After you add/remove a plugin, run
+`./sync-plugins.sh export` and commit `plugins.json`** — that keeps the list
+current (same discipline as re-exporting VS Code extensions).
+
+What is *not* versioned: `~/.claude/plugins/` — the fetched plugin code plus a
+churn-y `installed_plugins.json` state file (absolute paths, timestamps, git
+SHAs). Reproduced from `plugins.json`, never committed. Project-scoped installs
+(e.g. `frontend-design`) are tied to a project dir, so `install` lists but skips
+them — install those from inside their project.

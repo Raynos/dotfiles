@@ -1,0 +1,48 @@
+{
+  "marketplaces": [
+    {
+      "name": "chrome-devtools-plugins",
+      "source": "github",
+      "repo": "ChromeDevTools/chrome-devtools-mcp"
+    },
+    {
+      "name": "claude-plugins-official",
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    }
+  ],
+  "plugins": [
+    {
+      "id": "chrome-devtools-mcp@claude-plugins-official",
+      "scope": "user"
+    },
+    {
+      "id": "claude-md-management@claude-plugins-official",
+      "scope": "user"
+    },
+    {
+      "id": "code-review@claude-plugins-official",
+      "scope": "user"
+    },
+    {
+      "id": "context7@claude-plugins-official",
+      "scope": "user"
+    },
+    {
+      "id": "frontend-design@claude-plugins-official",
+      "scope": "project"
+    },
+    {
+      "id": "hookify@claude-plugins-official",
+      "scope": "user"
+    },
+    {
+      "id": "playwright@claude-plugins-official",
+      "scope": "user"
+    },
+    {
+      "id": "typescript-lsp@claude-plugins-official",
+      "scope": "user"
+    }
+  ]
+}
