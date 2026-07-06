@@ -91,3 +91,43 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+# Company machine default: naked `claude` uses company profile.
+export CLAUDE_CONFIG_DIR="$HOME/.claude-company"
+# `command claude` bypasses the games guard function below (which would
+# otherwise block bare `claude`).
+# ANTHROPIC_MODEL=opus pins every personal session to OPEN in Opus,
+# regardless of what `/model` scribbles into ~/.claude/settings.json (the
+# env var out-ranks the settings `model` key). Typing `/model fable` still
+# switches the LIVE session fine — an explicit choice beats the env var —
+# but the next session re-opens in Opus.
+# Effort is handled DIFFERENTLY (no env var — that would hard-pin high and
+# block runtime `/effort`). Instead we re-seed settings.json to "high" on
+# every launch, so new sessions default to high while `/effort low` still
+# works live and persists for the rest of that session.
+unalias claude-personal 2>/dev/null  # else interactive alias-expansion breaks the def below
+claude-personal() {
+  local s="$HOME/.claude/settings.json"
+  [ -f "$s" ] && jq '.effortLevel = "high"' "$s" > "$s.tmp" && mv "$s.tmp" "$s"
+  ANTHROPIC_MODEL=opus CLAUDE_CONFIG_DIR="$HOME/.claude" command claude "$@"
+}
+
+# ===== personal-games guard (added 2026-07-02) =====
+# Block bare `claude` (company) under ~/projects/games and nudge toward
+# claude-personal; delegate to your normal claude everywhere else.
+# Placed at end of file so it wraps the claude defined above. Delete this
+# block to remove. If your company `claude` is an *alias* (not a function),
+# tell Claude Code so delegation can preserve its flags.
+if declare -F claude >/dev/null 2>&1 && ! declare -F __claude_real >/dev/null 2>&1; then
+    eval "__claude_real() $(declare -f claude | tail -n +2)"   # preserve company claude
+fi
+alias claude >/dev/null 2>&1 && unalias claude                 # step aside if it's an alias
+claude() {
+    case "$PWD/" in
+        "$HOME/projects/games/"*)
+            printf '🚫 personal game project — run `claude-personal` here, not company claude.\n' >&2
+            return 1 ;;
+    esac
+    if declare -F __claude_real >/dev/null 2>&1; then __claude_real "$@"; else command claude "$@"; fi
+}
+# ===== end personal-games guard =====
