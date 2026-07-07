@@ -7,7 +7,7 @@ dir="$HOME/.claude/sounds/warcraft3-en"
 # Per-category default volume; question is boosted so decision/ask prompts
 # aren't easy to miss. Override any of them with CC_SOUND_VOL.
 case "$cat" in
-  question) def_vol=1.5 ;;
+  question) def_vol=3.0 ;;
   *)        def_vol=1.25 ;;
 esac
 vol="${CC_SOUND_VOL:-$def_vol}"
