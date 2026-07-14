@@ -5,8 +5,10 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const target = process.argv[2] ?? join(process.env.HOME, ".codex", "config.toml");
-const check = process.argv.includes("--check");
+const arguments_ = process.argv.slice(2);
+const check = arguments_.includes("--check");
+const target = arguments_.find((argument) => argument !== "--check") ??
+  join(process.env.HOME, ".codex", "config.toml");
 const managedSource = readFileSync(join(root, "config.managed.toml"), "utf8");
 const managed = managedSource.split(/^\[tools(?:\.|\])/m, 1)[0]
   .split("\n")

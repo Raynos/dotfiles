@@ -27,6 +27,9 @@ Codex has no documented equivalent of Claude Code's terminal status line or
 is shared; notification sounds and status labels remain Claude-specific.
 
 Run `node ../agent-common/sync-agent-tooling.mjs check` to detect a missing
-capability. The check treats the declared Claude plugins and Codex MCP/plugin
-adapters as equivalent capabilities; it does not copy one product's private
-plugin or authentication state into the other.
+capability. `export` refreshes the credential-free Codex MCP commands in the
+manifest, while preserving its capability descriptions and Claude adapters.
+`install` adds missing declared Codex MCP servers and plugins, but never
+removes configuration or copies private plugin or authentication state. The
+check treats the declared Claude plugins and Codex MCP/plugin adapters as
+equivalent capabilities.
