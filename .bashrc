@@ -72,6 +72,15 @@ source ~/.pnpm-completion.bash
 # Add tab completion for the `claude` CLI (Claude Code)
 [ -f ~/.claude-completion.bash ] && source ~/.claude-completion.bash
 
+# Add tab completion for the Codex CLI. The generated completion function
+# understands wrappers because it keys off the command name passed by Bash.
+if command -v codex >/dev/null 2>&1; then
+  eval "$(command codex completion bash 2>/dev/null)"
+  if declare -F _codex >/dev/null 2>&1; then
+    complete -F _codex -o bashdefault -o default codex-personal
+  fi
+fi
+
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then
     colorflag="--color"
@@ -112,9 +121,9 @@ claude-personal() {
   ANTHROPIC_MODEL=opus CLAUDE_CONFIG_DIR="$HOME/.claude" command claude "$@"
 }
 
-# ===== personal-games guard (added 2026-07-02) =====
-# Block bare `claude` (company) under ~/projects/games and nudge toward
-# claude-personal; delegate to your normal claude everywhere else.
+# ===== personal-projects guard (added 2026-07-02) =====
+# Block bare `claude` (company) under the personal project roots below and
+# nudge toward claude-personal; delegate to your normal claude everywhere else.
 # Placed at end of file so it wraps the claude defined above. Delete this
 # block to remove. If your company `claude` is an *alias* (not a function),
 # tell Claude Code so delegation can preserve its flags.
@@ -124,10 +133,33 @@ fi
 alias claude >/dev/null 2>&1 && unalias claude                 # step aside if it's an alias
 claude() {
     case "$PWD/" in
-        "$HOME/projects/games/"*)
-            printf '🚫 personal game project — run `claude-personal` here, not company claude.\n' >&2
+        "$HOME/projects/games/"*|"$HOME/projects/house/"*)
+            printf '🚫 personal project — run `claude-personal` here, not company claude.\n' >&2
             return 1 ;;
     esac
     if declare -F __claude_real >/dev/null 2>&1; then __claude_real "$@"; else command claude "$@"; fi
 }
-# ===== end personal-games guard =====
+# ===== end personal-projects guard =====
+
+# Company machine default: naked `codex` uses the company profile. CODEX_HOME
+# keeps config, auth, logs, sessions, and skills separate from the personal
+# profile. Both directories must exist before Codex starts.
+export CODEX_HOME="$HOME/.codex-company"
+unalias codex-personal 2>/dev/null
+codex-personal() {
+    CODEX_HOME="$HOME/.codex" command codex "$@"
+}
+
+# ===== personal-projects Codex guard =====
+# Match the Claude guard above: never accidentally open company Codex inside a
+# personal checkout. `command codex` remains an explicit bypass.
+alias codex >/dev/null 2>&1 && unalias codex
+codex() {
+    case "$PWD/" in
+        "$HOME/projects/games/"*|"$HOME/projects/house/"*)
+            printf '🚫 personal project — run `codex-personal` here, not company codex.\n' >&2
+            return 1 ;;
+    esac
+    command codex "$@"
+}
+# ===== end personal-projects Codex guard =====
