@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    {
+      "id": "browser-use@openai-bundled",
+      "required": true
+    }
+  ]
+}

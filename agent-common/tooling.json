@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "capabilities": [
+    {
+      "name": "context7",
+      "purpose": "Current library and framework documentation",
+      "claude": {
+        "kind": "plugin",
+        "id": "context7@claude-plugins-official"
+      },
+      "codex": {
+        "kind": "mcp",
+        "command": "npx",
+        "args": ["-y", "@upstash/context7-mcp"]
+      }
+    },
+    {
+      "name": "playwright",
+      "purpose": "Headless, scriptable browser automation",
+      "claude": {
+        "kind": "plugin",
+        "id": "playwright@claude-plugins-official"
+      },
+      "codex": {
+        "kind": "mcp",
+        "command": "npx",
+        "args": ["-y", "@playwright/mcp@latest"]
+      }
+    },
+    {
+      "name": "chrome-devtools",
+      "purpose": "Chrome and DevTools-level browser inspection",
+      "claude": {
+        "kind": "plugin",
+        "id": "chrome-devtools-mcp@claude-plugins-official"
+      },
+      "codex": {
+        "kind": "mcp",
+        "command": "npx",
+        "args": ["-y", "chrome-devtools-mcp@1.6.0"]
+      }
+    },
+    {
+      "name": "browser-use",
+      "purpose": "Interactive testing in Codex's in-app browser",
+      "codex": {
+        "kind": "plugin",
+        "id": "browser-use@openai-bundled"
+      }
+    }
+  ]
+}
