@@ -1,7 +1,7 @@
 set +h
 
 
-[[ $- == *i* ]] || return
+[[ $- == *i* ]] || return 0
 
 
 # Core please

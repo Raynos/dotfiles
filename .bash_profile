@@ -1,6 +1,6 @@
 set +h
 
-[[ $- == *i* ]] || return
+[[ $- == *i* ]] || return 0
 
 # test if the prompt var is not set
 if [ -z "$PS1" ]; then

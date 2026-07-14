@@ -21,6 +21,16 @@
 # reinstate that as the real #1.)
 input=$(cat)
 
+# Side-effect: cache the plan-usage rate limits (5h/7d windows) that the harness
+# includes in this payload, so `~/.claude/usage.sh` can print them on demand from
+# any terminal. Only written when the payload actually carries rate_limits (it
+# appears after the first API response of a session). Rendering is unaffected.
+rl=$(printf '%s' "$input" | jq -c '.rate_limits // empty' 2>/dev/null)
+if [ -n "$rl" ]; then
+  printf '%s' "$input" | jq -c '{cached_at: now, model: (.model.display_name // "unknown"), rate_limits}' \
+    > "$HOME/.claude/usage-cache.json" 2>/dev/null
+fi
+
 model=$(printf '%s' "$input" | jq -r '.model.display_name // "unknown"' | tr ' ' '-')
 # Append the reasoning-effort level (.effort.level: low/medium/high/xhigh/max) →
 # "Opus-4.8-high". Absent when the model doesn't support effort — then no suffix.
