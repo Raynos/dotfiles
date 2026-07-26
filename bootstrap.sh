@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 cd "$(dirname "${BASH_SOURCE}")"
 git pull origin master
+# NOTE: .config/herdr/ is excluded because it is symlink-managed by
+# .config/install.sh, not copy-managed. rsync transfers a regular file by renaming
+# a temp into place, which would replace ~/.config/herdr/config.toml (a symlink
+# back into this repo) with a real copy — silently un-tracking it and
+# reintroducing drift. Run ./.config/install.sh instead.
+#
+# Deliberately scoped to herdr, NOT all of .config/: .config/terminator/config is
+# still copy-managed and must keep being rsynced. ("install.sh" below is
+# unanchored, so it already keeps .config/install.sh out of ~.)
 function doIt() {
 	rsync --exclude ".git/" \
     --exclude ".gitignore" \
     --exclude ".DS_Store" \
+    --exclude ".config/herdr/" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \
     --exclude "init.sh" \
