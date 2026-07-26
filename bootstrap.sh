@@ -24,7 +24,36 @@ function doIt() {
     --exclude "ubuntu.sh" \
     --exclude "ubuntu-wallpaper.jpg" \
     -av --no-perms . ~
+
+	runInstallers
 }
+
+# rsync only copies files into ~. It cannot create the symlinks into ~/.claude,
+# ~/.codex and ~/.config, merge the managed subset of settings.json, or sync
+# plugins — that is what the per-tool installers do. Nothing used to call them,
+# so a fresh machine following the README got every dotfile and none of the
+# agent tooling, silently: no hooks, no statusline, no herdr config.
+#
+# Each installer is idempotent (they print "ok" for anything already linked), so
+# re-running on every bootstrap is cheap. Failures are reported and stepped over
+# rather than propagated, because bootstrap.sh is meant to be SOURCED — an
+# unguarded non-zero exit out of a `set -e` installer would kill the
+# interactive shell that sourced this.
+function runInstallers() {
+	local installer
+	for installer in .config/install.sh claude/install.sh codex/install.sh; do
+		if [ ! -x "$installer" ]; then
+			echo "skip (not executable): $installer"
+			continue
+		fi
+		echo ""
+		echo "Running $installer"
+		if ! "./$installer"; then
+			echo "warn: $installer failed — continuing"
+		fi
+	done
+}
+
 if [ "$1" == "--force" -o "$1" == "-f" ]; then
 	doIt
 else
@@ -34,5 +63,5 @@ else
 		doIt
 	fi
 fi
-unset doIt
+unset doIt runInstallers
 source ~/.bash_profile
