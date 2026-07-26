@@ -77,15 +77,23 @@ sidebar_max_width = 40
 #   fg0  #fbf1c7  12.99:1
 #   fg1  #ebdbb2  10.75:1   default text -- `workspace` uses this
 #   fg2  #d5c4a1   8.59:1
-#   fg3  #bdae93   6.77:1   `$cwd`
-#   fg4  #a89984   5.30:1
+#   fg3  #bdae93   6.77:1
+#   fg4  #a89984   5.30:1   `$cwd` -- fg3 still read as too loud
 #   gray #928374   4.02:1   the original "too dim"
 #
-# So rank by HUE as well: `$goal` is bright_yellow #fabd2f (8.69:1), which is
-# unmistakably not `workspace` while staying brighter than fg3. `$cwd` stays
-# neutral at fg3 because it is supporting detail, and that also keeps the two
-# custom rows distinct from EACH OTHER -- they were briefly identical, which
-# is its own kind of unreadable.
+# So rank by HUE as well: `$goal` is bright_yellow #fabd2f, unmistakably not
+# `workspace`, and `$cwd` is neutral fg4 -- which keeps the two custom rows
+# distinct from EACH OTHER (they were briefly identical, its own kind of
+# unreadable) without spending a second hue on supporting detail.
+#
+# ⚠️ `$goal` carries `dim = true` ON TOP of the yellow, by request. Note that
+# bold and dim are OPPOSING terminal attributes -- SGR 1 (increased intensity)
+# vs SGR 2 (decreased) -- so `bold` was removed rather than combined with it;
+# emitting both leaves the result up to the terminal. Also note dim is applied
+# by the TERMINAL to whatever fg it is given, so its exact effect on #fabd2f
+# is not something the contrast figures above predict. If dimmed yellow reads
+# wrong, the deterministic way to get the same look is a darker yellow with no
+# dim flag: neutral_yellow #d79921 (5.94:1) or faded_yellow #b57614 (3.91:1).
 #
 # Budget: 4 hues on screen (aqua/orange/yellow + the state icon). Adding more
 # is what makes `state_icon` stop reading as the semantic one.
@@ -121,7 +129,7 @@ row_gap = 1
 # the `cut -c1-24` in ~/.claude/set-label.sh.
 rows = [
   ["state_icon", { token = "workspace", bold = true }, { token = "agent", fg = "#8ec07c" }],
-  [{ token = "$goal", fg = "#fabd2f", bold = true, dim = false }],
+  [{ token = "$goal", fg = "#fabd2f", dim = true }],
 ]
 
 # No [ui.sidebar.agents.rows_by_agent]. herdr's stock config recommends one for
@@ -160,7 +168,7 @@ rows = [
 row_gap = 1
 rows = [
   ["state_icon", { token = "workspace", bold = true }, { token = "branch", fg = "#8ec07c" }, { token = "git_status", fg = "#fe8019" }],
-  [{ token = "$cwd", fg = "#bdae93", dim = false }],
+  [{ token = "$cwd", fg = "#a89984", dim = false }],
 ]
 
 [theme]
