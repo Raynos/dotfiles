@@ -23,7 +23,7 @@ _claude_complete() {
     if [[ "$cur" == -* ]]; then
         cache="${TMPDIR:-/tmp}/.claude_flags_cache"
         if [[ ! -f "$cache" || -n "$(find "$cache" -mtime +1 2>/dev/null)" ]]; then
-            claude --help 2>/dev/null \
+            command claude --help 2>/dev/null \
                 | grep -oE -- '--[a-zA-Z][a-zA-Z0-9-]*' \
                 | sort -u > "$cache"
         fi
