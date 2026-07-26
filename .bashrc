@@ -166,3 +166,31 @@ codex() {
     command codex "$@"
 }
 # ===== end personal-projects Codex guard =====
+
+# ===== herdr auto-create guard =====
+# Both `herdr --session <name>` and `herdr session attach <name>` auto-create on
+# an unknown name, so a typo silently spawns a whole new session instead of
+# failing. Route them through herdr-attach, which only ever attaches to a
+# whitelisted name (and sets the matching iTerm profile). Everything else —
+# `herdr session list`, `herdr status`, bare `herdr` — passes straight through.
+# `command herdr` remains an explicit bypass, and is how you create a genuinely
+# new session before adding it to the table in bin/herdr-attach.
+alias herdr >/dev/null 2>&1 && unalias herdr
+herdr() {
+    local arg
+    for arg in "$@"; do
+        case "$arg" in
+            --session|--session=*)
+                printf '🚫 `herdr --session` auto-creates on typos — run `herdr-attach <name>` instead.\n' >&2
+                return 1 ;;
+        esac
+    done
+
+    if [ "${1:-}" = "session" ] && [ "${2:-}" = "attach" ]; then
+        printf '🚫 `herdr session attach` auto-creates on typos — run `herdr-attach %s` instead.\n' "${3:-<name>}" >&2
+        return 1
+    fi
+
+    command herdr "$@"
+}
+# ===== end herdr auto-create guard =====

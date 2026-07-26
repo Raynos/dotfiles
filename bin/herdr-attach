@@ -94,4 +94,7 @@ restore_profile="${ITERM_PROFILE:-Default}"
 trap 'set_profile "$restore_profile"' EXIT INT TERM
 
 set_profile "$profile"
-herdr session attach "$session" "$@"
+# `command` so the interactive herdr() guard in .bashrc can never shadow this —
+# that guard exists to push people here, and this is the sanctioned caller.
+# (Shell functions aren't inherited by scripts anyway; this is belt and braces.)
+command herdr session attach "$session" "$@"
