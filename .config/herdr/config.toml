@@ -40,3 +40,5 @@ enabled = false
 [ui.sound]
 enabled = false
 
+[update]
+channel = "stable"
