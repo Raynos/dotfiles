@@ -7,14 +7,15 @@ You own that goal string. At the **start of a task**, and **whenever the goal
 materially shifts**, set it by running:
 
 ```
-~/.claude/set-label.sh "<=50 char goal, git-branch / PR-title style>" "<=12 char tag>"
+~/.claude/set-label.sh "<=50 char goal, git-branch / PR-title style>" "<=24 char tag>"
 ```
 
 **Both args are required** (the script errors otherwise). Arg 1 is the
 status-line goal — **quote it**, it's a single argument. Arg 2 is a short tag
-(≤12 chars) that mirrors into the **herdr agents panel** when running inside
-herdr (a no-op otherwise) — keep it terse and legible, it's a chip, not a
-sentence (e.g. `herdr-tag`, `andon-ui`, `t0-econ`).
+(≤24 chars) that mirrors into the **herdr agents panel** when running inside
+herdr (a no-op otherwise) — it now owns a full sidebar row, so it can be a short
+phrase rather than a chip, but it still truncates and never wraps
+(e.g. `herdr sidebar layout`, `andon steel palette`, `flaky combat e2e`).
 
 The herdr half is **two coupled pieces** — if the chip stops showing up, check
 both: `set-label.sh` writes pane metadata token `goal`, and

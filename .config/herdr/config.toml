@@ -10,6 +10,14 @@ show_agent_labels_on_pane_borders = true
 # [ui.toast.clipboard] enabled = false below. (herdr 0.7.5, #1471)
 copy_on_select = false
 
+# Give the expanded sidebar more room than herdr's defaults (26/36). min is
+# pinned to 30 on purpose: the width otherwise auto-scales down off short
+# workspace names, and set-label.sh's tag cap is measured against a known
+# column count. Raising the floor makes that cap deterministic.
+sidebar_width = 30
+sidebar_min_width = 30
+sidebar_max_width = 40
+
 # Agent sidebar rows. This mirrors herdr's default layout and appends the custom
 # `$goal` token, which claude/set-label.sh writes via
 # `herdr pane report-metadata --token goal=<tag>`. herdr 0.7.x dropped the old
@@ -19,10 +27,15 @@ copy_on_select = false
 # (Affects the expanded desktop sidebar only; collapsed/mobile keep compact
 # layouts.) Apply without restarting: `herdr server reload-config`.
 [ui.sidebar.agents]
-row_gap = 0
+# row_gap = 1 puts a blank terminal row between entries (0 is herdr's tight
+# default). The harness name (`agent`, e.g. "claude") rides along with the
+# workspace/tab row so `$goal` gets a whole row to itself — that width is what
+# set-label.sh's tag cap is sized against, so widening the sidebar or dropping a
+# token from row 1 means re-measuring the cap there.
+row_gap = 1
 rows = [
-  ["state_icon", "workspace", "tab"],
-  ["agent", { token = "$goal", dim = true }],
+  ["state_icon", "workspace", "tab", "agent"],
+  [{ token = "$goal", dim = true }],
 ]
 [theme]
 # "terminal" follows the host palette instead of hardcoding one, so herdr's
