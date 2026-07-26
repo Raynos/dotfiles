@@ -96,14 +96,19 @@ trap 'set_profile "$restore_profile"' EXIT INT TERM
 set_profile "$profile"
 
 # Keep the spaces sidebar's `$cwd` row populated. herdr emits no events, so this
-# is a poller; it self-locks to one instance per host and exits on its own once
-# the herdr server goes away, so attaching repeatedly doesn't stack up watchers.
-# Detached from this shell's lifetime on purpose — the watcher should outlive a
-# detach and keep serving whatever other clients are still attached.
+# is a poller; it self-locks to one instance per SESSION and exits on its own
+# once that session's server goes away, so attaching repeatedly doesn't stack up
+# watchers. Detached from this shell's lifetime on purpose — the watcher should
+# outlive a detach and keep serving whatever other clients are still attached.
 # (macOS has no setsid(1), so it's nohup + & + disown to survive this shell.)
+#
+# --session is REQUIRED here: out at this level $HERDR_SESSION is unset (we are
+# outside any pane), so without it the watcher would resolve to the `default`
+# session and publish this session's row nowhere. Every session attached this way
+# gets its own watcher.
 cwd_watcher="$HOME/.config/herdr/herdr-cwd-labels.sh"
 if [ -x "$cwd_watcher" ]; then
-    nohup "$cwd_watcher" --watch >/dev/null 2>&1 < /dev/null &
+    nohup "$cwd_watcher" --session "$session" --watch >/dev/null 2>&1 < /dev/null &
     disown 2>/dev/null || true
 fi
 
