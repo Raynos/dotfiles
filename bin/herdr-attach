@@ -1,0 +1,97 @@
+#!/bin/bash
+#
+# herdr-attach — attach to a known herdr session, in the right iTerm colors.
+#
+# Fixes two things about a bare `herdr session attach`:
+#
+#   1. It auto-creates on an unknown name, so a typo silently spawns a whole new
+#      session instead of failing. The table below is the only set of names this
+#      will ever attach to.
+#   2. The iTerm profile never changes, so every session looks identical. herdr
+#      swallows OSC 1337 SetProfile sent from inside a pane — its embedded
+#      terminal core parses the sequence and drops it — so the switch has to
+#      happen out here, while the shell still owns the tty, and be undone when
+#      the client exits. `herdr session attach` blocks until you detach from the
+#      menu, which gives us both edges for free.
+#
+# Default/Vibe/House differ from each other only in color keys (plus contrast
+# and bold-rendering tweaks) — same font, same geometry — so the switch
+# repaints without reflowing herdr.
+#
+# Usage:
+#     herdr-attach <session>    attach, setting colors to match
+#     herdr-attach --list       print the known session names, one per line
+
+set -uo pipefail
+
+# The whitelist and the color map are deliberately the same table: a session is
+# attachable if and only if it has a profile here. Add a line to add a session.
+SESSIONS=(
+    "games:Vibe"
+    "game-demos:Vibe"
+    "work:Default"
+    "personal:House"
+    "house:House"
+)
+
+session_names() {
+    local entry
+    for entry in "${SESSIONS[@]}"; do
+        printf '%s\n' "${entry%%:*}"
+    done
+}
+
+profile_for() {
+    local entry
+    for entry in "${SESSIONS[@]}"; do
+        if [[ "${entry%%:*}" == "$1" ]]; then
+            printf '%s' "${entry#*:}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+set_profile() {
+    # Only meaningful in iTerm, and only from outside herdr — a nested call is
+    # talking to herdr's terminal core, which drops the sequence anyway.
+    [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]] || return 0
+    [[ -z "${HERDR_ENV:-}" ]] || return 0
+    printf '\033]1337;SetProfile=%s\a' "$1"
+}
+
+usage() {
+    printf 'usage: herdr-attach <session>\n\nknown sessions:\n' >&2
+    local entry
+    for entry in "${SESSIONS[@]}"; do
+        printf '    %-12s %s\n' "${entry%%:*}" "${entry#*:}" >&2
+    done
+}
+
+case "${1:-}" in
+    --list)
+        session_names
+        exit 0 ;;
+    -h|--help)
+        usage
+        exit 0 ;;
+    "")
+        usage
+        exit 1 ;;
+esac
+
+session="$1"
+shift
+
+if ! profile="$(profile_for "$session")"; then
+    printf 'herdr-attach: unknown session %s — refusing to auto-create it.\n\n' "$session" >&2
+    usage
+    exit 1
+fi
+
+# Restore whatever profile this shell started under, not a hardcoded Default.
+restore_profile="${ITERM_PROFILE:-Default}"
+trap 'set_profile "$restore_profile"' EXIT INT TERM
+
+set_profile "$profile"
+herdr session attach "$session" "$@"

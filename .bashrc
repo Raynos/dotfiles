@@ -72,6 +72,9 @@ source ~/.pnpm-completion.bash
 # Add tab completion for the `claude` CLI (Claude Code)
 [ -f ~/.claude-completion.bash ] && source ~/.claude-completion.bash
 
+# Add tab completion for `herdr-attach` (session names come from its whitelist)
+[ -f ~/.herdr-completion.bash ] && source ~/.herdr-completion.bash
+
 # Add tab completion for the Codex CLI. The generated completion function
 # understands wrappers because it keys off the command name passed by Bash.
 if command -v codex >/dev/null 2>&1; then
