@@ -68,6 +68,28 @@ sidebar_max_width = 40
 # If auto_switch ever comes back, these hexes must go back to neutrals AND the
 # readability regression comes back with them. That is the actual trade.
 #
+# HIERARCHY -- use BOTH axes, which is the mistake this file made twice.
+# Tuning only brightness gives you a choice between "too faint" and "identical
+# to everything else", because gruvbox's default text IS fg1: setting a custom
+# row to #ebdbb2 makes it a clone of `workspace`, and stepping down far enough
+# to distinguish it lands back on gray. The ramp and the escape hatch:
+#
+#   fg0  #fbf1c7  12.99:1
+#   fg1  #ebdbb2  10.75:1   default text -- `workspace` uses this
+#   fg2  #d5c4a1   8.59:1
+#   fg3  #bdae93   6.77:1   `$cwd`
+#   fg4  #a89984   5.30:1
+#   gray #928374   4.02:1   the original "too dim"
+#
+# So rank by HUE as well: `$goal` is bright_yellow #fabd2f (8.69:1), which is
+# unmistakably not `workspace` while staying brighter than fg3. `$cwd` stays
+# neutral at fg3 because it is supporting detail, and that also keeps the two
+# custom rows distinct from EACH OTHER -- they were briefly identical, which
+# is its own kind of unreadable.
+#
+# Budget: 4 hues on screen (aqua/orange/yellow + the state icon). Adding more
+# is what makes `state_icon` stop reading as the semantic one.
+#
 # `state_icon` is deliberately left UNSTYLED: herdr colors it by lifecycle
 # state (idle/working/blocked/done), so a hardcoded fg would destroy the one
 # piece of color in the sidebar that actually carries information.
@@ -88,15 +110,18 @@ row_gap = 1
 # place we knowingly diverge from the stock shape, because the goal row is
 # worth more than the harness name having its own line.
 #
-# `$goal` is left UNSTYLED on purpose. It was dim, which is unreadable against
-# gruvbox; it is the row you actually read, so it gets full contrast.
+# `tab` was dropped from row 1: every workspace here has exactly ONE tab and
+# none are named, so herdr's `label` was the literal character "1" on every
+# row forever -- a constant, costing columns in a 30-wide sidebar where long
+# workspace names ("house priscilla") are what truncate. Put it back if you
+# start running multiple tabs per workspace or `herdr tab rename` them.
 #
 # ⚠️ set-label.sh's 24-char tag cap is measured against THIS layout: `$goal`
 # owning a full row, at sidebar_min_width = 30. Change either and re-measure
 # the `cut -c1-24` in ~/.claude/set-label.sh.
 rows = [
-  ["state_icon", { token = "workspace", bold = true }, { token = "tab", fg = "#a89984" }, { token = "agent", fg = "#8ec07c" }],
-  [{ token = "$goal", fg = "#ebdbb2", bold = true, dim = false }],
+  ["state_icon", { token = "workspace", bold = true }, { token = "agent", fg = "#8ec07c" }],
+  [{ token = "$goal", fg = "#fabd2f", bold = true, dim = false }],
 ]
 
 # No [ui.sidebar.agents.rows_by_agent]. herdr's stock config recommends one for
@@ -135,7 +160,7 @@ rows = [
 row_gap = 1
 rows = [
   ["state_icon", { token = "workspace", bold = true }, { token = "branch", fg = "#8ec07c" }, { token = "git_status", fg = "#fe8019" }],
-  [{ token = "$cwd", fg = "#ebdbb2", dim = false }],
+  [{ token = "$cwd", fg = "#bdae93", dim = false }],
 ]
 
 [theme]
