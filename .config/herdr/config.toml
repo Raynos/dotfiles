@@ -52,14 +52,32 @@ sidebar_max_width = 40
 # `herdr server reload-config`.
 #
 # TOKEN STYLING: herdr accepts { token = "x", fg = "#RRGGBB", bold, dim } per
-# occurrence. fg is STRICT HEX ONLY -- no named colors, no palette references
-# -- which fights [theme] auto_switch, because one literal hex has to sit on
-# both the gruvbox dark and gruvbox-light backgrounds. So every fg below is a
-# gruvbox NEUTRAL, the variant gruvbox publishes precisely for that job.
-# Anything tuned for dark alone will look wrong at 06:00 in light mode.
+# occurrence, and "omitted style fields preserve the CONTEXTUAL DEFAULT".
+# That last part is the trap: deleting `dim = true` from a row does NOT make it
+# bright, because the contextual default for a secondary sidebar row is itself
+# a muted gray. `$goal` was left bare and still rendered faint. To actually get
+# contrast you must set `fg` AND `dim = false` explicitly.
+#
+# fg is STRICT HEX ONLY -- no named colors, no palette references. Measured
+# WCAG contrast of the gruvbox palette against gruvbox dark0 (#282828) and
+# gruvbox-light light0 (#fbf1c7): NOTHING clears 4.5:1 on both. The best
+# dual-background colors top out at ~3.8:1 (neutral_orange 3.81/3.41,
+# neutral_blue 3.48/3.73, gray 4.02/3.24) -- which is exactly the washed-out
+# look that made this config unreadable. Hence [theme] auto_switch is OFF: on
+# dark alone, fg1 #ebdbb2 scores 10.75:1, ~2.8x the best compromise color.
+# If auto_switch ever comes back, these hexes must go back to neutrals AND the
+# readability regression comes back with them. That is the actual trade.
+#
 # `state_icon` is deliberately left UNSTYLED: herdr colors it by lifecycle
 # state (idle/working/blocked/done), so a hardcoded fg would destroy the one
 # piece of color in the sidebar that actually carries information.
+#
+# The global alternative to per-token fg is [theme.custom], which retints the
+# theme itself. Its vocabulary (read out of the 0.7.5 binary, catppuccin-style
+# names even under gruvbox): accent, panel_bg, surface0, surface1, surface_dim,
+# overlay0, overlay1, text, subtext0, mauve, green, yellow, red, blue, teal,
+# peach. `subtext0` is the likely driver of muted row text -- untested, so the
+# per-token fg below is used instead, which is explicit and certain.
 [ui.sidebar.agents]
 # row_gap = 1 puts a blank terminal row between entries (0 is herdr's tight
 # default). This is a deliberate divergence, and it is the FIRST thing to give
@@ -77,8 +95,8 @@ row_gap = 1
 # owning a full row, at sidebar_min_width = 30. Change either and re-measure
 # the `cut -c1-24` in ~/.claude/set-label.sh.
 rows = [
-  ["state_icon", { token = "workspace", bold = true }, { token = "tab", dim = true }, { token = "agent", fg = "#689d6a" }],
-  ["$goal"],
+  ["state_icon", { token = "workspace", bold = true }, { token = "tab", fg = "#a89984" }, { token = "agent", fg = "#8ec07c" }],
+  [{ token = "$goal", fg = "#ebdbb2", bold = true, dim = false }],
 ]
 
 # No [ui.sidebar.agents.rows_by_agent]. herdr's stock config recommends one for
@@ -116,8 +134,8 @@ rows = [
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
-  ["state_icon", { token = "workspace", bold = true }, { token = "branch", fg = "#689d6a" }, { token = "git_status", fg = "#d65d0e" }],
-  [{ token = "$cwd", dim = true }],
+  ["state_icon", { token = "workspace", bold = true }, { token = "branch", fg = "#8ec07c" }, { token = "git_status", fg = "#fe8019" }],
+  [{ token = "$cwd", fg = "#ebdbb2", dim = false }],
 ]
 
 [theme]
@@ -125,9 +143,16 @@ rows = [
 # defaults. `name = "terminal"` follows the host palette instead of hardcoding
 # one -- but that means herdr stops painting its own chrome and inherits
 # whichever iTerm profile the session attached under, which flattens the
-# accent, borders and navigation UI. auto_switch buys back the reason
-# "terminal" was chosen in the first place: herdr follows the host's
-# light/dark appearance and swaps between the two names below.
+# accent, borders and navigation UI.
+#
+# auto_switch was ON for about an hour on 2026-07-26 and is now OFF, because
+# it and readability are in direct conflict: a token `fg` is a single literal
+# hex, so under auto_switch it has to be legible on BOTH gruvbox dark0
+# (#282828) and gruvbox-light light0 (#fbf1c7), and no gruvbox color manages
+# 4.5:1 on both -- the ceiling is ~3.8:1. Dark-only lifts the custom rows to
+# 10.75:1. Restoring it is one line plus reverting every fg in the sidebar
+# blocks to a neutral; the washed-out sidebar comes back with it.
+# dark_name/light_name are left here, unused, as the recipe.
 #
 # The light variants are REAL but UNDOCUMENTED -- the "Built-in themes:" list
 # in `herdr --default-config` names only the dark half. Pairs that exist
@@ -141,9 +166,9 @@ rows = [
 # still prints "config: ok" -- it validates keys, not enum values. The only
 # way to verify a theme name is to look at the rendered UI.
 name = "gruvbox"
-auto_switch = true
-dark_name = "gruvbox"
-light_name = "gruvbox-light"
+auto_switch = false
+# dark_name = "gruvbox"
+# light_name = "gruvbox-light"
 
 [ui.toast]
 delivery = "herdr"
