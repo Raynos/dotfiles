@@ -21,9 +21,12 @@ BACKUP_DIR="$CLAUDE_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 # Curated items, path-relative to BOTH the repo dir and ~/.claude.
 # Directories are symlinked whole; anything not listed here (runtime state) is
 # never touched.
+# NOTE: settings.json is deliberately NOT here. Claude Code rewrites it (model,
+# plugins, notification channel), and an atomic write replaces a symlink instead
+# of following it — it broke twice, see the .dotfiles-backup-* dirs. It is merged
+# key-by-key instead, at the bottom of this script.
 ITEMS=(
   CLAUDE.md
-  settings.json
   set-label.sh
   session-label-remind.sh
   statusline.sh
@@ -65,6 +68,17 @@ mkdir -p "$CLAUDE_DIR"
 for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
+
+# Merge the managed subset of settings.json in place, leaving app-owned keys
+# (model, theme, enabledPlugins, ...) exactly as Claude Code left them.
+if command -v node >/dev/null; then
+  echo ""
+  echo "Applying managed settings"
+  node "$REPO_DIR/scripts/apply-managed-settings.mjs"
+else
+  echo ""
+  echo "note: skipping managed settings (need 'node'); run scripts/apply-managed-settings.mjs later"
+fi
 
 # Reinstall plugins declaratively from plugins.json (VS Code-extensions style).
 if command -v claude >/dev/null && command -v jq >/dev/null; then

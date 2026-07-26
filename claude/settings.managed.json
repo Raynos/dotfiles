@@ -30,7 +30,6 @@
     ],
     "defaultMode": "bypassPermissions"
   },
-  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -92,9 +91,5 @@
       }
     }
   },
-  "effortLevel": "high",
-  "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "dark",
-  "preferredNotifChannel": "iterm2_with_bell"
+  "skipDangerousModePermissionPrompt": true
 }

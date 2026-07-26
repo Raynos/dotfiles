@@ -19,13 +19,33 @@ Runtime state in `~/.claude` is never touched.
 | Item                       | What it is                                              |
 | -------------------------- | ------------------------------------------------------- |
 | `CLAUDE.md`                | Global instructions for all sessions                    |
-| `settings.json`            | Permissions, hooks, statusline, model, theme            |
+| `settings.managed.json`    | The subset of `settings.json` this repo owns (merged, not linked) |
 | `set-label.sh`             | Sets the status-line goal label (+ herdr tag)           |
 | `session-label-remind.sh`  | `UserPromptSubmit` hook: nudge to refresh a stale label |
 | `statusline.sh`            | Renders the terminal status line                        |
 | `hooks/`                   | `herdr-agent-state.sh`, `clear-herdr-tag.sh`            |
 | `skills/herdr/`            | The custom `herdr` skill                                |
 | `sounds/`                  | Notification-sound scripts + `warcraft3-en/` wav assets |
+
+### Why `settings.json` is merged, not symlinked
+
+Claude Code rewrites `settings.json` itself whenever you switch model, toggle a
+plugin, or change notification channel — and it writes atomically, so a
+`rename()` lands on the path and *replaces* a symlink rather than writing
+through it. This is not theoretical: `install.sh` had to re-link `settings.json`
+on 2026-07-05 and again on 2026-07-09, and each re-link silently moved the
+app's edits into a backup dir. The file also carried `skip-worktree` in the
+index, so `git status` never showed the drift.
+
+So the repo owns a subset of top-level keys in `settings.managed.json` —
+`permissions`, `hooks`, `statusLine`, `extraKnownMarketplaces`,
+`skipDangerousModePermissionPrompt` — and `scripts/apply-managed-settings.mjs`
+merges just those into the live file. Everything else (`model`, `theme`, `tui`,
+`effortLevel`, `enabledPlugins`, `preferredNotifChannel`) stays app-owned and is
+never overwritten. `--check` reports drift without writing.
+
+The general rule this repo follows: **symlink directories and files only you
+edit; merge files the app writes.**
 
 ## What's NOT tracked (deliberately)
 
