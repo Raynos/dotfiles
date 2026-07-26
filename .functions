@@ -235,5 +235,120 @@ function maybe-jq() {
     done < "/dev/stdin"
 }
 
+## herdr: every live agent, across every herdr session
+
+# `herdr agent list` only ever answers for ONE session — the one its socket
+# points at — so from inside a pane you can only see your own session's agents.
+# This walks `herdr session list --json` and re-asks each running session over
+# its own socket_path.
+#
+# Targeting is by HERDR_SOCKET_PATH, deliberately NOT `herdr --session <name>`:
+# the latter auto-creates a whole session on an unknown name (same trap
+# bin/herdr-attach exists to close), while a socket path can only ever hit a
+# server that already exists.
+#
+# Live panes only — nothing here reads ~/.claude. A session with no agents
+# prints one "-" row, so an empty session is visible rather than missing.
+function herdr-agents() {
+    local kind=claude agents_only=0 working=0 json=0 usage sessions name sock
+
+    usage='usage: herdr-agents [-k KIND] [-A] [-w] [-j]
+
+  -k, --kind KIND    agent kind to list (default: claude, "any" for every kind)
+  -A, --agents-only  hide herdr sessions that have no matching agent
+  -w, --working      only agents whose status is "working"
+  -j, --json         one JSON object per agent instead of a table
+  -h, --help         show this'
+
+    while (( $# )); do
+        case "$1" in
+            -k|--kind)        kind=${2?--kind needs a value}; shift 2 ;;
+            -A|--agents-only) agents_only=1; shift ;;
+            -w|--working)     working=1; shift ;;
+            -j|--json)        json=1; shift ;;
+            -h|--help)        printf '%s\n' "$usage"; return 0 ;;
+            *)                printf '%s\n' "$usage" >&2; return 1 ;;
+        esac
+    done
+
+    command -v herdr >/dev/null 2>&1 ||
+        { printf 'herdr-agents: herdr is not in PATH\n' >&2; return 1; }
+
+    sessions=$(command herdr session list --json 2>/dev/null) ||
+        { printf 'herdr-agents: no herdr server answered\n' >&2; return 1; }
+
+    __herdr_agents_rows() {
+        local name sock
+        while IFS=$'\t' read -r name sock; do
+            HERDR_SOCKET_PATH=$sock command herdr agent list 2>/dev/null |
+                jq -rc --arg sess "$name" --arg kind "$kind" \
+                      --argjson working "$working" --argjson json "$json" '
+                    [ (.result.agents // [])[]
+                      | select($kind == "any" or .agent == $kind)
+                      | select($working == 0 or .agent_status == "working") ]
+                    | if $json == 1 then
+                          .[] | {session: $sess, kind: .agent, status: .agent_status,
+                                 pane: .pane_id, cwd: (.foreground_cwd // .cwd),
+                                 goal: .tokens.goal, title: .terminal_title_stripped,
+                                 claude_session: .agent_session.value}
+                      elif length == 0 then
+                          [$sess, "-", "-", "-", "-", "-"] | @tsv
+                      else
+                          .[] | [ $sess, .pane_id, .agent_status,
+                                  (.foreground_cwd // .cwd // "-"),
+                                  (.tokens.goal // "-"),
+                                  (.terminal_title_stripped // .terminal_title // "-")
+                                ] | @tsv
+                      end'
+        done < <(jq -r '.sessions[] | select(.running) | [.name, .socket_path] | @tsv' <<<"$sessions")
+    }
+
+    if (( json )); then
+        __herdr_agents_rows
+        unset -f __herdr_agents_rows
+        return 0
+    fi
+
+    __herdr_agents_rows | awk -F'\t' -v home="$HOME" -v cols="${COLUMNS:-100}" \
+                                     -v agents_only="$agents_only" -v kind="$kind" '
+        function clip(s, n) {
+            return (n > 1 && length(s) > n) ? substr(s, 1, n - 1) "\342\200\246" : s
+        }
+        function widen(n, s) { return length(s) > n ? length(s) : n }
+        {
+            if (!($1 in allsess)) { allsess[$1] = 1; nsess++ }
+            if (agents_only && $2 == "-") next
+            r++
+            sess[r] = $1; pane[r] = $2; st[r] = $3
+            c = $4; sub("^" home, "~", c); cwd[r] = c
+            goal[r] = clip($5, 28); title[r] = $6
+            w1 = widen(w1, $1); w2 = widen(w2, $2)
+            w3 = widen(w3, $3); w4 = widen(w4, c); w5 = widen(w5, goal[r])
+            if ($2 != "-") {
+                live++
+                busy += ($3 == "working")
+                if (!($1 in seen)) { seen[$1] = 1; withagents++ }
+            }
+        }
+        END {
+            if (!r) { print "no running herdr sessions"; exit }
+            w1 = widen(w1, "SESSION"); w2 = widen(w2, "PANE"); w3 = widen(w3, "STATUS")
+            w4 = widen(w4, "CWD");     w5 = widen(w5, "GOAL")
+            tw = cols - (w1 + w2 + w3 + w4 + w5 + 10)
+
+            fmt = "%-" w1 "s  %-" w2 "s  %-" w3 "s  %-" w4 "s  %-" w5 "s  %s\n"
+            printf fmt, "SESSION", "PANE", "STATUS", "CWD", "GOAL", "TITLE"
+            for (i = 1; i <= r; i++)
+                printf fmt, sess[i], pane[i], st[i], cwd[i], goal[i], clip(title[i], tw)
+
+            printf "\n%d live %sagent%s in %d of %d herdr sessions, %d working\n",
+                live + 0, (kind == "any" ? "" : kind " "), (live == 1 ? "" : "s"),
+                withagents + 0, nsess + 0, busy + 0
+        }
+    '
+
+    unset -f __herdr_agents_rows
+}
+
 
 
