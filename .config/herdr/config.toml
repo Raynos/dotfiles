@@ -18,8 +18,11 @@ sidebar_width = 30
 sidebar_min_width = 30
 sidebar_max_width = 40
 
-# Agent sidebar rows. This mirrors herdr's default layout and appends the custom
-# `$goal` token, which claude/set-label.sh writes via
+# Agent sidebar rows. This does NOT mirror herdr's default layout -- the stock
+# default is [["state_icon", "workspace", "tab"], ["agent"]], with `agent` on a
+# row of its own. We merge `agent` up into row 1 (see row_gap note below) so
+# the custom `$goal` token gets a full row. `$goal` is written by
+# claude/set-label.sh via
 # `herdr pane report-metadata --token goal=<tag>`. herdr 0.7.x dropped the old
 # `--custom-status` chip; a token only renders if a row asks for it by `$name`,
 # so this block and set-label.sh must stay in sync. A row vanishes when none of
@@ -35,6 +38,25 @@ sidebar_max_width = 40
 row_gap = 1
 rows = [
   ["state_icon", "workspace", "tab", "agent"],
+  [{ token = "$goal", dim = true }],
+]
+
+# Claude panes get a third row: `terminal_title_stripped` is a herdr BUILT-IN
+# carrying the live terminal title, i.e. what Claude Code is doing right now,
+# with no scaffolding on our side. That overlaps `$goal` -- which is a curated
+# <=50-char headline set-label.sh has to publish by hand -- so this is a
+# deliberate side-by-side trial (2026-07-26): run both for a while and see
+# whether the free built-in beats the curated one. If it wins, `$goal`, the
+# herdr half of set-label.sh, and the token/row sync hazard all retire; if it
+# loses, delete this block and nothing else changes.
+#
+# Cost: rows_by_agent REPLACES the rows above for matching agents, so a claude
+# entry is now 3 rows + row_gap = 4 terminal rows in the sidebar. If the agent
+# panel gets crowded, drop row_gap to 0 before dropping a row.
+[ui.sidebar.agents.rows_by_agent]
+claude = [
+  ["state_icon", "workspace", "tab", "agent"],
+  ["terminal_title_stripped"],
   [{ token = "$goal", dim = true }],
 ]
 
@@ -58,11 +80,29 @@ rows = [
 ]
 
 [theme]
-# "terminal" follows the host palette instead of hardcoding one, so herdr's
-# chrome picks up whichever iTerm profile the session was attached under
-# (see the herdr wrapper in ~/.bashrc). Set back to "gruvbox" to pin it.
-name = "terminal"
-auto_switch = false
+# Pinned to gruvbox 2026-07-26, after A/B-ing this config against stock
+# defaults. `name = "terminal"` follows the host palette instead of hardcoding
+# one -- but that means herdr stops painting its own chrome and inherits
+# whichever iTerm profile the session attached under, which flattens the
+# accent, borders and navigation UI. auto_switch buys back the reason
+# "terminal" was chosen in the first place: herdr follows the host's
+# light/dark appearance and swaps between the two names below.
+#
+# The light variants are REAL but UNDOCUMENTED -- the "Built-in themes:" list
+# in `herdr --default-config` names only the dark half. Pairs that exist
+# (read out of the 0.7.5 binary): catppuccin/catppuccin-latte,
+# gruvbox/gruvbox-light, one-dark/one-light, solarized/solarized-light,
+# tokyo-night/tokyo-night-day, rose-pine/rose-pine-dawn,
+# kanagawa/kanagawa-lotus. dracula, nord and vesper are dark-only.
+#
+# ⚠️ A misspelled theme name is NOT an error. herdr logs "unknown theme,
+# falling back" and silently renders catppuccin, while `herdr config check`
+# still prints "config: ok" -- it validates keys, not enum values. The only
+# way to verify a theme name is to look at the rendered UI.
+name = "gruvbox"
+auto_switch = true
+dark_name = "gruvbox"
+light_name = "gruvbox-light"
 
 [ui.toast]
 delivery = "herdr"
