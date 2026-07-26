@@ -18,45 +18,81 @@ sidebar_width = 30
 sidebar_min_width = 30
 sidebar_max_width = 40
 
-# Agent sidebar rows. This does NOT mirror herdr's default layout -- the stock
-# default is [["state_icon", "workspace", "tab"], ["agent"]], with `agent` on a
-# row of its own. We merge `agent` up into row 1 (see row_gap note below) so
-# the custom `$goal` token gets a full row. `$goal` is written by
-# claude/set-label.sh via
-# `herdr pane report-metadata --token goal=<tag>`. herdr 0.7.x dropped the old
-# `--custom-status` chip; a token only renders if a row asks for it by `$name`,
-# so this block and set-label.sh must stay in sync. A row vanishes when none of
-# its tokens have a value, so panes with no goal set just show the default rows.
-# (Affects the expanded desktop sidebar only; collapsed/mobile keep compact
-# layouts.) Apply without restarting: `herdr server reload-config`.
+# ─── Sidebar rows ────────────────────────────────────────────────────────────
+#
+# POLICY (2026-07-26): track herdr's OWN recommended layout, and diverge in
+# exactly three places -- sidebar width, row_gap, and the two custom tokens
+# ($goal, $cwd). Everything else here is the stock shape from
+# `herdr --default-config`, copied verbatim. When herdr changes its
+# recommendation, re-diff against that and re-adopt; do not hand-roll.
+#
+# The stock shapes this is built from:
+#   [ui.sidebar.agents] rows = [["state_icon","workspace","tab"], ["agent"]]
+#   [ui.sidebar.agents.rows_by_agent]
+#     claude = [["state_icon","workspace","tab"],
+#               ["terminal_title_stripped"], ["agent"]]
+#   [ui.sidebar.spaces] rows = [["state_icon","workspace"],
+#                               ["branch","git_status"]]
+#
+# `$goal` is pane metadata written by claude/set-label.sh via
+# `herdr pane report-metadata --token goal=<tag>` (herdr 0.7.x dropped the old
+# `--custom-status` chip). A token only renders if a row asks for it by
+# `$name`, so these blocks and set-label.sh must stay in sync -- and a row
+# whose tokens are all empty vanishes rather than rendering blank, so panes
+# with no goal just lose that row. Affects the expanded desktop sidebar only;
+# collapsed/mobile keep their own compact layouts. Apply without restarting:
+# `herdr server reload-config`.
+#
+# TOKEN STYLING: herdr accepts { token = "x", fg = "#RRGGBB", bold, dim } per
+# occurrence. fg is STRICT HEX ONLY -- no named colors, no palette references
+# -- which fights [theme] auto_switch, because one literal hex has to sit on
+# both the gruvbox dark and gruvbox-light backgrounds. So every fg below is a
+# gruvbox NEUTRAL, the variant gruvbox publishes precisely for that job.
+# Anything tuned for dark alone will look wrong at 06:00 in light mode.
+# `state_icon` is deliberately left UNSTYLED: herdr colors it by lifecycle
+# state (idle/working/blocked/done), so a hardcoded fg would destroy the one
+# piece of color in the sidebar that actually carries information.
 [ui.sidebar.agents]
 # row_gap = 1 puts a blank terminal row between entries (0 is herdr's tight
-# default). The harness name (`agent`, e.g. "claude") rides along with the
-# workspace/tab row so `$goal` gets a whole row to itself — that width is what
-# set-label.sh's tag cap is sized against, so widening the sidebar or dropping a
-# token from row 1 means re-measuring the cap there.
+# default). This is a deliberate divergence, and it is the FIRST thing to give
+# back if the agent panel gets crowded -- cheaper than dropping a row.
 row_gap = 1
 rows = [
-  ["state_icon", "workspace", "tab", "agent"],
+  ["state_icon", { token = "workspace", bold = true }, { token = "tab", dim = true }],
+  [{ token = "agent", fg = "#689d6a" }],
   [{ token = "$goal", dim = true }],
 ]
 
-# Claude panes get a third row: `terminal_title_stripped` is a herdr BUILT-IN
-# carrying the live terminal title, i.e. what Claude Code is doing right now,
-# with no scaffolding on our side. That overlaps `$goal` -- which is a curated
-# <=50-char headline set-label.sh has to publish by hand -- so this is a
-# deliberate side-by-side trial (2026-07-26): run both for a while and see
-# whether the free built-in beats the curated one. If it wins, `$goal`, the
-# herdr half of set-label.sh, and the token/row sync hazard all retire; if it
-# loses, delete this block and nothing else changes.
+# Per-agent overrides. rows_by_agent REPLACES `rows` above for a matching
+# agent, so each entry repeats the full layout. Keys are canonical agent IDs;
+# only the integrations actually installed here are listed -- `herdr
+# integration status` reports claude (v7) and cursor (v1) current, the other
+# twelve (pi, omp, codex, copilot, devin, droid, kimi, opencode, kilo, hermes,
+# qodercli, mastracode) not installed. An unused key is harmless but is dead
+# config; add one when you install its integration.
 #
-# Cost: rows_by_agent REPLACES the rows above for matching agents, so a claude
-# entry is now 3 rows + row_gap = 4 terminal rows in the sidebar. If the agent
-# panel gets crowded, drop row_gap to 0 before dropping a row.
+# `terminal_title_stripped` is a herdr BUILT-IN carrying the live terminal
+# title -- what the agent is doing right now, for free. It overlaps `$goal`,
+# which is a curated <=50-char headline set-label.sh publishes by hand, so
+# this is a deliberate side-by-side TRIAL: run both, keep the winner. If the
+# built-in wins, `$goal` + the herdr half of set-label.sh + the token/row sync
+# hazard all retire together; if it loses, delete the title row.
+#
+# ⚠️ Cost: a claude entry is now 4 rows + row_gap = 5 terminal rows. That is
+# the price of the stock shape (which puts `agent` on its own row) plus both
+# the title and goal rows. If that is too tall, the fixes in order are:
+# row_gap = 0, then merge `agent` back up into row 1, then drop a row.
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  ["state_icon", "workspace", "tab", "agent"],
-  ["terminal_title_stripped"],
+  ["state_icon", { token = "workspace", bold = true }, { token = "tab", dim = true }],
+  [{ token = "terminal_title_stripped", dim = true }],
+  [{ token = "agent", fg = "#689d6a" }],
+  [{ token = "$goal", dim = true }],
+]
+cursor = [
+  ["state_icon", { token = "workspace", bold = true }, { token = "tab", dim = true }],
+  [{ token = "terminal_title_stripped", dim = true }],
+  [{ token = "agent", fg = "#689d6a" }],
   [{ token = "$goal", dim = true }],
 ]
 
@@ -67,16 +103,16 @@ claude = [
 # watcher dies this row expires and vanishes rather than showing a stale
 # directory. Keep the two in sync: a token with no row renders nothing, silently.
 #
-# Two rows, not three: branch/push/cwd share a line so a space costs 2 rows
-# plus the gap. This is the widest row in the sidebar, so it's the one that
-# truncates first — a long branch name eats the cwd. Widen sidebar_max_width
-# above, or shorten the path with another abbreviation in the script, if that
-# starts biting.
+# $cwd gets its OWN row (stock two rows + ours). It used to share the
+# branch/git_status line to save vertical space, but that made it the widest
+# row in the sidebar and therefore the first to truncate — a long branch name
+# ate the path. Its own row removes that coupling.
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
-  ["state_icon", "workspace"],
-  ["branch", "git_status", { token = "$cwd", dim = true }],
+  ["state_icon", { token = "workspace", bold = true }],
+  [{ token = "branch", fg = "#689d6a" }, { token = "git_status", fg = "#d65d0e" }],
+  [{ token = "$cwd", dim = true }],
 ]
 
 [theme]
