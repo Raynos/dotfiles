@@ -1,0 +1,42 @@
+onboarding = false
+[ui]
+agent_panel_sort = "priority"
+
+show_agent_labels_on_pane_borders = true
+
+# Don't hijack the clipboard on mouse-select — the selection stays visible, it
+# just isn't copied, so an iTerm-side or explicit copy still works and a stray
+# drag can't clobber what's already on the clipboard. Pairs with
+# [ui.toast.clipboard] enabled = false below. (herdr 0.7.5, #1471)
+copy_on_select = false
+
+# Agent sidebar rows. This mirrors herdr's default layout and appends the custom
+# `$goal` token, which claude/set-label.sh writes via
+# `herdr pane report-metadata --token goal=<tag>`. herdr 0.7.x dropped the old
+# `--custom-status` chip; a token only renders if a row asks for it by `$name`,
+# so this block and set-label.sh must stay in sync. A row vanishes when none of
+# its tokens have a value, so panes with no goal set just show the default rows.
+# (Affects the expanded desktop sidebar only; collapsed/mobile keep compact
+# layouts.) Apply without restarting: `herdr server reload-config`.
+[ui.sidebar.agents]
+row_gap = 0
+rows = [
+  ["state_icon", "workspace", "tab"],
+  ["agent", { token = "$goal", dim = true }],
+]
+[theme]
+# "terminal" follows the host palette instead of hardcoding one, so herdr's
+# chrome picks up whichever iTerm profile the session was attached under
+# (see the herdr wrapper in ~/.bashrc). Set back to "gruvbox" to pin it.
+name = "terminal"
+auto_switch = false
+
+[ui.toast]
+delivery = "herdr"
+
+[ui.toast.clipboard]
+enabled = false
+
+[ui.sound]
+enabled = false
+

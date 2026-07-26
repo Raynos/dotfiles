@@ -16,11 +16,17 @@ mkdir -p "$dir"
 label=$(printf '%s' "$1" | tr '\n\t' '  ' | sed -E 's/  +/ /g; s/^ +//; s/ +$//' | cut -c1-50)
 printf '%s' "$label" > "$dir/$CLAUDE_CODE_SESSION_ID.label"
 
-# Mirror the short tag into the herdr agents panel (custom_status). No-op outside
-# herdr. The panel truncates + doesn't wrap, so this is a terse tag, not a status
-# line — 12 chars is the measured no-clip width (2026-07-04).
+# Mirror the short tag into the herdr agents panel. No-op outside herdr. The panel
+# truncates + doesn't wrap, so this is a terse tag, not a status line — 12 chars is
+# the measured no-clip width (2026-07-04).
+#
+# herdr 0.7.x REMOVED `--custom-status`; display-only pane metadata is now a token
+# map, and the sidebar renders a token as `$name` only if config.toml asks it to.
+# So this writes token `goal`, and dotfiles/.config/herdr/config.toml carries the
+# matching `[ui.sidebar.agents]` row referencing `$goal`. BOTH halves are required —
+# writing the token alone renders nothing. (re-verified against herdr 0.7.5)
 if [ "${HERDR_ENV:-}" = "1" ] && [ -n "${HERDR_PANE_ID:-}" ] && command -v herdr >/dev/null 2>&1; then
   tag=$(printf '%s' "$2" | tr '\n\t' '  ' | sed -E 's/  +/ /g; s/^ +//; s/ +$//' | cut -c1-12)
   herdr pane report-metadata "$HERDR_PANE_ID" --source claude:goal \
-    --custom-status "$tag" >/dev/null 2>&1 || true
+    --token "goal=$tag" >/dev/null 2>&1 || true
 fi

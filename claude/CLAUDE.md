@@ -16,6 +16,12 @@ status-line goal — **quote it**, it's a single argument. Arg 2 is a short tag
 herdr (a no-op otherwise) — keep it terse and legible, it's a chip, not a
 sentence (e.g. `herdr-tag`, `andon-ui`, `t0-econ`).
 
+The herdr half is **two coupled pieces** — if the chip stops showing up, check
+both: `set-label.sh` writes pane metadata token `goal`, and
+`dotfiles/.config/herdr/config.toml` has the `[ui.sidebar.agents]` row that
+renders `$goal`. A token with no matching row renders nothing, silently. (herdr
+0.7.x replaced the old one-shot `--custom-status` flag with this token model.)
+
 - Imperative and concrete, no trailing punctuation — e.g.
   `Migrate estate map to Andon Steel palette`, `Fix flaky combat e2e test`.
 - It's a trivial local file write: no cost, no background process, no
