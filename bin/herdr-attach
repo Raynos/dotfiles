@@ -94,6 +94,19 @@ restore_profile="${ITERM_PROFILE:-Default}"
 trap 'set_profile "$restore_profile"' EXIT INT TERM
 
 set_profile "$profile"
+
+# Keep the spaces sidebar's `$cwd` row populated. herdr emits no events, so this
+# is a poller; it self-locks to one instance per host and exits on its own once
+# the herdr server goes away, so attaching repeatedly doesn't stack up watchers.
+# Detached from this shell's lifetime on purpose — the watcher should outlive a
+# detach and keep serving whatever other clients are still attached.
+# (macOS has no setsid(1), so it's nohup + & + disown to survive this shell.)
+cwd_watcher="$HOME/.config/herdr/herdr-cwd-labels.sh"
+if [ -x "$cwd_watcher" ]; then
+    nohup "$cwd_watcher" --watch >/dev/null 2>&1 < /dev/null &
+    disown 2>/dev/null || true
+fi
+
 # `command` so the interactive herdr() guard in .bashrc can never shadow this —
 # that guard exists to push people here, and this is the sanctioned caller.
 # (Shell functions aren't inherited by scripts anyway; this is belt and braces.)

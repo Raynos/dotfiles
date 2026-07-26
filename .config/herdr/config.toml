@@ -37,6 +37,26 @@ rows = [
   ["state_icon", "workspace", "tab", "agent"],
   [{ token = "$goal", dim = true }],
 ]
+
+# Built-in space tokens: state_icon, state_text, workspace, branch, git_status.
+# There is NO built-in cwd token — `$cwd` is workspace metadata published by
+# .config/herdr/herdr-cwd-labels.sh, which polls `herdr api snapshot` because
+# herdr fires no events. That script writes the token with a TTL, so if the
+# watcher dies this row expires and vanishes rather than showing a stale
+# directory. Keep the two in sync: a token with no row renders nothing, silently.
+#
+# Two rows, not three: branch/push/cwd share a line so a space costs 2 rows
+# plus the gap. This is the widest row in the sidebar, so it's the one that
+# truncates first — a long branch name eats the cwd. Widen sidebar_max_width
+# above, or shorten the path with another abbreviation in the script, if that
+# starts biting.
+[ui.sidebar.spaces]
+row_gap = 1
+rows = [
+  ["state_icon", "workspace"],
+  ["branch", "git_status", { token = "$cwd", dim = true }],
+]
+
 [theme]
 # "terminal" follows the host palette instead of hardcoding one, so herdr's
 # chrome picks up whichever iTerm profile the session was attached under

@@ -35,6 +35,7 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 #
 ITEMS=(
   herdr/config.toml
+  herdr/herdr-cwd-labels.sh
 )
 
 link_one() {
