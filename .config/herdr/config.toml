@@ -77,9 +77,14 @@ sidebar_max_width = 40
 #   fg0  #fbf1c7  12.99:1
 #   fg1  #ebdbb2  10.75:1   default text -- `workspace` uses this
 #   fg2  #d5c4a1   8.59:1
-#   fg3  #bdae93   6.77:1
-#   fg4  #a89984   5.30:1   `$cwd` -- fg3 still read as too loud
+#   fg3  #bdae93   6.77:1   `$cwd`, +dim (see below)
+#   fg4  #a89984   5.30:1
 #   gray #928374   4.02:1   the original "too dim"
+#
+# Both custom rows ended up on fg + dim rather than a darker fg alone: fg3
+# bare read as too loud and fg4 bare as too flat, and the terminal's dim
+# lands between them. That means the ratios above are UPPER BOUNDS for those
+# two rows, not what is on screen -- see the dim caveat below.
 #
 # So rank by HUE as well: `$goal` is bright_yellow #fabd2f, unmistakably not
 # `workspace`, and `$cwd` is neutral fg4 -- which keeps the two custom rows
@@ -168,7 +173,7 @@ rows = [
 row_gap = 1
 rows = [
   ["state_icon", { token = "workspace", bold = true }, { token = "branch", fg = "#8ec07c" }, { token = "git_status", fg = "#fe8019" }],
-  [{ token = "$cwd", fg = "#a89984", dim = false }],
+  [{ token = "$cwd", fg = "#bdae93", dim = true }],
 ]
 
 [theme]
