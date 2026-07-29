@@ -31,6 +31,7 @@ ITEMS=(
   session-label-remind.sh
   statusline.sh
   hooks
+  skills/handoff
   skills/herdr
   sounds
 )
