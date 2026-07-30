@@ -1,0 +1,3 @@
+# Machine-local pnpm settings (not project settings).
+# enableGlobalVirtualStore stays off in repos; this opts this machine in.
+enable-global-virtual-store=true

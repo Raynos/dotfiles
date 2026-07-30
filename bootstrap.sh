@@ -7,6 +7,9 @@ git pull origin master
 # back into this repo) with a real copy — silently un-tracking it and
 # reintroducing drift. Run ./.config/install.sh instead.
 #
+# pnpm/ is excluded for the same reason: pnpm/install.sh symlinks the managed
+# global rc into pnpm's globalconfig path (Library/Preferences on macOS).
+#
 # Deliberately scoped to herdr, NOT all of .config/: .config/terminator/config is
 # still copy-managed and must keep being rsynced. ("install.sh" below is
 # unanchored, so it already keeps .config/install.sh out of ~.)
@@ -15,6 +18,7 @@ function doIt() {
     --exclude ".gitignore" \
     --exclude ".DS_Store" \
     --exclude ".config/herdr/" \
+    --exclude "pnpm/" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \
     --exclude "init.sh" \
@@ -41,7 +45,7 @@ function doIt() {
 # interactive shell that sourced this.
 function runInstallers() {
 	local installer
-	for installer in .config/install.sh claude/install.sh codex/install.sh agents/install.sh; do
+	for installer in .config/install.sh claude/install.sh codex/install.sh agents/install.sh pnpm/install.sh; do
 		if [ ! -x "$installer" ]; then
 			echo "skip (not executable): $installer"
 			continue
