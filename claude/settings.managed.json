@@ -4,33 +4,36 @@
       "Bash"
     ],
     "deny": [
-      "Bash(rm -rf /)",
-      "Bash(rm -rf /*)",
-      "Bash(rm -rf ~)",
-      "Bash(rm -rf ~/*)",
-      "Bash(rm -rf .)"
+      "Bash(sudo:*)",
+      "Bash(chmod -R:*)",
+      "Bash(chmod 777:*)",
+      "Bash(chown -R:*)",
+      "Bash(dd:*)",
+      "Bash(mkfs:*)"
     ],
     "ask": [
-      "Bash(sudo:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
       "Bash(git push --force-with-lease:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean -f:*)",
-      "Bash(git checkout -- :*)",
-      "Bash(chmod -R:*)",
-      "Bash(chmod 777:*)",
-      "Bash(chown -R:*)",
-      "Bash(dd:*)",
-      "Bash(mkfs:*)",
-      "Bash(sh)",
-      "Bash(bash)",
-      "Bash(sh -c:*)",
-      "Bash(bash -c:*)"
+      "Bash(git checkout -- :*)"
     ],
     "defaultMode": "bypassPermissions"
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/guard-rm.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "hooks": [
