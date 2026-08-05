@@ -1,3 +1,6 @@
+# Add the opencode CLI (installed by the opencode installer)
+export PATH="$HOME/.opencode/bin:$PATH"
+
 # Add `~/bin` to the `$PATH`
 export PATH="$HOME/bin:$PATH"
 # Add node_modules to path
