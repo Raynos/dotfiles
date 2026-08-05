@@ -4,11 +4,11 @@ agent_panel_sort = "priority"
 
 show_agent_labels_on_pane_borders = true
 
-# Don't hijack the clipboard on mouse-select — the selection stays visible, it
-# just isn't copied, so an iTerm-side or explicit copy still works and a stray
-# drag can't clobber what's already on the clipboard. Pairs with
-# [ui.toast.clipboard] enabled = false below. (herdr 0.7.5, #1471)
-copy_on_select = false
+# Mouse-drag selection copies straight to the clipboard. This was off for a
+# while (a stray drag can clobber what's already on the clipboard), but the
+# friction of always reaching for an explicit copy won out. The clipboard toast
+# stays off in [ui.toast.clipboard] below, so copies are silent.
+copy_on_select = true
 
 # Give the expanded sidebar more room than herdr's defaults (26/36). min is
 # pinned to 30 on purpose: the width otherwise auto-scales down off short

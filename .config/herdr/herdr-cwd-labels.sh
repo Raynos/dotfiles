@@ -162,11 +162,12 @@ export HERDR_SOCKET_PATH="$SOCKET"
 # the ~26 usable sidebar columns, so it collapses to `~prj`. Everything else
 # under $HOME just gets the normal `~`.
 #
-# GROUPS below go one better: a project group that has its own herdr session is
-# noise in the label (inside the `games` session, every row saying `~prj/games/`
-# tells you nothing), so it collapses into the tilde itself —
-# `~prj/games/kami-kakushi` becomes `~games/kami-kakushi`, buying back 4 columns
-# for the part that actually varies. Add a group by adding a name to the tuple.
+# PATH_ALIASES below go one better: a project group that has its own herdr
+# session is noise in the label (inside the `games` session, every row saying
+# `~prj/games/` tells you nothing), so it collapses into the tilde itself.
+# Aliases may also shorten nested paths: `~/projects/game-demos/foo` becomes
+# `~demos/foo`, while its `gauntlet-demos` subtree becomes `~gdemo`.
+# Add or rename an alias by editing the mapping; the longest match wins.
 abbrev_paths() {
     python3 -c '
 import json, os, sys
@@ -183,8 +184,13 @@ if not snap:
 
 home = os.path.expanduser("~")
 
-# Project groups that collapse into the tilde: ~/projects/games/x -> ~games/x.
-GROUPS = ("games", "house")
+# Project paths that collapse into the tilde. Values are display names.
+PATH_ALIASES = {
+    "games": "games",
+    "house": "house",
+    "game-demos": "demos",
+    "game-demos/gauntlet-demos": "gdemo",
+}
 
 def pretty(path):
     if path == home:
@@ -193,9 +199,11 @@ def pretty(path):
         return "~prj"
     if path.startswith(home + "/projects/"):
         rest = path[len(home) + len("/projects/"):]
-        # rest already starts with the group name, so "~" + rest is the label.
-        if rest.split("/", 1)[0] in GROUPS:
-            return "~" + rest
+        for prefix in sorted(PATH_ALIASES, key=len, reverse=True):
+            if rest == prefix:
+                return "~" + PATH_ALIASES[prefix]
+            if rest.startswith(prefix + "/"):
+                return "~" + PATH_ALIASES[prefix] + rest[len(prefix):]
         return "~prj/" + rest
     if path.startswith(home + "/"):
         return "~/" + path[len(home) + 1:]
