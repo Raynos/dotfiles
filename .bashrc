@@ -136,7 +136,7 @@ fi
 alias claude >/dev/null 2>&1 && unalias claude                 # step aside if it's an alias
 claude() {
     case "$PWD/" in
-        "$HOME/projects/games/"*|"$HOME/projects/house/"*|"$HOME/projects/personal/"*)
+        "$HOME/projects/games/"*|"$HOME/projects/game-demos/"*|"$HOME/projects/house/"*|"$HOME/projects/personal/"*)
             printf '🚫 personal project — run `claude-personal` here, not company claude.\n' >&2
             return 1 ;;
     esac
@@ -159,7 +159,7 @@ codex-personal() {
 alias codex >/dev/null 2>&1 && unalias codex
 codex() {
     case "$PWD/" in
-        "$HOME/projects/games/"*|"$HOME/projects/house/"*|"$HOME/projects/personal/"*)
+        "$HOME/projects/games/"*|"$HOME/projects/game-demos/"*|"$HOME/projects/house/"*|"$HOME/projects/personal/"*)
             printf '🚫 personal project — run `codex-personal` here, not company codex.\n' >&2
             return 1 ;;
     esac
