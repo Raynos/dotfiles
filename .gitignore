@@ -8,3 +8,4 @@ sublime/User/Package Control.cache
 *.sublime-workspace
 *.log
 markdown/
+**/.claude/settings.local.json
