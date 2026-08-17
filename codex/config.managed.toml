@@ -1,11 +1,28 @@
-# These scalar defaults are applied to ~/.codex/config.toml by install.sh.
-# They deliberately exclude project trust, plugin cache, OAuth, and sessions.
+# Applied to ~/.codex/config.toml by install.sh: top-level scalars are
+# replaced line-by-line, [table] sections are replaced wholesale. This
+# deliberately excludes project trust, plugin cache, marketplaces, OAuth,
+# hook trust hashes, and sessions — those stay app-owned. The stdio MCP
+# servers (context7, playwright, chrome-devtools) are managed by
+# agent-common/sync-agent-tooling.mjs, not here.
 model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
+plan_mode_reasoning_effort = "xhigh"
 approvals_reviewer = "auto_review"
 service_tier = "default"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
+
+[tui]
+pet = "dewey"
+
+[features]
+hooks = true
+
+[notice]
+hide_rate_limit_model_nudge = true
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
 
 [tools.experimental_request_user_input]
 enabled = true

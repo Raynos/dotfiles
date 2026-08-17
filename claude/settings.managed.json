@@ -94,5 +94,11 @@
       }
     }
   },
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "model": "fable",
+  "effortLevel": "high",
+  "askUserQuestionTimeout": "10m",
+  "tui": "fullscreen",
+  "theme": "dark",
+  "preferredNotifChannel": "notifications_disabled"
 }
