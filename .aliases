@@ -7,4 +7,5 @@ alias ntest="NODE_ENV=test npm test"
 alias npmcov="rm -rf coverage/ && npm run cover && npm run view-cover"
 alias gpublish="npm version patch && git push origin master --tags"
 alias npmrun='npm -s run'
+alias herdr-file-viewer="herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
 

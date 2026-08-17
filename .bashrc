@@ -73,6 +73,9 @@ fi
 
 source ~/.pnpm-completion.bash
 
+# Add npm tab completion (output of `npm completion`)
+[ -f ~/.npm-completion.bash ] && source ~/.npm-completion.bash
+
 # Add tab completion for the `claude` CLI (Claude Code)
 [ -f ~/.claude-completion.bash ] && source ~/.claude-completion.bash
 

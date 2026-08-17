@@ -1,3 +1,8 @@
+# Homebrew (macOS, Apple Silicon) — bash logins don't get .zprofile's shellenv
+[ -d /opt/homebrew/bin ] && export PATH="/opt/homebrew/bin:$PATH"
+# psql and friends without linking the full postgres formula
+[ -d /opt/homebrew/opt/libpq/bin ] && export PATH="$PATH:/opt/homebrew/opt/libpq/bin"
+
 # Add the opencode CLI (installed by the opencode installer)
 export PATH="$HOME/.opencode/bin:$PATH"
 
