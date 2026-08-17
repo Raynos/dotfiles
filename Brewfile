@@ -76,7 +76,6 @@ brew 'yt-dlp'
 brew 'zopfli'
 
 # --- Fun --------------------------------------------------------------------
-brew 'mgba'
 brew 'sdl2_image'
 brew 'sdl2_mixer'
 brew 'sdl2_net'
