@@ -1,0 +1,126 @@
+{
+    "editor.rulers": [
+        65,
+        80,
+        120
+    ],
+    "editor.detectIndentation": false,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.renderWhitespace": "all",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.tsserver.maxTsServerMemory": 16000,
+    "workbench.colorTheme": "Default Dark+",
+    "editor.glyphMargin": false,
+    "biome.enabled": false,
+    "cursor.windowSwitcher.sidebarHoverCollapsed": true,
+    "extensions.ignoreRecommendations": true,
+    "javascript.preferGoToSourceDefinition": true,
+    "typescript.preferGoToSourceDefinition": true,
+    "typescript.experimental.useTsgo": true,
+    "[typescript]": {
+      "editor.defaultFormatter": "TypeScriptTeam.native-preview"
+    },
+    "git.replaceTagsWhenPull": true,
+    "git.autofetch": false,
+    "git.pullTags": false,
+    "git.confirmSync": false,
+    "typescript.tsserver.log": "verbose",
+    "cursor.composer.shouldChimeAfterChatFinishes": true,
+    "cursor.preferNotificationsSameAsChat": true,
+    "accessibility.signals.chatResponseReceived": {
+      "sound": "off"
+    },
+    "audioCues.enabled": "off",
+    "task.allowAutomaticTasks": "on",
+    "git.blame.editorDecoration.enabled": true,
+    "git.blame.statusBarItem.enabled": true,
+    "editor.minimap.enabled": true,
+    "typescript.native-preview.trace.server": "off",
+    "cursor.inlineDiff.enablePerformanceProtection": false,
+    "window.autoDetectColorScheme": false,
+    "accessibility.signals.lineHasError": {
+      "sound": "off"
+    },
+    "accessibility.signals.lineHasWarning": {
+      "sound": "off"
+    },
+    "accessibility.signals.lineHasFoldedArea": {
+      "sound": "off"
+    },
+    "accessibility.signals.lineHasBreakpoint": {
+      "sound": "off"
+    },
+    "accessibility.signals.lineHasInlineSuggestion": {
+      "sound": "off"
+    },
+    "accessibility.signals.terminalQuickFix": {
+      "sound": "off"
+    },
+    "accessibility.signals.terminalCommandSucceeded": {
+      "sound": "off"
+    },
+    "accessibility.signals.terminalCommandFailed": {
+      "sound": "off"
+    },
+    "accessibility.signals.onDebugBreak": {
+      "sound": "off"
+    },
+    "accessibility.signals.noInlayHints": {
+      "sound": "off"
+    },
+    "accessibility.signals.taskCompleted": {
+      "sound": "off"
+    },
+    "accessibility.signals.taskFailed": {
+      "sound": "off"
+    },
+    "accessibility.signals.notebookCellCompleted": {
+      "sound": "off"
+    },
+    "accessibility.signals.notebookCellFailed": {
+      "sound": "off"
+    },
+    "accessibility.signals.diffLineInserted": {
+      "sound": "off"
+    },
+    "accessibility.signals.diffLineDeleted": {
+      "sound": "off"
+    },
+    "accessibility.signals.diffLineModified": {
+      "sound": "off"
+    },
+    "accessibility.signals.chatRequestSent": {
+      "sound": "off"
+    },
+    "accessibility.signals.clear": {
+      "sound": "off"
+    },
+    "accessibility.signals.save": {
+      "sound": "never"
+    },
+    "accessibility.signals.format": {
+      "sound": "never"
+    },
+    "accessibility.signals.voiceRecordingStarted": {
+      "sound": "off"
+    },
+    "accessibility.signals.voiceRecordingStopped": {
+      "sound": "off"
+    },
+    "accessibility.signals.progress": {
+      "sound": "off"
+    },
+    "accessibility.signals.positionHasError": {
+      "sound": "off"
+    },
+    "accessibility.signals.positionHasWarning": {
+      "sound": "off"
+    },
+    "accessibility.signalOptions.volume": 0,
+    "editor.accessibilitySupport": "off",
+    "git.openRepositoryInParentFolders": "never",
+    "claudeCode.useTerminal": true,
+    "claudeCode.preferredLocation": "sidebar",
+    "cursor.composer.codeBlockWordWrap": true
+}
