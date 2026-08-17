@@ -54,10 +54,6 @@ function nstart() {
     __nstart "$(basename $PWD)" "$@"
 }
 
-function colingo-nstart() {
-    __nstart "Colingo/$(basename $PWD)" "$@"
-}
-
 function __ngenplus() {
     local scaffold=$1
     local projectName=$2
@@ -92,10 +88,6 @@ function __ngenplus() {
 
 function ngenplus() {
     __ngenplus "ngen" $1 $2
-}
-
-function colingo-ngenplus() {
-    __ngenplus "colingo-ngen" $1 $2
 }
 
 ## Git and github work flows
