@@ -52,8 +52,11 @@ function codexPluginInstalled(capability) {
     result.output.includes("installed, enabled");
 }
 
+// Presence only, not `enabled`: the CLI reports enabled session-dependently
+// (false when run headless, e.g. from bootstrap.sh) — see sync-plugins.sh,
+// which excludes `enabled` from plugins.json for the same reason.
 function claudePluginInstalled(capability, plugins) {
-  return plugins.some((plugin) => plugin.id === capability.claude.id && plugin.enabled);
+  return plugins.some((plugin) => plugin.id === capability.claude.id);
 }
 
 function claudePlugins() {

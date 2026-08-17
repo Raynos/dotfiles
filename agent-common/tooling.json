@@ -50,11 +50,11 @@
       }
     },
     {
-      "name": "browser-use",
+      "name": "browser",
       "purpose": "Interactive testing in Codex's in-app browser",
       "codex": {
         "kind": "plugin",
-        "id": "browser-use@openai-bundled"
+        "id": "browser@openai-bundled"
       }
     }
   ]
