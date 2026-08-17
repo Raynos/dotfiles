@@ -198,3 +198,8 @@ herdr() {
     command herdr "$@"
 }
 # ===== end herdr auto-create guard =====
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+[[ -r "$HOME/.grok/completions/bash/grok.bash" ]] && source "$HOME/.grok/completions/bash/grok.bash"
+# <<< grok installer <<<
