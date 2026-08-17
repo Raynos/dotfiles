@@ -29,40 +29,6 @@ else
 fi
 
 echo ""
-echo "Checking Homebrew"
-
-if ( hash brew 2>/dev/null ); then
-    echo " - Already installed Homebrew"
-else
-    echo " - Fetching Homebrew"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
-
-# Make brew available in THIS shell even before .bashrc/.zprofile exist.
-if [ -x /opt/homebrew/bin/brew ]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
-echo ""
-echo "Installing Brewfile bundle (formulae + casks)"
-brew bundle --file="$SCRIPT_DIR/Brewfile"
-
-echo ""
-echo "Checking login shell (Homebrew bash)"
-
-BREW_BASH="$(brew --prefix)/bin/bash"
-if ! grep -q "$BREW_BASH" /etc/shells 2>/dev/null; then
-    echo " - Adding $BREW_BASH to /etc/shells (needs sudo)"
-    echo "$BREW_BASH" | sudo tee -a /etc/shells >/dev/null
-fi
-if [ "$(dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}')" = "$BREW_BASH" ]; then
-    echo " - Already using Homebrew bash as login shell"
-else
-    echo " - Switching login shell to $BREW_BASH"
-    chsh -s "$BREW_BASH"
-fi
-
-echo ""
 echo "Checking ~/projects and ~/bin"
 
 if [ ! -e ~/projects ]; then
@@ -75,6 +41,8 @@ if [ ! -e ~/.extra ]; then
     touch ~/.extra
 fi
 
+# Prompt for git identity BEFORE the long brew bundle so everything after
+# this point can run unattended.
 echo ""
 echo "Configuring git email & name"
 
@@ -100,6 +68,43 @@ fi
 if ( ! grep 'git config --global user.name' 1>/dev/null 2>/dev/null ~/.extra ); then
     echo " - Storing global user.name in ~/.extra"
     echo "git config --global user.name '$(git config --global user.name)'" >> ~/.extra
+fi
+
+echo ""
+echo "Checking Homebrew"
+
+if ( hash brew 2>/dev/null ); then
+    echo " - Already installed Homebrew"
+else
+    echo " - Fetching Homebrew"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Make brew available in THIS shell even before .bashrc/.zprofile exist.
+# /opt/homebrew on Apple Silicon, /usr/local on Intel.
+if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+echo ""
+echo "Installing Brewfile bundle (formulae + casks)"
+brew bundle --file="$SCRIPT_DIR/Brewfile"
+
+echo ""
+echo "Checking login shell (Homebrew bash)"
+
+BREW_BASH="$(brew --prefix)/bin/bash"
+if ! grep -q "$BREW_BASH" /etc/shells 2>/dev/null; then
+    echo " - Adding $BREW_BASH to /etc/shells (needs sudo)"
+    echo "$BREW_BASH" | sudo tee -a /etc/shells >/dev/null
+fi
+if [ "$(dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}')" = "$BREW_BASH" ]; then
+    echo " - Already using Homebrew bash as login shell"
+else
+    echo " - Switching login shell to $BREW_BASH"
+    chsh -s "$BREW_BASH"
 fi
 
 echo ""
