@@ -36,9 +36,8 @@
 	gjb = "!f() { git grep -n \"$@\" | perl -F':' -anpe '$_=`git blame -f  -L$F[1],+1 $F[0]`' | awk '{ commit=$1; (\"basename -s .java -z \" $2 ) | getline fbasename; $1=$2=\"\"; printf(\"%s %-40s %s \\n\", commit, fbasename, $0) }'; }; f"
 
 [core]
-	# Use custom `.gitignore` and `.gitattributes`
+	# Use custom `.gitignore`
 	excludesfile = ~/.gitignore
-	attributesfile = ~/.gitattributes
 	# Treat spaces before tabs, lines that are indented with 8 or more spaces, and all kinds of trailing whitespace as an error
 	whitespace = space-before-tab,trailing-space
 
@@ -72,8 +71,6 @@
 	authorbrief = %Cred%h%Creset %C(yellow)%an%d%Creset %s %Cgreen(%ar)%Creset
 
 # URL shorthands
-[url "gitolite@code.uber.internal:"]
-	insteadOf = "gito:"
 [url "git@github.com:"]
 	insteadOf = "gh:"
 	pushInsteadOf = "github:"
