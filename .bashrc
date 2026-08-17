@@ -13,6 +13,10 @@ if [ -e ~/projects/nvm ]; then
     node_version=${NVM_NODE_VERSION:-"v16.17.0"}
     # Tell nvm to use the latest node 0.8 branch
     nvm use $node_version
+elif [ -s /opt/homebrew/opt/nvm/nvm.sh ]; then
+    # macOS: nvm comes from Homebrew (macos.sh), versions live in ~/.nvm
+    export NVM_DIR="$HOME/.nvm"
+    . /opt/homebrew/opt/nvm/nvm.sh
 fi
 
 # Load the shell dotfiles, and then some:
