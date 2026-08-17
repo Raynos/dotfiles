@@ -35,7 +35,7 @@ profiles).
 ### Bootstrap the dotfiles
 
 Copies the dotfiles into `~` and runs the per-tool installers
-(`.config/`, `claude/`, `codex/`, `agents/`, `pnpm/`, `cursor/`):
+(`.config/`, `claude/`, `codex/`, `agents/`, `pnpm/`, `cursor/`, `iterm2/`):
 
 ```sh
 source bootstrap.sh
