@@ -61,11 +61,6 @@
 	# Include summaries of merged commits in newly created merge commit messages
 	log = true
 
-# Use `origin` as the default remote on the `master` branch in all cases
-[branch "master"]
-	remote = origin
-	merge = refs/heads/master
-
 [pretty]
 	brief = %Cred%h%Creset %C(yellow)%an%d%Creset %s %Cgreen(%cr)%Creset
 	authorbrief = %Cred%h%Creset %C(yellow)%an%d%Creset %s %Cgreen(%ar)%Creset
