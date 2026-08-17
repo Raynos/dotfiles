@@ -184,7 +184,7 @@ echo "      echo \"your-email namespaces=\\\"git\\\" \$(cat ~/.ssh/id_ed25519.pu
 echo "      pbcopy < ~/.ssh/id_ed25519.pub   # add to GitHub as BOTH auth and signing key"
 echo "  - Sign in: iCloud / App Store, 1Password, Google, Slack, gcloud auth login"
 echo "  - Grant permissions (System Settings > Privacy & Security):"
-echo "      Accessibility: iTerm, AltTab, Docker; Screen Recording: Loom, zoom"
+echo "      Accessibility: iTerm, AltTab, Docker; Screen Recording: zoom"
 echo "  - iTerm2 profiles: create 'Default', 'Vibe', 'House' (bin/herdr-attach switches between them)"
 echo "  - Docker Desktop first run (license prompt + starts the daemon)"
 echo "  - Dark mode / scroll direction take effect after logout"
