@@ -19,6 +19,9 @@ function doIt() {
     --exclude ".DS_Store" \
     --exclude ".config/herdr/" \
     --exclude "pnpm/" \
+    --exclude "cursor/" \
+    --exclude "macos.sh" \
+    --exclude "Brewfile" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \
     --exclude "init.sh" \
@@ -45,7 +48,7 @@ function doIt() {
 # interactive shell that sourced this.
 function runInstallers() {
 	local installer
-	for installer in .config/install.sh claude/install.sh codex/install.sh agents/install.sh pnpm/install.sh; do
+	for installer in .config/install.sh claude/install.sh codex/install.sh agents/install.sh pnpm/install.sh cursor/install.sh; do
 		if [ ! -x "$installer" ]; then
 			echo "skip (not executable): $installer"
 			continue
