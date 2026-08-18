@@ -81,7 +81,10 @@ if command -v cursor >/dev/null; then
       echo "ok    $ext"
     else
       echo "install $ext"
-      cursor --install-extension "$ext" >/dev/null
+      # Warn-and-continue: one extension missing from Cursor's marketplace
+      # (e.g. not mirrored from VS Code's) must not abort the rest of the sync.
+      cursor --install-extension "$ext" >/dev/null || \
+        echo "warn: failed to install $ext — continuing"
     fi
   done < "$REPO_DIR/extensions.txt"
 else
