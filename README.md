@@ -16,6 +16,18 @@ cd dotfiles
 git submodule init && git submodule update
 ```
 
+On a fresh machine with no SSH keys yet, clone over HTTPS and rewrite the
+SSH submodule URL (`.gitmodules` uses `git@github.com:`); flip the origin
+remote back to SSH once keys exist:
+
+```sh
+git clone https://github.com/Raynos/dotfiles
+cd dotfiles
+git -c url."https://github.com/".insteadOf="git@github.com:" submodule update --init
+# later, after ssh-keygen + GitHub key upload:
+git remote set-url origin git@github.com:Raynos/dotfiles.git
+```
+
 ## macOS
 
 ### Provision the machine
