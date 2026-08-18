@@ -38,6 +38,13 @@ if [ ! -e ~/.extra ]; then
     touch ~/.extra
 fi
 
+# .bash_prompt shows "production" (all-yellow) colors unless this is exactly
+# the string 1 — seed it on personal machines so the local palette applies.
+if ! grep -q 'IS_LOCAL_MACHINE' ~/.extra; then
+    echo " - Storing IS_LOCAL_MACHINE=1 in ~/.extra (local prompt colors)"
+    echo 'export IS_LOCAL_MACHINE=1' >> ~/.extra
+fi
+
 echo ""
 echo "Checking git email & name"
 
@@ -148,7 +155,7 @@ defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool true
 defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
 defaults write com.apple.dock tilesize -int 72
 defaults write com.apple.finder ShowPathbar -bool true
-# Icon view in Finder
+# Gallery view in Finder (icon view would be "icnv")
 defaults write com.apple.finder FXPreferredViewStyle -string "glyv"
 mkdir -p ~/Documents/Screenshots
 defaults write com.apple.screencapture location -string "$HOME/Documents/Screenshots"
@@ -165,8 +172,20 @@ echo ""
 echo "Manual checklist (things a script can't do):"
 echo "  - SSH key + commit signing (.gitconfig enforces SSH signing; commits FAIL without it):"
 echo "      ssh-keygen -t ed25519 -C 'your-email'"
-echo "      echo \"your-email namespaces=\\\"git\\\" \$(cat ~/.ssh/id_ed25519.pub)\" > ~/.ssh/allowed_signers"
-echo "      pbcopy < ~/.ssh/id_ed25519.pub   # add to GitHub as BOTH auth and signing key"
+echo "      # allowed_signers needs ONE LINE PER COMMITTER EMAIL (personal + work),"
+echo "      # or history signed under the other email shows as unverified:"
+echo "      printf '%s namespaces=\"git\" %s\n' raynos2@gmail.com \"\$(cat ~/.ssh/id_ed25519.pub)\" >  ~/.ssh/allowed_signers"
+echo "      printf '%s namespaces=\"git\" %s\n' jake@socket.dev  \"\$(cat ~/.ssh/id_ed25519.pub)\" >> ~/.ssh/allowed_signers"
+echo "      chmod 600 ~/.ssh/allowed_signers"
+echo "      # upload to GitHub as BOTH key types; default gh token lacks the scopes:"
+echo "      gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key"
+echo "      gh ssh-key add ~/.ssh/id_ed25519.pub --type authentication"
+echo "      gh ssh-key add ~/.ssh/id_ed25519.pub --type signing"
+echo "  - Clone the private work repo and run its installer (provides the"
+echo "    ~/.cursor skills/rules/hooks symlinks + hooks.json — dotfiles does NOT):"
+echo "      gh repo clone Raynos/work-skills ~/projects/work-skills && ~/projects/work-skills/install.sh"
+echo "  - Launch Codex.app once and sign in — that materializes the openai-bundled"
+echo "    plugin marketplace; codex/install.sh reports browser@openai-bundled missing until then"
 echo "  - Sign in: iCloud / App Store, 1Password, Google, Slack, gcloud auth login"
 echo "  - Grant permissions (System Settings > Privacy & Security):"
 echo "      Accessibility: iTerm, AltTab, Docker; Screen Recording: zoom"

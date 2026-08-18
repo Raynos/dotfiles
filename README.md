@@ -40,8 +40,11 @@ bash macos-headless.sh        # agent-safe remainder
 ```
 
 It ends with a manual checklist for the things a script can't do (SSH key +
-commit signing, app sign-ins, Privacy & Security permissions, iTerm2
-profiles).
+commit signing with a two-email `~/.ssh/allowed_signers`, app sign-ins,
+Privacy & Security permissions, signing in to Codex.app to unlock its plugin
+marketplace, and cloning the private `Raynos/work-skills` repo — that repo's
+own installer provides the `~/.cursor` skills/rules/hooks symlinks and
+`~/.cursor/hooks.json`, which this repo deliberately does not manage).
 
 ### Bootstrap the dotfiles
 
@@ -91,8 +94,13 @@ source bootstrap.sh
 
 ## Local overrides
 
-`~/.extra` (gitignored, sourced by `.bashrc`) holds anything you don't want
-committed — git identity, machine-specific PATH entries, secrets.
+`~/.extra` (gitignored, sourced by `.bashrc` *before* `.bash_prompt`, so it
+can set flags the prompt reads) holds anything you don't want committed — git
+identity, machine-specific PATH entries, secrets.
+
+One load-bearing flag: `export IS_LOCAL_MACHINE=1` (the literal string `1`,
+not `true`) switches `.bash_prompt` from the all-yellow "production" palette
+to local colors. `macos-headless.sh` seeds it automatically.
 
 ## Thanks to…
 
