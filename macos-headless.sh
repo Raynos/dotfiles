@@ -95,6 +95,18 @@ else
 fi
 
 echo ""
+echo "Checking pnpm"
+
+if ( hash pnpm 2>/dev/null ); then
+    echo " - Already installed pnpm"
+elif ( hash npm 2>/dev/null ); then
+    echo " - Installing pnpm (npm -g)"
+    npm install -g pnpm
+else
+    echo " - warn: npm not found (node install failed above?); skipping pnpm"
+fi
+
+echo ""
 echo "Checking rupa/z"
 
 if [ ! -e ~/projects/z ]; then
