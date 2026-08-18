@@ -23,6 +23,12 @@ FILE="$REPO_DIR/plugins.json"
 command -v claude >/dev/null || { echo "error: 'claude' CLI not found" >&2; exit 1; }
 command -v jq >/dev/null     || { echo "error: 'jq' not found" >&2; exit 1; }
 
+# Our gitconfig sets submodule.recurse=true, which breaks `claude plugin
+# install`'s internal `git checkout <pinned sha>` on repos with uninitialized
+# submodules (e.g. chrome-devtools-mcp's devtools-frontend). Override for
+# every git the CLI spawns from here.
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=submodule.recurse GIT_CONFIG_VALUE_0=false
+
 cmd="${1:-install}"
 
 case "$cmd" in
