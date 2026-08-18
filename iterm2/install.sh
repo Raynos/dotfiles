@@ -38,8 +38,20 @@ else
   defaults write "$DOMAIN" PrefsCustomFolder -string "$REPO_DIR"
   defaults write "$DOMAIN" LoadPrefsFromCustomFolder -bool true
   echo "set   iTerm2 custom settings folder -> ${REPO_DIR#$HOME/}"
-  echo "note: restart iTerm2 to load them; set Settings > General > Settings >"
-  echo "      'Save changes' to 'Automatically' so UI edits flow back into git"
+  echo "note: restart iTerm2 to load them"
+fi
+
+# "Save changes" = Automatically (Settings > General > Settings). Without this
+# the whole versioned-plist flow silently no-ops — iTerm2 never writes UI edits
+# back into the repo. NoSync* keys live in the local plist, never in the custom
+# folder, so the GUI toggle can't be captured by the versioned file itself.
+current_save="$(defaults read "$DOMAIN" NoSyncNeverRemindPrefsChangesLostForFile_selection 2>/dev/null || true)"
+if [ "$current_save" = "2" ]; then
+  echo "ok    iTerm2 'Save changes' already set to Automatically"
+else
+  defaults write "$DOMAIN" NoSyncNeverRemindPrefsChangesLostForFile -bool true
+  defaults write "$DOMAIN" NoSyncNeverRemindPrefsChangesLostForFile_selection -int 2
+  echo "set   iTerm2 'Save changes' -> Automatically (takes effect on restart)"
 fi
 
 echo "Done."
