@@ -26,6 +26,8 @@ function doIt() {
     --exclude "Brewfile" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \
+    --exclude "TODO.md" \
+    --exclude "HANDOFF.md" \
     --exclude "init.sh" \
     --exclude "install.sh" \
     --exclude "sync-sublime.sh" \

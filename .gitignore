@@ -4,6 +4,8 @@ package-lock.json
 
 .extra
 .DS_Store
+TODO.md
+HANDOFF.md
 sublime/User/Package Control.cache
 *.sublime-workspace
 *.log
