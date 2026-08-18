@@ -89,7 +89,12 @@ brew 'sdl2_net'
 cask '1password-cli'
 cask 'bruno'
 cask 'claude' # Claude desktop app; the claude CLI is installed by macos.sh
-cask 'codex' # OpenAI Codex (app + CLI)
+cask 'codex' # OpenAI Codex CLI (despite the cask description, no .app)
+# Codex desktop app — REQUIRED for browser@openai-bundled: the CLI alone never
+# registers the openai-bundled plugin marketplace; launching + signing into the
+# app materializes it. Deprecated upstream (replacement: chatgpt cask, disabled
+# 2027-07-12) — revisit when it breaks.
+cask 'codex-app'
 cask 'cursor'
 cask 'dbeaver-community'
 cask 'docker-desktop'
