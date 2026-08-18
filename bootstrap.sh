@@ -30,8 +30,6 @@ function doIt() {
     --exclude "HANDOFF.md" \
     --exclude "init.sh" \
     --exclude "install.sh" \
-    --exclude "sync-sublime.sh" \
-    --exclude "projects.sh" \
     --exclude "ubuntu.sh" \
     --exclude "ubuntu-wallpaper.jpg" \
     -av --no-perms . ~
