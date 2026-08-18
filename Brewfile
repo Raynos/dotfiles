@@ -7,8 +7,8 @@
 # --- Taps -------------------------------------------------------------------
 tap 'hashicorp/tap'
 tap 'depot/tap'
-# Newer Homebrew treats third-party taps as untrusted; if `brew bundle` balks,
-# run: brew trust francium-tech/tap ykushch/tap
+# Homebrew 6+ treats ALL third-party taps as untrusted (depot/tap included);
+# macos-headless.sh runs `brew trust` on every tap here before `brew bundle`.
 tap 'francium-tech/tap'
 tap 'ykushch/tap'
 
@@ -79,6 +79,11 @@ brew 'zopfli'
 brew 'sdl2_image'
 brew 'sdl2_mixer'
 brew 'sdl2_net'
+
+# Casks whose installers need sudo (docker-desktop, google-chrome, slack,
+# zoom, google-drive, tailscale-app) are pre-installed by
+# `macos.sh --short-setup` so the headless `brew bundle` never hits a
+# password prompt. Keep both lists in sync (SUDO_CASKS in macos.sh).
 
 # --- Casks: dev essentials --------------------------------------------------
 cask '1password-cli'
