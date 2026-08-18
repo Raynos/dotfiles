@@ -22,6 +22,7 @@ function doIt() {
     --exclude "cursor/" \
     --exclude "iterm2/" \
     --exclude "macos.sh" \
+    --exclude "macos-headless.sh" \
     --exclude "Brewfile" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \

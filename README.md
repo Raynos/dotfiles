@@ -28,6 +28,17 @@ Homebrew bash as the login shell, node via nvm, the `claude` and
 bash macos.sh
 ```
 
+Split for agent-driven setup: `--short-setup` runs only the interactive
+parts (prompts / password / sudo — Xcode CLT, git identity, Homebrew, login
+shell, and the casks whose installers need sudo), and `macos-headless.sh`
+runs everything else with no prompts, so an
+agent can run it unattended. Both halves skip work already done:
+
+```sh
+bash macos.sh --short-setup   # you, once, interactively
+bash macos-headless.sh        # agent-safe remainder
+```
+
 It ends with a manual checklist for the things a script can't do (SSH key +
 commit signing, app sign-ins, Privacy & Security permissions, iTerm2
 profiles).
