@@ -105,9 +105,11 @@ export LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40
 
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"
+# pnpm >= 10 puts global bins in $PNPM_HOME/bin (older pnpm used $PNPM_HOME
+# itself) — keep both on PATH or `pnpm add -g` binaries are unreachable.
 case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
 
