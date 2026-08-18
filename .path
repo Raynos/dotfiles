@@ -22,5 +22,10 @@ export PATH="$PATH:$GOPATH/bin"
 
 export PATH="$HOME/.cargo/bin:$PATH"
 
+# Docker Desktop CLI plugins (docker-credential-osxkeychain etc.) — Docker
+# appends this to ~/.bash_profile/~/.profile on first run, but bootstrap.sh's
+# rsync clobbers those; keep it here instead.
+[ -d "$HOME/.docker/bin" ] && export PATH="$PATH:$HOME/.docker/bin"
+
 # Raise opencode's per-response output cap (default 32k) — DeepSeek V4 Flash supports 384k
 export OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX=131072
