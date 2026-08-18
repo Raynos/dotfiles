@@ -115,7 +115,6 @@ cask 'wispr-flow'
 
 # --- Casks: personal --------------------------------------------------------
 cask 'blender'
-cask 'expressvpn'
 cask 'librecad'
 cask 'signal'
 cask 'sketchup'
