@@ -54,14 +54,66 @@ export WHITE
 export BOLD
 export RESET
 
+# Git info for the prompt.
+#
+# This used to render as three separate `git` processes per prompt: `git branch`
+# to decide whether to print " on ", then parse_git_branch's own `git branch`
+# piped through sed, then parse_git_dirty's full `git status` piped through
+# tail. In a repo of any size that is the slowest thing that happens between
+# pressing Return and getting a prompt back.
+#
+# Worse for a multi-pane setup: a plain `git status` takes .git/index.lock to
+# refresh the index, so N shells sitting in the same repo serialise against each
+# other every time any of them draws a prompt. --no-optional-locks tells git to
+# skip that write entirely, and --porcelain=v2 --branch gets branch name and
+# dirty state out of a single invocation.
+#
+# Result is left in two variables rather than command-substituted from PS1, so
+# it is computed once per prompt instead of once per PS1 evaluation.
+__prompt_git() {
+	__GIT_ON=""
+	__GIT_BRANCH=""
+
+	local out
+	out=$(git --no-optional-locks status --porcelain=v2 --branch 2>/dev/null) || return
+
+	local branch=${out#*'# branch.head '}
+	if [ "$branch" != "$out" ]; then
+		branch=${branch%%$'\n'*}
+	else
+		branch=""
+	fi
+
+	# Every header line starts with '# '; anything else is a changed, staged,
+	# unmerged or untracked path — i.e. the working tree is dirty.
+	local dirty=""
+	case $'\n'"$out" in
+		*$'\n'[!\#]*) dirty="*" ;;
+	esac
+
+	__GIT_ON=" on "
+	__GIT_BRANCH="${branch}${dirty}"
+}
+
+# Kept as thin wrappers: they were the documented way to get this info, and
+# other scripts/aliases may still call them.
 function parse_git_dirty() {
-        local status="$(git status 2> /dev/null | tail -n1)"
-	[[ "$status" != *"working"* ]] && [[ "$status" != *"clean"* ]] && echo "*"
+	__prompt_git
+	case "$__GIT_BRANCH" in *"*") echo "*" ;; esac
 }
 
 function parse_git_branch() {
-	git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
+	__prompt_git
+	[ -n "$__GIT_BRANCH" ] && echo "$__GIT_BRANCH"
 }
 
-export PS1="\[${BOLD}${MAGENTA}\]\u \[$MAGENTA\]at \[$ORANGE\]\h  \n\[$GREEN\]\w\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$PURPLE\]\$(parse_git_branch)\n\$ \[$RESET\]"
+# Prepend rather than assign: set_terminal_title() in ~/.functions also writes
+# PROMPT_COMMAND, and whichever ran last used to win.
+case "${PROMPT_COMMAND:-}" in
+	*__prompt_git*) ;;
+	"") PROMPT_COMMAND="__prompt_git" ;;
+	*) PROMPT_COMMAND="__prompt_git; $PROMPT_COMMAND" ;;
+esac
+
+export PS1="\[${BOLD}${MAGENTA}\]\u \[$MAGENTA\]at \[$ORANGE\]\h  \n\[$GREEN\]\w\${__GIT_ON}\[$PURPLE\]\${__GIT_BRANCH}\n\$ \[$RESET\]"
 export PS2="\[$ORANGE\]→ \[$RESET\]"

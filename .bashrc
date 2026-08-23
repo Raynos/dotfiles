@@ -1,4 +1,8 @@
-set +h
+# NOTE: this file used to start with `set +h`, which disables bash's command
+# hash table. Without it every single command you run re-scans all ~45 PATH
+# entries from scratch, and nvm's internal `hash -r` printed
+# "bash: hash: hashing disabled" on every shell start. Hashing is on by design;
+# anything that changes PATH (nvm included) already calls `hash -r` itself.
 
 
 [[ $- == *i* ]] || return 0
@@ -7,17 +11,6 @@ set +h
 # Core please
 ulimit -c unlimited
 
-# Run nvm so that it's accessible
-if [ -e ~/projects/nvm ]; then
-    . ~/projects/nvm/nvm.sh
-    node_version=${NVM_NODE_VERSION:-"v16.17.0"}
-    # Tell nvm to use the latest node 0.8 branch
-    nvm use $node_version
-elif [ -s /opt/homebrew/opt/nvm/nvm.sh ]; then
-    # macOS: nvm comes from Homebrew (macos.sh), versions live in ~/.nvm
-    export NVM_DIR="$HOME/.nvm"
-    . /opt/homebrew/opt/nvm/nvm.sh
-fi
 
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
@@ -147,3 +140,116 @@ herdr() {
 export PATH="$HOME/.grok/bin:$PATH"
 [[ -r "$HOME/.grok/completions/bash/grok.bash" ]] && source "$HOME/.grok/completions/bash/grok.bash"
 # <<< grok installer <<<
+
+# nvm goes last so its bin dir wins over Homebrew's node/npx shims.
+# nvm, loaded LAZILY.
+#
+# Sourcing nvm.sh eagerly cost ~320ms per interactive shell: it is a 144KB
+# script, and on load it runs `nvm use default`, which walks the tree looking
+# for .nvmrc (forking `dirname` once per directory level, ~26 forks), shells out
+# to `node --version` and `manpath`, and calls `hash -r`. Opening 20 shells at
+# once meant 20x that, all competing for the same CPU and the same page cache.
+#
+# Instead: put the default version's bin dir on PATH directly (a file read plus
+# a string prepend, ~0ms), which is all that 99% of shells ever need from nvm.
+# The real nvm.sh is sourced on first use of `nvm`/`nvm_load`, and the stub
+# functions below then get replaced by the genuine ones.
+if [ -e ~/projects/nvm ]; then
+    . ~/projects/nvm/nvm.sh
+    node_version=${NVM_NODE_VERSION:-"v16.17.0"}
+    # Tell nvm to use the latest node 0.8 branch
+    nvm use $node_version
+elif [ -s /opt/homebrew/opt/nvm/nvm.sh ]; then
+    # macOS: nvm comes from Homebrew (macos.sh), versions live in ~/.nvm
+    export NVM_DIR="$HOME/.nvm"
+
+    # Resolve the `default` alias without running nvm. It may point at another
+    # alias (`lts`, `node`) rather than a version, so follow the chain a couple
+    # of hops before giving up and falling back to lazy-loading proper.
+    __nvm_default_bin() {
+        local alias_name=default hops=0 target
+        while [ $hops -lt 4 ]; do
+            [ -r "$NVM_DIR/alias/$alias_name" ] || return 1
+            read -r target < "$NVM_DIR/alias/$alias_name" || return 1
+            # nvm writes the alias either way ("24.18.1" or "v24.18.1"),
+            # so normalise before looking for the version directory.
+            case "$target" in
+                v[0-9]*|[0-9]*)
+                    [ "${target#v}" = "$target" ] && target="v$target"
+                    [ -d "$NVM_DIR/versions/node/$target/bin" ] || return 1
+                    printf '%s' "$NVM_DIR/versions/node/$target/bin"
+                    return 0 ;;
+                *) alias_name=$target; hops=$((hops + 1)) ;;
+            esac
+        done
+        return 1
+    }
+
+    # Move it to the FRONT even if it is already present. A nested shell
+    # inherits a PATH that already contains this dir somewhere in the middle; a
+    # plain "add if missing" guard would leave it there, behind Homebrew's bin,
+    # so `npx` (which Homebrew also ships) would resolve to the wrong node.
+    if __nvm_bin=$(__nvm_default_bin); then
+        local_path=":$PATH:"
+        local_path="${local_path//:$__nvm_bin:/:}"
+        local_path="${local_path#:}"
+        local_path="${local_path%:}"
+        export PATH="$__nvm_bin${local_path:+:$local_path}"
+        unset local_path
+    fi
+    unset __nvm_bin
+    unset -f __nvm_default_bin
+
+    # First call to any of these pays the real load cost, once, in that shell.
+    # nvm's own bash completion is loaded here too rather than at startup.
+    nvm_load() {
+        unset -f nvm nvm_load
+        complete -r nvm 2>/dev/null
+        . /opt/homebrew/opt/nvm/nvm.sh
+        local c
+        for c in "$NVM_DIR/bash_completion" \
+                 /opt/homebrew/opt/nvm/etc/bash_completion.d/nvm; do
+            [ -s "$c" ] && { . "$c"; break; }
+        done
+    }
+    nvm() { nvm_load && nvm "$@"; }
+
+    # Pressing Tab on `nvm ...` before nvm has ever been run loads it (and its
+    # real completion), then hands off so the first Tab still completes.
+    __nvm_lazy_complete() {
+        nvm_load
+        # nvm 0.40 registers __nvm; older versions used _nvm.
+        local fn
+        for fn in __nvm _nvm; do
+            if declare -F "$fn" >/dev/null 2>&1; then
+                "$fn" "$@"
+                return
+            fi
+        done
+    }
+    complete -F __nvm_lazy_complete nvm
+fi
+
+# Collapse duplicate PATH entries.
+#
+# Every file above prepends unconditionally, and a login shell re-sources some
+# of them, so PATH had grown to 45 entries with three copies of /opt/homebrew/bin
+# and of the active node bin dir. Duplicates are not merely untidy: a command
+# that misses the hash table is looked up by scanning PATH left to right, so
+# every stale copy is extra filesystem work on every miss, in every shell.
+# Keeps first occurrence (so precedence is unchanged) and drops the rest.
+__dedupe_path() {
+    local entry seen= out=
+    local IFS=:
+    for entry in $PATH; do
+        [ -n "$entry" ] || continue
+        case ":$seen:" in
+            *":$entry:"*) continue ;;
+        esac
+        seen="${seen:+$seen:}$entry"
+        out="${out:+$out:}$entry"
+    done
+    export PATH="$out"
+}
+__dedupe_path
+

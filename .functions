@@ -162,7 +162,14 @@ function tap-fail() {
 
 function set_terminal_title() {
     export ___TERMINAL_TITLE=$1
-    PROMPT_COMMAND='echo -ne "\033]0;${___TERMINAL_TITLE}\007"'
+    # Append instead of assigning: this used to overwrite PROMPT_COMMAND
+    # wholesale, silently dropping the git-info hook set up in ~/.bash_prompt.
+    local emit='echo -ne "\033]0;${___TERMINAL_TITLE}\007"'
+    case "${PROMPT_COMMAND:-}" in
+        *___TERMINAL_TITLE*) ;;
+        "") PROMPT_COMMAND="$emit" ;;
+        *) PROMPT_COMMAND="$PROMPT_COMMAND; $emit" ;;
+    esac
 }
 
 function watcher()
