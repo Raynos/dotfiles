@@ -91,10 +91,14 @@
     }
   },
   "skipDangerousModePermissionPrompt": true,
-  "model": "fable",
+  "model": "opus",
+  "cleanupPeriodDays": 180,
   "effortLevel": "high",
   "askUserQuestionTimeout": "10m",
   "tui": "fullscreen",
   "theme": "dark",
-  "preferredNotifChannel": "notifications_disabled"
+  "preferredNotifChannel": "notifications_disabled",
+  "env": {
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+  }
 }

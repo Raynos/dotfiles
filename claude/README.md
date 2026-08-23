@@ -39,10 +39,21 @@ index, so `git status` never showed the drift.
 
 So the repo owns a subset of top-level keys in `settings.managed.json` —
 `permissions`, `hooks`, `statusLine`, `extraKnownMarketplaces`,
-`skipDangerousModePermissionPrompt` — and `scripts/apply-managed-settings.mjs`
-merges just those into the live file. Everything else (`model`, `theme`, `tui`,
-`effortLevel`, `enabledPlugins`, `preferredNotifChannel`) stays app-owned and is
-never overwritten. `--check` reports drift without writing.
+`skipDangerousModePermissionPrompt`, `cleanupPeriodDays`, `model`,
+`effortLevel`, `askUserQuestionTimeout`, `tui`, `theme`,
+`preferredNotifChannel`, `env` — and `scripts/apply-managed-settings.mjs`
+merges just those into the live file, replacing each wholesale. Everything else
+(`enabledPlugins`, `autoMode`, and any key the app adds later) stays app-owned
+and is never touched. `--check` reports drift without writing.
+
+Note that the preference keys **are** managed, so the app and the repo do fight
+over them: switch model in-app and the next `install.sh` switches it back. The
+fix is to edit `settings.managed.json`, not the live file.
+
+`cleanupPeriodDays: 180` is load-bearing — it sets how long
+`~/.claude/projects/**` transcripts survive, **including the per-subagent
+`<session-id>/subagents/agent-*.jsonl` logs**, which are ~90% of the bytes.
+Unset, Claude Code defaults to 30 days and silently deletes the rest.
 
 The general rule this repo follows: **symlink directories and files only you
 edit; merge files the app writes.**
