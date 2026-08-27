@@ -1,13 +1,16 @@
 # Grok tooling
 
 Curated personal Grok CLI configuration, parallel to `../codex/`. Run
-`./install.sh` to apply the managed config defaults.
+`./install.sh` to apply the managed config defaults and link the hook file.
 
 ## What is managed
 
 - `config.managed.toml` — `[features] feedback = false`, which disables the
   `/feedback` command and its rating prompts. This mirrors
   `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1` in `../claude/settings.managed.json`.
+- `hooks/dcg.json` — the dcg destructive-command guard, symlinked into
+  `~/.grok/hooks/`, which Grok auto-discovers at session start. See
+  `../dcg/README.md`. Grok needs a restart to pick up a change here.
 
 ## What remains native or runtime-owned
 

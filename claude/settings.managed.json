@@ -20,6 +20,15 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/raynos/.local/bin/dcg"
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {

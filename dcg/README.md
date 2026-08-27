@@ -45,6 +45,18 @@ Hook wiring lives with each agent, so this repo stays the only writer:
 Cursor is not wired here: `~/.cursor` hooks belong to the private
 `Raynos/work-skills` repo.
 
+Two quirks worth knowing before you edit the Claude entry:
+
+- **It carries no `timeout` key on purpose.** `dcg doctor`'s hook-wiring check
+  demands the hook object be *exactly* `{type, command}` — two keys, byte-equal
+  to what dcg would write — so adding `"timeout": 5` turns doctor permanently
+  red. (dcg contradicts itself here: its self-heal path explicitly tolerates an
+  operator-set `timeout`, their #345. Doctor does not.) A red doctor trains you
+  to ignore doctor, and this repo uses it as the drift signal, so the key is
+  omitted. dcg self-bounds at a 1000 ms evaluation budget anyway.
+- **`dcg doctor` always reports one issue: OpenCode NOT REGISTERED.** OpenCode
+  isn't installed here. Expected — everything else should read OK.
+
 ## What's NOT tracked (deliberately)
 
 - **The binary.** Reproducible from the pin in `install.sh`. dcg is MIT *plus

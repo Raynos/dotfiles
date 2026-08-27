@@ -1,0 +1,17 @@
+{
+  "description": "dcg (Destructive Command Guard) — blocks rm -rf, git reset --hard, force pushes, DROP DATABASE, kubectl delete, and similar destructive commands before Grok's run_terminal_cmd tool can execute them.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/raynos/.local/bin/dcg",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
