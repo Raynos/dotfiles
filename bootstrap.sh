@@ -50,7 +50,7 @@ function doIt() {
 # interactive shell that sourced this.
 function runInstallers() {
 	local installer
-	for installer in .config/install.sh claude/install.sh codex/install.sh grok/install.sh agents/install.sh pnpm/install.sh cursor/install.sh iterm2/install.sh; do
+	for installer in dcg/install.sh .config/install.sh claude/install.sh codex/install.sh grok/install.sh agents/install.sh pnpm/install.sh cursor/install.sh iterm2/install.sh; do
 		if [ ! -x "$installer" ]; then
 			echo "skip (not executable): $installer"
 			continue

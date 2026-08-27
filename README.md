@@ -61,7 +61,7 @@ own installer provides the `~/.cursor` skills/rules/hooks symlinks and
 ### Bootstrap the dotfiles
 
 Copies the dotfiles into `~` and runs the per-tool installers
-(`.config/`, `claude/`, `codex/`, `grok/`, `agents/`, `pnpm/`, `cursor/`, `iterm2/`):
+(`dcg/`, `.config/`, `claude/`, `codex/`, `grok/`, `agents/`, `pnpm/`, `cursor/`, `iterm2/`):
 
 ```sh
 source bootstrap.sh
