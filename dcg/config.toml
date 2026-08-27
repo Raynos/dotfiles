@@ -1,0 +1,30 @@
+# Managed dcg config -- the repo copy is the real file; dcg/install.sh symlinks
+# it to ~/.config/dcg/config.toml. dcg layers this over its own defaults, so
+# only the keys below are pinned.
+#
+# No [packs] section on purpose: the no-config defaults (core.filesystem,
+# core.git, system.disk) are exactly the scope we want. Every other pack --
+# database.*, kubernetes.*, cloud.*, containers.* -- stays opt-in.
+#
+# ~/.config/dcg/allowlist.toml is a separate file written by `dcg allowlist
+# add` / `dcg allow-once`. It is runtime-owned and deliberately untracked, so
+# nothing dcg writes at runtime ever lands in this symlinked file.
+
+[general]
+# Updates arrive by bumping DCG_VERSION in install.sh and re-running it, never
+# by dcg updating itself.
+check_updates = false
+
+# CRITICAL: dcg's default (true) makes every hook invocation re-register itself
+# in ~/.claude/settings.json whenever it doesn't find its exact canonical entry.
+# That would fight ../claude/scripts/apply-managed-settings.mjs, which has to
+# stay the single writer of the managed subset. Our managed entry already
+# matches dcg's canonical shape (absolute path, "Bash|PowerShell" matcher), so
+# there is nothing for self-heal to do.
+self_heal_hook = false
+
+# A command dcg cannot verify (evaluation deadline exhausted, oversized input)
+# is denied outright rather than escalated to an interactive prompt. The repo
+# policy is never to ask: an ask once left an unattended agent blocked for 23h
+# (2026-07-31) -- see the contract note in ../claude/hooks/guard-rm.py.
+unverified_decision = "deny"
