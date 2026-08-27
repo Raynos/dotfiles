@@ -88,6 +88,28 @@ Two quirks worth knowing before you edit the Claude entry:
   can only add blocks, never lift dcg's, but it is the known-good backstop
   while dcg is on trial.
 
+## The redirect rules will surprise you
+
+`core.filesystem` guards truncating redirects as well as `rm`, and these fire
+far more often than the `rm` rules in day-to-day work. Both are **kept at deny
+deliberately** — writing through `>` destroys the previous contents with no
+recovery, and dcg cannot tell "create a new file" from "truncate a real one":
+
+| Rule | Denies |
+|------|--------|
+| `redirect-truncate-root-home` | any truncating `>` to an absolute or `~` path under `$HOME` — `echo x > ~/projects/foo.txt`, `npm run build > ~/projects/build.log` |
+| `redirect-truncate-dynamic-path` | `>` to a path built from a shell variable, including heredocs: `cat > "$DIR/file" <<'EOF'` |
+
+What still works, cheapest first:
+
+- **relative paths** — `echo x > ./foo.txt` (allowed; only absolute/`~` targets are guarded)
+- **append** — `echo x >> ~/projects/foo.txt`
+- **literal temp** — `echo x > /tmp/…` or `/private/tmp/…`
+- **the Write/Edit tools** — they don't go through Bash, so no hook fires. This
+  is the normal answer for an agent authoring a file.
+- `producer | dcg create-new <path>` — refuses to clobber an existing file
+- otherwise `dcg allow-once <code>` from the denial panel, or `DCG_BYPASS=1`
+
 ## Known policy difference from guard-rm.py
 
 dcg is **stricter**. It denies variable-rooted and relative recursive deletes
