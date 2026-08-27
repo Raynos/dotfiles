@@ -38,7 +38,7 @@ function doIt() {
 }
 
 # rsync only copies files into ~. It cannot create the symlinks into ~/.claude,
-# ~/.codex and ~/.config, merge the managed subset of settings.json, or sync
+# ~/.codex, ~/.grok and ~/.config, merge the managed subset of settings.json, or sync
 # plugins — that is what the per-tool installers do. Nothing used to call them,
 # so a fresh machine following the README got every dotfile and none of the
 # agent tooling, silently: no hooks, no statusline, no herdr config.
@@ -50,7 +50,7 @@ function doIt() {
 # interactive shell that sourced this.
 function runInstallers() {
 	local installer
-	for installer in .config/install.sh claude/install.sh codex/install.sh agents/install.sh pnpm/install.sh cursor/install.sh iterm2/install.sh; do
+	for installer in .config/install.sh claude/install.sh codex/install.sh grok/install.sh agents/install.sh pnpm/install.sh cursor/install.sh iterm2/install.sh; do
 		if [ ! -x "$installer" ]; then
 			echo "skip (not executable): $installer"
 			continue
