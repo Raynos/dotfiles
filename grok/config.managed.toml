@@ -1,0 +1,14 @@
+# Applied to ~/.grok/config.toml by install.sh: top-level scalars are
+# replaced line-by-line, [table] sections are replaced wholesale.
+#
+# Deliberately minimal. [ui] is NOT managed even though it holds real
+# preferences (max_thoughts_width, compact_mode, permission_mode, yolo):
+# Grok rewrites those from inside the TUI, so managing the table wholesale
+# would fight every runtime toggle. [cli], [marketplace], and [privacy] are
+# install/runtime state and stay app-owned too.
+
+# Disables the /feedback command and its rating prompts. Telemetry is a
+# separate switch ([features] telemetry, env GROK_TELEMETRY_ENABLED) and is
+# intentionally left at Grok's default.
+[features]
+feedback = false
