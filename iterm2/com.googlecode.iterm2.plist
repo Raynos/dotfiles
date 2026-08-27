@@ -1545,6 +1545,10 @@
 	<false/>
 	<key>HotkeyMigratedFromSingleToMulti</key>
 	<true/>
+	<key>NeverWarnAboutShortLivedSessions_389F166A-D86F-43D1-BDC9-19F71CD7D746</key>
+	<true/>
+	<key>NeverWarnAboutShortLivedSessions_389F166A-D86F-43D1-BDC9-19F71CD7D746_selection</key>
+	<integer>0</integer>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -2430,8 +2434,6 @@
 			<string>No</string>
 			<key>Custom Directory</key>
 			<string>No</string>
-			<key>Custom Locale</key>
-			<string>en_US.UTF-8</string>
 			<key>Default Bookmark</key>
 			<string>No</string>
 			<key>Description</key>
@@ -2635,8 +2637,6 @@
 			</dict>
 			<key>Send Code When Idle</key>
 			<false/>
-			<key>Set Local Environment Vars</key>
-			<integer>2</integer>
 			<key>Shortcut</key>
 			<string></string>
 			<key>Silence Bell</key>
@@ -4836,6 +4836,8 @@
 			<string>/Users/raynos</string>
 		</dict>
 	</array>
+	<key>PMPrintingPanelSize</key>
+	<string>{780, 828}</string>
 	<key>PointerActions</key>
 	<dict>
 		<key>Button,1,1,,</key>
