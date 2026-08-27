@@ -32,6 +32,7 @@ SESSIONS=(
     "work:Default"
     "personal:House"
     "house:House"
+    "localai:Vibe"
 )
 
 session_names() {
