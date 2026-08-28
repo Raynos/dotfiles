@@ -29,3 +29,26 @@ export MANPAGER="less -X"
 
 # Link Homebrew casks in `/Applications` rather than `~/Applications`
 # export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+
+# Node's V8 compile cache (Node >= 22.1). Caches compiled bytecode for every
+# module node loads, so big CLIs (claude, tsc, eslint, jest…) skip
+# recompilation on every start. Older node ignores the variable, so it is safe
+# on the v16 nvm branch too.
+#
+# It lives under the OS temp dir, not ~/.cache, on node's own advice. Entries
+# are keyed by node version + source hash, so every node upgrade and every
+# `npm install` strands the previous set — and nothing on macOS ever prunes
+# ~/.cache, so that pile only grows. $TMPDIR is a stable, private (0700),
+# per-user directory that the OS does reap (measured on this machine: plenty of
+# files unread for 3+ days, none older than two weeks), which is exactly the
+# policy we want — hot entries stay warm, cold ones evaporate, and the official
+# cleanup story ("delete it, node rebuilds it") happens by itself.
+#
+# Linux usually leaves TMPDIR unset. Falling back to a bare /tmp path would put
+# bytecode node later loads in a world-writable directory any other user could
+# pre-create, so scope the fallback by uid.
+if [ -n "$TMPDIR" ]; then
+    export NODE_COMPILE_CACHE="${TMPDIR%/}/node-compile-cache"
+else
+    export NODE_COMPILE_CACHE="/tmp/node-compile-cache-$(id -u)"
+fi
