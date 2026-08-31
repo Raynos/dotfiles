@@ -23,7 +23,24 @@ providers:
         name: Qwen3.8-27B (MTPLX 4-bit, local)
         api: openai-completions
         reasoning: true
-        input: [text]
+        # These weights ARE vision-capable and MTPLX serves the vision tower;
+        # `input: [text]` here was under-declaring it, and omp trusts this field
+        # rather than probing. The symptom is indirect: `inspect_image` resolves
+        # `modelRoles.vision`, finds nothing configured, falls back to the session
+        # model, and dies with "does not support image input. Configure a
+        # vision-capable model for modelRoles.vision" — which reads like a missing
+        # role, not a wrong capability declaration.
+        #
+        # Evidence it is genuinely vision-capable:
+        #   curl -s 127.0.0.1:18091/health | jq .vision
+        #     -> {"enabled": true, "formats": ["png","jpeg","webp"]}
+        #   model dir has model-vision.safetensors + preprocessor_config.json
+        #   config.json: Qwen3_5ForConditionalGeneration, with vision_config,
+        #                image_token_id, vision_start_token_id
+        #
+        # NOTE: `/v1/models` reports `"capability": "chat"` and is misleading here.
+        # `/health` is the endpoint that actually reports vision support.
+        input: [text, image]
         # Measured on this box, not guessed: 262,144 native context. The bounded
         # xhigh runs used a 120,000-token generation budget and ts-class needed
         # 74,642 tokens, so a 16k default would truncate real work.
