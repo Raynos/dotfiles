@@ -3,6 +3,11 @@
 [ -d /opt/homebrew/bin ] && export PATH="/opt/homebrew/bin:$PATH"
 [ -d /opt/homebrew/opt/libpq/bin ] && export PATH="$PATH:/opt/homebrew/opt/libpq/bin"
 
+# See .path — POSIX login shells never source .bashrc, so they never reach the
+# bun entry there. omp and every other globally-installed bun CLI needs this.
+export BUN_INSTALL="$HOME/.bun"
+[ -d "$BUN_INSTALL/bin" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+
 export NVM_DIR="$HOME/.nvm"
 if [ -s "$NVM_DIR/nvm.sh" ]; then
   . "$NVM_DIR/nvm.sh"

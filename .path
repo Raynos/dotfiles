@@ -27,5 +27,14 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # rsync clobbers those; keep it here instead.
 [ -d "$HOME/.docker/bin" ] && export PATH="$PATH:$HOME/.docker/bin"
 
+# bun, and the CLIs it installs globally (omp lives at ~/.bun/bin/omp). Same
+# story as Docker above: bun's installer appended this to ~/.bash_profile,
+# which is not versioned here and is overwritten on the next bootstrap rsync.
+# Worse, it landed BELOW that file's `[[ $- == *i* ]] || return 0` guard, so
+# only interactive shells ever saw it — every script, hook and `bash -c`
+# reported "omp: command not found".
+export BUN_INSTALL="$HOME/.bun"
+[ -d "$BUN_INSTALL/bin" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+
 # Raise opencode's per-response output cap (default 32k) — DeepSeek V4 Flash supports 384k
 export OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX=131072
