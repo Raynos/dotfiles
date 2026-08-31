@@ -1,0 +1,40 @@
+# omp -> MTPLX, Qwen3.8-27B on this machine.
+#
+# `providers.<id>.baseUrl` + `api: openai-completions` is the RUNTIME route for
+# an OpenAI-compatible server; it needs no rebuild. The other documented route
+# (adding-a-provider.md) is a source change to packages/catalog + packages/ai
+# and is not usable from an installed binary.
+#
+# Ports: MTPLX serves 18091 directly.
+#
+# Schema: ~/.omp/agent/models.yml, root key `providers` only (unknown root keys
+# fail validation). Documented in the packaged docs index, `models.md`.
+providers:
+  mtplx-local:
+    baseUrl: http://127.0.0.1:18091/v1
+    api: openai-completions
+    # Required. Without it omp refuses the whole file:
+    #   'apiKey is required when defining custom models unless auth is
+    #    "none" or "oauth"' -- and it disables ALL custom providers, not just
+    # this one, so a single bad entry silently costs you the local model.
+    auth: none
+    models:
+      - id: mtplx-qwen38-27b-optimized-speed
+        name: Qwen3.8-27B (MTPLX 4-bit, local)
+        api: openai-completions
+        reasoning: true
+        input: [text]
+        # Measured on this box, not guessed: 262,144 native context. The bounded
+        # xhigh runs used a 120,000-token generation budget and ts-class needed
+        # 74,642 tokens, so a 16k default would truncate real work.
+        contextWindow: 262144
+        maxTokens: 120000
+        cost:
+          input: 0
+          output: 0
+          cacheRead: 0
+          cacheWrite: 0
+        compat:
+          # The whole point of this stack: `medium` is worth +34 points of
+          # correctness here (50% -> 84%) for ~10% of decode speed.
+          supportsReasoningEffort: true
