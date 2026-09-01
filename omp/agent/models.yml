@@ -46,6 +46,25 @@ providers:
         # 74,642 tokens, so a 16k default would truncate real work.
         contextWindow: 262144
         maxTokens: 120000
+        # Qwen3.8's chat template accepts EXACTLY these three, and `xhigh` is what you
+        # get when reasoning_effort is omitted entirely -- which is why this model has a
+        # reputation for wildly overthinking out of the box.
+        #
+        # Without this block omp falls back to its generic ladder and offered
+        # `minimal, low, medium, high` for this model: two values the template does not
+        # know (`minimal`, `high`) and missing the real top end (`xhigh`). Sending
+        # `high` is not a soft failure -- the template raises
+        #   TemplateError: Unexpected reasoning effort high.
+        #                  Supported types are xhigh (default), medium, and low.
+        # which surfaces as an HTTP 500 from the server (QwenLM/Qwen3.8#217, the same
+        # bug that stops stock Claude Code talking to this model, since its default
+        # effort is `high`).
+        #
+        # Declaring the real ladder makes omp's `/effort` command and shift+tab cycle
+        # match what the model can actually honour.
+        thinking:
+          mode: effort
+          efforts: [low, medium, xhigh]
         cost:
           input: 0
           output: 0
