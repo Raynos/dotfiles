@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+#
+# Find CLIs that nvm has stranded, and say how to un-strand them.
+#
+# ## The failure this exists for
+#
+# `npm i -g <tool>` under nvm installs into
+# `~/.nvm/versions/node/<version>/lib/node_modules` — **per node version**.
+# The next `nvm install` gives you a new version with an empty global prefix,
+# and every CLI you installed disappears from `$PATH` at once. Nothing warns
+# you. `command -v vercel` simply prints nothing, and the tool is still on disk
+# one directory over.
+#
+# That reads as a broken `$PATH` and is not one: `$PATH` is fine, it points at
+# the *current* node's bin, which genuinely does not contain the tool. Agents
+# and humans have both burned time on this more than once — the usual dead end
+# is "install it again", which fixes it until the next node upgrade.
+#
+# ## The fix
+#
+# Install user-level CLIs with **pnpm** instead of npm. pnpm's global bin is
+# `~/Library/pnpm` (macOS) — one directory, already on `$PATH`, and completely
+# independent of which node nvm has active. Install once, survives every node
+# upgrade.
+#
+#     pnpm add -g vercel
+#
+# Reserve `npm i -g` for things that genuinely must match a node version.
+#
+# ## Usage
+#
+#     node-global-doctor          # report
+#     node-global-doctor --fix    # re-install the strays with pnpm, then
+#                                 # print the `npm rm -g` lines to tidy up
+#
+set -euo pipefail
+
+NVM_NODES="${NVM_DIR:-$HOME/.nvm}/versions/node"
+FIX=0
+[ "${1:-}" = "--fix" ] && FIX=1
+
+if [ ! -d "$NVM_NODES" ]; then
+  echo "no nvm at $NVM_NODES — nothing to check"
+  exit 0
+fi
+
+CURRENT="$(node --version 2>/dev/null || echo none)"
+echo "node in use:  $CURRENT   ($(command -v node || echo 'not found'))"
+echo "pnpm global:  $(pnpm root -g 2>/dev/null || echo 'pnpm not installed')"
+echo
+
+# Packages that ship with node itself, or that are legitimately per-version.
+IGNORE='^(npm|corepack|pnpm|yarn)$'
+
+strays=()
+for dir in "$NVM_NODES"/*/lib/node_modules/; do
+  [ -d "$dir" ] || continue
+  ver="$(echo "$dir" | sed -E 's|.*/node/([^/]+)/.*|\1|')"
+  for pkg in "$dir"*/; do
+    [ -d "$pkg" ] || continue
+    name="$(basename "$pkg")"
+    # Scoped packages hold their real entries one level down.
+    if [ "${name:0:1}" = "@" ]; then
+      for sub in "$pkg"*/; do
+        [ -d "$sub" ] || continue
+        full="$name/$(basename "$sub")"
+        [ "$ver" = "$CURRENT" ] || strays+=("$ver|$full")
+      done
+      continue
+    fi
+    echo "$name" | grep -qE "$IGNORE" && continue
+    [ "$ver" = "$CURRENT" ] || strays+=("$ver|$name")
+  done
+done
+
+if [ ${#strays[@]} -eq 0 ]; then
+  echo "clean — no globals stranded in a non-current node version."
+  exit 0
+fi
+
+echo "stranded globals (installed under a node version that is NOT in use):"
+echo
+for s in "${strays[@]}"; do
+  ver="${s%%|*}"; pkg="${s#*|}"
+  have=""
+  command -v "$(basename "$pkg")" >/dev/null 2>&1 && have="   (a binary of this name IS on \$PATH — probably from pnpm already)"
+  printf '  %-12s %s%s\n' "$ver" "$pkg" "$have"
+done
+
+echo
+if [ "$FIX" -eq 1 ]; then
+  echo "re-installing with pnpm (version-independent)..."
+  for s in "${strays[@]}"; do
+    pkg="${s#*|}"
+    echo "  pnpm add -g $pkg"
+    pnpm add -g "$pkg" >/dev/null 2>&1 && echo "    ok" || echo "    FAILED — install by hand"
+  done
+  echo
+  echo "then tidy the old copies (optional; they are only wasting disk):"
+  for s in "${strays[@]}"; do
+    ver="${s%%|*}"; pkg="${s#*|}"
+    echo "  rm -rf $NVM_NODES/$ver/lib/node_modules/$pkg"
+  done
+else
+  echo "fix:  node-global-doctor --fix     # re-install these with pnpm"
+  echo "or:   pnpm add -g <name>           # one at a time"
+fi
