@@ -28,3 +28,27 @@ self_heal_hook = false
 # policy is never to ask: an ask once left an unattended agent blocked for 23h
 # (2026-07-31) -- see the contract note in ../claude/hooks/guard-rm.py.
 unverified_decision = "deny"
+
+[policy]
+# Never escalate to an interactive yes/no. dcg's severity-based defaults can
+# resolve a matched rule to "ask", which Claude Code renders as a native
+# permission prompt -- and a hook "ask" overrides bypassPermissions, so it
+# prompts even in a session configured never to prompt. Same failure mode as
+# the unverified_decision default above: an unattended agent stalls on a
+# dialog nobody is there to answer. Pin every matched destructive pattern to
+# a hard deny; the denial reason is actionable, an unanswered ask is not.
+#
+# Trade-off, accepted deliberately: this also flattens "warn" and "log" rules
+# into deny. As of 2026-09-03 every rule in the three enabled packs
+# (core.filesystem, core.git, system.disk) already resolved to deny, so the
+# practical delta is zero -- this pins the behaviour against future packs and
+# dcg default changes rather than altering today's.
+default_mode = "deny"
+
+[interactive]
+# The escape hatch is `dcg allow-once <code>`, run deliberately by the human
+# in their own shell -- never a prompt dcg raises mid-turn. Interactive mode
+# is not reachable from the hook path anyway (stdin is the JSON envelope, not
+# a TTY), but leaving it on defaults means the posture depends on TTY
+# detection rather than on config. Turn it off explicitly.
+enabled = false
