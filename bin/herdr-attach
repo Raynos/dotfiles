@@ -33,6 +33,7 @@ SESSIONS=(
     "personal:House"
     "house:House"
     "localai:Vibe"
+    "wildshard:Vibe"
 )
 
 session_names() {
