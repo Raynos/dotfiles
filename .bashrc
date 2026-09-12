@@ -56,8 +56,13 @@ done
 # Add tab completion for SSH hostnames based on ~/.ssh/config, ignoring wildcards
 [ -e "$HOME/.ssh/config" ] && complete -o "default" -o "nospace" -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2 | tr ' ' '\n')" scp sftp ssh
 
-# If possible, add tab completion for many more commands
-[ -f /etc/bash_completion ] && source /etc/bash_completion
+# If possible, add tab completion for many more commands (make targets, brew,
+# etc). macOS: bash-completion@2 from the Brewfile. Linux: distro package.
+if [ -r /opt/homebrew/etc/profile.d/bash_completion.sh ]; then
+  source /opt/homebrew/etc/profile.d/bash_completion.sh
+elif [ -f /etc/bash_completion ]; then
+  source /etc/bash_completion
+fi
 
 # Add git-completion.bash
 if [ -f ~/.git-completion.bash ]; then

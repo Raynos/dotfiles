@@ -14,6 +14,7 @@ tap 'ykushch/tap'
 
 # --- Shell & core CLI -------------------------------------------------------
 brew 'bash' # login shell (macos.sh runs chsh)
+brew 'bash-completion@2' # make/brew/etc tab completion (.bashrc sources it)
 brew 'bat'
 brew 'brightness'
 brew 'cloc'
