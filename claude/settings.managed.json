@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash"
+      "Bash",
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "NotebookEdit",
+      "WebFetch",
+      "WebSearch",
+      "Agent",
+      "mcp__*"
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -15,7 +23,7 @@
       "Bash(git reset --hard:*)",
       "Bash(git clean -f:*)"
     ],
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "dontAsk"
   },
   "hooks": {
     "PreToolUse": [

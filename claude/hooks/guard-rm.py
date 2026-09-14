@@ -12,6 +12,21 @@ Policy: block literal targets that are the filesystem root, a home/system dir, a
 bare glob, or `.`/`..`. Targets containing an unexpanded $VAR are allowed -- they
 cannot be resolved without running the shell, and blocking them is what broke
 scripted work in the first place.
+
+Second job (2026-09-13): pre-empt Claude Code's built-in `dangerousRemoval`
+safety check. That check is bypass-immune (fires under bypassPermissions, cannot
+be allow-ruled, ignores a hook "allow") and its only output is an interactive
+*ask* -- exactly the dialog that stalls an overnight agent. Sessions run in
+`dontAsk` mode so the ask becomes a deny, but a dontAsk deny carries no reason
+and the agent just retries the same shape. So this hook denies the same target
+shapes first, with a message that says how to rewrite the command. This applies
+to every rm/rmdir, recursive or not. Shapes mirrored from the 2.1.270 binary:
+
+  - relative `dir/*` when the command also contains cd/pushd/popd
+  - `$VAR/...`, `"$VAR"/*`, `${VAR:-x}/...`: variable-rooted (possibly empty)
+  - `~/dir/*`, `../dir/*`, or any unexpanded `$` in a `dir/*` target
+  - globs in a directory component, or more than one glob level (`a/*/*`)
+  - the working directory itself or one of its ancestors
 """
 
 import json
@@ -105,6 +120,62 @@ def verdict(target):
     return None
 
 
+VAR_ROOTED = re.compile(
+    r"""^["']*\$(?:\{[A-Za-z_@*!#0-9][A-Za-z0-9_]*(?::?-[^}]*)?\}|[A-Za-z_@*!#0-9][A-Za-z0-9_]*)["']*/(?:[*?\[{]|\$|/|["']|$)"""
+)
+CD_COMMANDS = {"cd", "pushd", "popd", "chdir"}
+
+
+def unresolvable(cmd, target, saw_cd, cwd):
+    """Reason the built-in dangerousRemoval check would *ask* about `target`.
+
+    Returns None when the target is statically resolvable and therefore never
+    reaches a permission dialog.
+    """
+    t = target
+    ends_glob = bool(re.search(r"/\*+$", t))
+    is_abs = t.startswith("/")
+
+    if VAR_ROOTED.match(t):
+        return f"{t!r} is rooted at a shell variable that may be empty or unset"
+
+    if ends_glob:
+        if saw_cd and not is_abs:
+            return f"{t!r} is a relative glob after a cd in the same command"
+        if t.startswith("~"):
+            return f"{t!r} is a `~`-rooted glob (the tilde is not expanded statically)"
+        if "$" in t:
+            return f"{t!r} mixes an unexpanded variable into a glob target"
+        if not is_abs and re.search(r"(^|/)\.\.(/|$)", t):
+            return f"{t!r} walks up through `..` before a glob"
+        stem = re.sub(r"(/\*+)+/*$", "", t)
+        if re.search(r"[*?\[]", stem):
+            return f"{t!r} has a wildcard in a directory component"
+        if len(re.findall(r"/\*+", t[len(stem):])) > 1:
+            return f"{t!r} globs more than one directory level"
+
+    # Workspace: the cwd or any ancestor of it.
+    if cwd and not re.search(r"[*?\[$~]", t):
+        resolved = os.path.normpath(t if is_abs else os.path.join(cwd, t))
+        cwd_n = os.path.normpath(cwd)
+        if resolved == cwd_n or cwd_n.startswith(resolved.rstrip("/") + "/"):
+            return f"{t!r} is the working directory or one of its ancestors"
+
+    return None
+
+
+# Suggest only idioms that BOTH guards accept: dcg denies absolute rm globs under
+# $HOME and `find -delete`, Claude Code denies relative globs after a cd.
+UNRESOLVABLE_HELP = (
+    "Claude Code's built-in rm check cannot resolve this target statically and "
+    "would stall on a permission dialog. Rewrite it as one of:\n"
+    "  - `find /abs/dir -mindepth 1 -maxdepth 1 -type f -exec rm -f {} +`\n"
+    "  - a relative `rm -f sub/*` issued as its own command, with the shell "
+    "already in that directory (no cd, no $VAR, no ~, no .. in the same command)\n"
+    "  - explicit file names: `rm -f /abs/dir/a.mp4 /abs/dir/b.mp4`"
+)
+
+
 def main():
     try:
         payload = json.load(sys.stdin)
@@ -115,9 +186,11 @@ def main():
         sys.exit(0)
 
     command = (payload.get("tool_input") or {}).get("command") or ""
-    if not re.search(r"\brm\b", command):
+    if not re.search(r"\brm(dir)?\b", command):
         sys.exit(0)
+    cwd = payload.get("cwd") or os.getcwd()
 
+    saw_cd = False
     for segment in SEPARATORS.split(command):
         segment = segment.strip()
         if not segment:
@@ -135,11 +208,28 @@ def main():
         ):
             tokens.pop(0)
 
-        if not tokens or os.path.basename(tokens[0]) != "rm":
+        if not tokens:
+            continue
+        cmd = os.path.basename(tokens[0])
+        if cmd in CD_COMMANDS:
+            saw_cd = True
+            continue
+        if cmd not in ("rm", "rmdir"):
             continue
 
         flags, targets = targets_and_flags(tokens[1:])
-        if not is_recursive(flags):
+
+        for target in targets:
+            reason = unresolvable(cmd, target, saw_cd, cwd)
+            if reason:
+                print(
+                    f"Blocked by guard-rm hook: {reason}.\n"
+                    f"Offending command: {segment}\n{UNRESOLVABLE_HELP}",
+                    file=sys.stderr,
+                )
+                sys.exit(2)
+
+        if cmd != "rm" or not is_recursive(flags):
             continue
 
         for target in targets:
