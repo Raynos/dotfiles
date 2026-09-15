@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -52,6 +53,22 @@ function codexPluginInstalled(capability) {
     result.output.includes("installed, enabled");
 }
 
+function cliInstalled(spec) {
+  const result = run(spec.command, ["--version"]);
+  return result.ok && result.output.trim() === `${spec.command} ${spec.version}` &&
+    existsSync(join(homedir(), spec.skill, "SKILL.md"));
+}
+
+function ensureCli(spec) {
+  let present = cliInstalled(spec);
+  if (!present && mode === "install" && spec.installer) {
+    const result = run("bash", [join(root, "..", spec.installer)]);
+    if (!result.ok) console.error(result.output);
+    present = result.ok && cliInstalled(spec);
+  }
+  return present;
+}
+
 // Presence only, not `enabled`: the CLI reports enabled session-dependently
 // (false when run headless, e.g. from bootstrap.sh) — see sync-plugins.sh,
 // which excludes `enabled` from plugins.json for the same reason.
@@ -75,7 +92,9 @@ const exportedCapabilities = [];
 
 for (const capability of manifest.capabilities) {
   if (capability.claude) {
-    const present = claudePluginInstalled(capability, installedClaudePlugins);
+    const present = capability.claude.kind === "cli"
+      ? ensureCli(capability.claude)
+      : claudePluginInstalled(capability, installedClaudePlugins);
     console.log(`${present ? "ok" : "MISSING"} Claude ${capability.name} (${capability.claude.kind})`);
     if (!present) failures += 1;
   }
@@ -87,9 +106,9 @@ for (const capability of manifest.capabilities) {
 
   let present = capability.codex.kind === "mcp"
     ? codexMcpMatches(capability)
-    : codexPluginInstalled(capability);
+    : capability.codex.kind === "cli" ? ensureCli(capability.codex) : codexPluginInstalled(capability);
 
-  if (!present && mode === "install") {
+  if (!present && mode === "install" && capability.codex.kind !== "cli") {
     const result = capability.codex.kind === "mcp"
       ? run("codex", [
           "mcp", "add", capability.name, "--", capability.codex.command,

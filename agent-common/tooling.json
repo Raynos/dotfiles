@@ -2,6 +2,24 @@
   "version": 1,
   "capabilities": [
     {
+      "name": "agent-browser",
+      "purpose": "Headless browser automation with compact element references and the official skill",
+      "claude": {
+        "kind": "cli",
+        "command": "agent-browser",
+        "version": "0.37.1",
+        "skill": ".claude/skills/agent-browser",
+        "installer": "agent-browser/install.sh"
+      },
+      "codex": {
+        "kind": "cli",
+        "command": "agent-browser",
+        "version": "0.37.1",
+        "skill": ".agents/skills/agent-browser",
+        "installer": "agent-browser/install.sh"
+      }
+    },
+    {
       "name": "context7",
       "purpose": "Current library and framework documentation",
       "claude": {

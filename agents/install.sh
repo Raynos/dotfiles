@@ -23,6 +23,7 @@ BACKUP_DIR="$AGENTS_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 ITEMS=(
   skills/find-skills
   skills/herdr
+  skills/agent-browser
 )
 
 link_one() {

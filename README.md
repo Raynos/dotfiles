@@ -1,7 +1,7 @@
 # Raynos dotfiles
 
 Shell dotfiles plus per-tool installers (Claude Code, Codex, Cursor, herdr,
-pnpm). The repo holds the real files; `bootstrap.sh` copies the classic
+pnpm, [agent-browser](agent-browser/README.md)). The repo holds the real files; `bootstrap.sh` copies the classic
 dotfiles into `~` and the installers symlink tool config back into the repo so
 live edits flow straight into git.
 

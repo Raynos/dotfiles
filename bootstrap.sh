@@ -19,6 +19,7 @@ function doIt() {
     --exclude ".DS_Store" \
     --exclude ".config/herdr/" \
     --exclude "pnpm/" \
+    --exclude "agent-browser/" \
     --exclude "cursor/" \
     --exclude "iterm2/" \
     --exclude "macos.sh" \
@@ -50,7 +51,7 @@ function doIt() {
 # interactive shell that sourced this.
 function runInstallers() {
 	local installer
-	for installer in dcg/install.sh .config/install.sh claude/install.sh codex/install.sh grok/install.sh omp/install.sh agents/install.sh pnpm/install.sh cursor/install.sh iterm2/install.sh; do
+	for installer in dcg/install.sh .config/install.sh agent-browser/install.sh claude/install.sh codex/install.sh grok/install.sh omp/install.sh agents/install.sh pnpm/install.sh cursor/install.sh iterm2/install.sh; do
 		if [ ! -x "$installer" ]; then
 			echo "skip (not executable): $installer"
 			continue
