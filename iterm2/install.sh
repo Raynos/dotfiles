@@ -54,4 +54,24 @@ else
   echo "set   iTerm2 'Save changes' -> Automatically (takes effect on restart)"
 fi
 
+# Dynamic profiles: extra profiles (currently just Wildshard) kept as JSON in
+# iterm2/DynamicProfiles and symlinked into iTerm2's DynamicProfiles folder.
+# iTerm2 watches that folder and (re)loads them live -- no restart, and unlike
+# the plist it never rewrites these files, so they can be edited by hand/script
+# while iTerm2 is running without being clobbered on the next auto-save.
+# Each one names a plist profile as its parent (font, geometry, keys inherit).
+DYN_DIR="$HOME/Library/Application Support/iTerm2/DynamicProfiles"
+mkdir -p "$DYN_DIR"
+for src in "$REPO_DIR"/DynamicProfiles/*.json; do
+  [ -e "$src" ] || continue
+  name="$(basename "$src")"
+  dst="$DYN_DIR/$name"
+  if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+    echo "ok    dynamic profile $name already linked"
+  else
+    ln -sfn "$src" "$dst"
+    echo "link  dynamic profile $name -> DynamicProfiles/"
+  fi
+done
+
 echo "Done."

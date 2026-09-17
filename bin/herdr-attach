@@ -16,7 +16,9 @@
 #
 # Default/Vibe/House differ from each other only in color keys (plus contrast
 # and bold-rendering tweaks) — same font, same geometry — so the switch
-# repaints without reflowing herdr.
+# repaints without reflowing herdr. Wildshard is a dynamic profile
+# (dotfiles/iterm2/DynamicProfiles/Wildshard.json) parented on Vibe, so the
+# same holds for it.
 #
 # Usage:
 #     herdr-attach <session>    attach, setting colors to match
@@ -33,7 +35,7 @@ SESSIONS=(
     "personal:House"
     "house:House"
     "localai:Vibe"
-    "wildshard:Vibe"
+    "wildshard:Wildshard"
 )
 
 session_names() {
