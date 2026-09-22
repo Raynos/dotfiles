@@ -153,7 +153,13 @@ rows = [
 # directory. Keep the two in sync: a token with no row renders nothing, silently.
 #
 # Two rows, mirroring the agents block above: identity on row 1, `$cwd` owning
-# row 2. Its own row means a long branch name can no longer eat the path.
+# row 2.
+#
+# `branch` was dropped from row 1 by Jake's call (2026-09-22): every checkout
+# here works on `main`, so it was the literal word "main" on every row -- a
+# constant costing columns that the workspace name needs. `git_status` stays
+# (dirty/ahead/behind is not constant). Put `branch` back if you start using
+# feature branches or worktrees.
 #
 # ⚠️ `tab` was requested for row 1 and is IMPOSSIBLE here: spaces are
 # workspaces and have no single tab. herdr rejects it outright --
@@ -172,7 +178,7 @@ rows = [
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
-  ["state_icon", { token = "workspace", bold = true }, { token = "branch", fg = "#8ec07c" }, { token = "git_status", fg = "#fe8019" }],
+  ["state_icon", { token = "workspace", bold = true }, { token = "git_status", fg = "#fe8019" }],
   [{ token = "$cwd", fg = "#bdae93", dim = true }],
 ]
 
