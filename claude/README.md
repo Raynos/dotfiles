@@ -23,6 +23,7 @@ Runtime state in `~/.claude` is never touched.
 | `set-label.sh`             | Sets the status-line goal label (+ herdr tag)           |
 | `session-label-remind.sh`  | `UserPromptSubmit` hook: nudge to refresh a stale label |
 | `statusline.sh`            | Renders the terminal status line                        |
+| `usage-log.sh`             | Hourly cron (`17 * * * *`, symlinked to `~/.claude/usage-log.sh`): appends OpenUsage limits per account + the active login email to `~/.claude/usage-log/<ISO week>.jsonl` |
 | `hooks/`                   | `herdr-agent-state.sh`, `clear-herdr-tag.sh`            |
 | `skills/herdr/`            | The custom `herdr` skill                                |
 | `sounds/`                  | Notification-sound scripts + `warcraft3-en/` wav assets |
