@@ -1,5 +1,12 @@
 # Global guidance (applies to all my sessions)
 
+## Licences: North and South America only
+
+Everything made on this machine ships in North and South America only, so a licence's territory clause (Hunyuan3D's
+EU / UK / South Korea exclusion, or any region limit) never applies. Never raise a territory caveat. Hunyuan3D is as
+allowed as TRELLIS.2: use whichever looks better. Only non-commercial / research-only terms still matter for shipped
+assets.
+
 ## Keep the status-line session label current
 
 The terminal status line renders `<model> — <this session's high-level goal>`.
