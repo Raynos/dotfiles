@@ -351,3 +351,47 @@ function herdr-agents() {
 
 
 
+
+# ===== Remote Control by default =====
+# Remote Control is opt-in per session: you either run /remote-control inside a
+# session or start it with `claude --remote-control`. There is NO settings key
+# for it -- the only `remoteControl` object settings.json accepts is
+# `{ "shareHostProfile": ... }` (verified against the 2.1.275 validator), and
+# no CLAUDE_CODE_* env var enables it either. So a wrapper is the only way to
+# make it the default, and it has to be a *function*: herdr `agent start` types
+# `claude ...` at the pane's interactive prompt, so spawned agents pick this up
+# exactly like a hand-typed one. An alias would not survive that.
+#
+# Deliberately NOT added when: the flag is already present; a subcommand is in
+# play (`claude mcp`, `claude update`, ...); it is a one-shot/non-interactive run
+# (-p/--print, piped stdin); or we are already inside a Remote Control session.
+# `command claude` remains the explicit bypass.
+alias claude >/dev/null 2>&1 && unalias claude
+claude() {
+    local arg skip=0
+
+    # Already inside a Remote Control session -- do not nest.
+    [ -n "${CLAUDE_CODE_REMOTE_SESSION_ID:-}" ] && skip=1
+
+    # Non-interactive stdin means a script or a pipe, not a session to drive.
+    [ -t 0 ] || skip=1
+
+    for arg in "$@"; do
+        case "$arg" in
+            --remote-control|--remote-control=*) skip=1 ;;
+            -p|--print) skip=1 ;;
+            # Subcommands and informational flags never open a session.
+            agents|attach|auth|auto-mode|doctor|gateway|import|install|logs|mcp|\
+            plugin|plugins|project|respawn|rm|setup-token|stop|kill|ultrareview|\
+            update|upgrade|-h|--help|-v|--version) skip=1 ;;
+        esac
+        [ "$skip" = 1 ] && break
+    done
+
+    if [ "$skip" = 1 ]; then
+        command claude "$@"
+    else
+        command claude --remote-control "$@"
+    fi
+}
+# ===== end Remote Control by default =====
