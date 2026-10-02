@@ -8,7 +8,11 @@
       "NotebookEdit",
       "WebFetch",
       "WebSearch",
-      "Agent"
+      "Agent",
+      "mcp__context7__*",
+      "mcp__playwright__*",
+      "mcp__chrome-devtools__*",
+      "mcp__linear-server__*"
     ],
     "deny": [
       "Bash(sudo:*)",
