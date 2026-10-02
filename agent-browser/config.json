@@ -1,3 +1,4 @@
 {
-  "headed": false
+  "headed": false,
+  "idleTimeout": "5m"
 }
