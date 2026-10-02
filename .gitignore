@@ -11,3 +11,4 @@ sublime/User/Package Control.cache
 *.log
 markdown/
 **/.claude/settings.local.json
+__pycache__/
