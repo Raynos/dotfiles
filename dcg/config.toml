@@ -45,6 +45,26 @@ unverified_decision = "deny"
 # dcg default changes rather than altering today's.
 default_mode = "deny"
 
+[policy.rules]
+# Plain recursive deletes are allowed (2026-10-02). Denying every `rm -r`
+# outside /tmp -- including any absolute path under $HOME -- did not stop a
+# single delete: dcg's own denial suggests `mv <path> /tmp/delete-me-*`, so
+# agents moved every folder into /tmp instead, and /tmp grew to 1.7T.
+#
+# "log" = allow silently. ("warn" also allows, but its stderr repeats the
+# mv-to-/tmp advice.) The catastrophic shapes stay blocked by guard-rm.py,
+# chained second: /, ~, $HOME, ~/projects, system dirs, anything <3 path
+# components deep, bare `.`/`*`. rm-glob-home (globs under $HOME) and every
+# non-rm rule stay at deny.
+"core.filesystem:rm-rf-general" = "log"
+"core.filesystem:rm-r-f-separate" = "log"
+"core.filesystem:rm-recursive-force-long" = "log"
+"core.filesystem:rm-recursive-general" = "log"
+"core.filesystem:rm-rf-root-home" = "log"
+"core.filesystem:rm-r-f-separate-root-home" = "log"
+"core.filesystem:rm-recursive-force-root-home" = "log"
+"core.filesystem:rm-recursive-root-home" = "log"
+
 [interactive]
 # The escape hatch is `dcg allow-once <code>`, run deliberately by the human
 # in their own shell -- never a prompt dcg raises mid-turn. Interactive mode

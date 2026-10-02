@@ -110,32 +110,20 @@ What still works, cheapest first:
 - `producer | dcg create-new <path>` — refuses to clobber an existing file
 - otherwise `dcg allow-once <code>` from the denial panel, or `DCG_BYPASS=1`
 
-## Known policy difference from guard-rm.py
+## Recursive rm: delegated to guard-rm.py
 
-dcg is **stricter**. It denies variable-rooted and relative recursive deletes
-that `guard-rm.py` deliberately allowed:
+dcg used to deny every recursive `rm` outside literal `/tmp`, including any
+absolute path under `$HOME`. That never stopped a delete: dcg's own denial
+suggests `mv <path> /tmp/delete-me-*`, so agents moved every folder into
+`/tmp` instead, and it grew to 1.7T (2026-10-02). `config.toml` now sets the
+eight recursive-rm rules to `"log"` (allow silently), and `guard-rm.py`, chained
+second, is what blocks the catastrophic shapes:
 
-| Command | guard-rm.py | dcg |
-|---------|-------------|-----|
-| `rm -rf "$SOME/$VAR"` | allow (unresolvable without a shell) | **deny** (`core.filesystem:rm-rf-general`) |
-| `rm -rf node_modules` | allow | **deny** |
-| `rm -rf /tmp/…`, `/private/tmp/…` | allow | allow (literal temp paths are safe-listed) |
-| `rm -rf /`, `~`, `/*` | deny | deny |
+| Command | dcg | guard-rm.py |
+|---------|-----|-------------|
+| `rm -rf build`, `rm -r ~/projects/x/dist`, `rm -rf "$S/$d"` | allow (log) | allow |
+| `rm -rf /`, `~`, `$HOME`, `~/projects`, `/usr`, `.` | allow (log) | **block** |
+| `rm -rf ~/projects/*` (glob under `$HOME`) | **deny** (`rm-glob-home`) | **block** |
 
-This is a deny, never an ask, so it cannot stall an unattended run — the agent
-gets an immediate structured denial. Escape hatches, cheapest first:
-
-- `dcg allow-once <code>` using the short code printed in the denial panel
-- `DCG_BYPASS=1 <command>` for a single invocation
-- `dcg allowlist add <rule-id> -r "reason"` for a recurring need
-- If trial friction is bad, downgrade the five general rm rules to warn (allow
-  + stderr warning) in `config.toml`, keeping root/home/glob rules at deny:
-
-  ```toml
-  [policy.rules]
-  "core.filesystem:rm-rf-general" = "warn"
-  "core.filesystem:rm-r-f-separate" = "warn"
-  "core.filesystem:rm-recursive-force" = "warn"
-  "core.filesystem:rm-recursive-force-long" = "warn"
-  "core.filesystem:rm-recursive-general" = "warn"
-  ```
+**Codex and Grok run dcg only**, with no guard-rm.py behind it, so for them the
+catastrophic shapes in row 2 are no longer blocked.

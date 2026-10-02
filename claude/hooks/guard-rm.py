@@ -86,6 +86,10 @@ def verdict(target):
     if not t:
         return None
 
+    # $HOME is the one variable we can resolve: dcg's root/home rule used to
+    # catch `rm -rf $HOME`, but that rule is now relaxed (see dcg/config.toml).
+    t = re.sub(r"^\$(?:\{HOME\}|HOME\b)", lambda _: HOME, t)
+
     # Unresolvable without running the shell. Allowing these is deliberate:
     # `rm -rf $S/$d` against a scratchpad is normal agent work.
     if "$" in t or "`" in t:
