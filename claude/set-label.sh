@@ -32,4 +32,22 @@ if [ "${HERDR_ENV:-}" = "1" ] && [ -n "${HERDR_PANE_ID:-}" ] && command -v herdr
   tag=$(printf '%s' "$2" | tr '\n\t' '  ' | sed -E 's/  +/ /g; s/^ +//; s/ +$//' | cut -c1-24)
   herdr pane report-metadata "$HERDR_PANE_ID" --source claude:goal \
     --token "goal=$tag" >/dev/null 2>&1 || true
+  # Keep the tab and workspace names in step with the goal (Jake, 2026-10-03: "the names of the panes and the
+  # spaces, the tabs, they're all completely stale"). Only where this pane is alone: a tab with one pane takes the
+  # tag; a workspace with one tab and one pane takes it too. A shared tab or workspace keeps its human-chosen name.
+  herdr pane current --current 2>/dev/null | /usr/bin/python3 -c '
+import json, subprocess, sys
+tag = sys.argv[1]
+try:
+    pane = json.load(sys.stdin)["result"]["pane"]
+    run = lambda *a: json.loads(subprocess.run(["herdr", *a], capture_output=True, text=True).stdout)["result"]
+    tab = run("tab", "get", pane["tab_id"])["tab"]
+    if tab.get("pane_count") == 1 and tab.get("label") != tag:
+        subprocess.run(["herdr", "tab", "rename", tab["tab_id"], tag], capture_output=True)
+        ws = run("workspace", "get", tab["workspace_id"])["workspace"]
+        if ws.get("tab_count") == 1 and ws.get("pane_count") == 1 and ws.get("label") != tag:
+            subprocess.run(["herdr", "workspace", "rename", ws["workspace_id"], tag], capture_output=True)
+except Exception:
+    pass
+' "$tag" >/dev/null 2>&1 || true
 fi

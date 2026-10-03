@@ -29,6 +29,9 @@ both: `set-label.sh` writes pane metadata token `goal`, and
 `dotfiles/.config/herdr/config.toml` has the `[ui.sidebar.agents]` row that
 renders `$goal`. A token with no matching row renders nothing, silently. (herdr
 0.7.x replaced the old one-shot `--custom-status` flag with this token model.)
+It also renames the herdr **tab** to the tag when the pane is alone in it, and the
+**workspace** when that is its only tab and pane, so names don't go stale; a shared
+tab or workspace keeps its human-chosen name (2026-10-03).
 
 - Imperative and concrete, no trailing punctuation — e.g.
   `Migrate estate map to Andon Steel palette`, `Fix flaky combat e2e test`.
