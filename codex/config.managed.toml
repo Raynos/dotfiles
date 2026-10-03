@@ -2,8 +2,8 @@
 # replaced line-by-line, [table] sections are replaced wholesale. This
 # deliberately excludes project trust, plugin cache, marketplaces, OAuth,
 # hook trust hashes, and sessions — those stay app-owned. The stdio MCP
-# servers (context7, playwright, chrome-devtools) are managed by
-# agent-common/sync-agent-tooling.mjs, not here.
+# servers retain the credential-free commands from agent-common/tooling.json;
+# this file also owns their approval defaults.
 model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "xhigh"
@@ -22,7 +22,56 @@ hooks = true
 hide_rate_limit_model_nudge = true
 
 [mcp_servers.openaiDeveloperDocs]
+default_tools_approval_mode = "approve"
 url = "https://developers.openai.com/mcp"
 
 [tools.experimental_request_user_input]
 enabled = true
+
+[apps._default]
+default_tools_approval_mode = "approve"
+
+[plugins."codex-app-tools@openai-bundled".mcp_servers."codex_app"]
+default_tools_approval_mode = "approve"
+
+[plugins."codex-app-tools@openai-bundled".mcp_servers."codex_app".tools."automation_update"]
+approval_mode = "approve"
+
+[plugins."codex-app-tools@openai-bundled".mcp_servers."codex_app".tools."create_thread"]
+approval_mode = "approve"
+
+[plugins."codex-app-tools@openai-bundled".mcp_servers."codex_app".tools."send_message_to_thread"]
+approval_mode = "approve"
+
+[plugins."codex-app-tools@openai-bundled".mcp_servers."codex_app".tools."fork_thread"]
+approval_mode = "approve"
+
+[plugins."codex-app-tools@openai-bundled".mcp_servers."codex_app".tools."handoff_thread"]
+approval_mode = "approve"
+
+[plugins."unified-computer-use@openai-bundled".mcp_servers."cua_repl"]
+default_tools_approval_mode = "approve"
+
+[plugins."unified-computer-use@openai-bundled".mcp_servers."cua_repl".tools."js"]
+approval_mode = "approve"
+
+[plugins."sentry@sentry-plugin-marketplace".mcp_servers."sentry"]
+default_tools_approval_mode = "approve"
+
+[plugins."code-review@openai-bundled".mcp_servers."code-review"]
+default_tools_approval_mode = "approve"
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+default_tools_approval_mode = "approve"
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
+default_tools_approval_mode = "approve"
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@1.6.0"]
+default_tools_approval_mode = "approve"
