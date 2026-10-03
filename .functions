@@ -249,11 +249,11 @@ function maybe-jq() {
 # Live panes only — nothing here reads ~/.claude. A session with no agents
 # prints one "-" row, so an empty session is visible rather than missing.
 function herdr-agents() {
-    local kind=claude agents_only=0 working=0 json=0 usage sessions name sock
+    local kind=any agents_only=0 working=0 json=0 usage sessions name sock
 
     usage='usage: herdr-agents [-k KIND] [-A] [-w] [-j]
 
-  -k, --kind KIND    agent kind to list (default: claude, "any" for every kind)
+  -k, --kind KIND    agent kind to list (default: any — every kind; e.g. claude, codex)
   -A, --agents-only  hide herdr sessions that have no matching agent
   -w, --working      only agents whose status is "working"
   -j, --json         one JSON object per agent instead of a table
