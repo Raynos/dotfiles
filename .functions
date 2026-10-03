@@ -291,9 +291,9 @@ function herdr-agents() {
                                  goal: .tokens.goal, title: .terminal_title_stripped,
                                  claude_session: .agent_session.value}
                       elif length == 0 then
-                          [$sess, "-", "-", "-", "-", "-"] | @tsv
+                          [$sess, "-", "-", "-", "-", "-", "-"] | @tsv
                       else
-                          .[] | [ $sess, .pane_id, .agent_status,
+                          .[] | [ $sess, .pane_id, .agent, .agent_status,
                                   (.foreground_cwd // .cwd // "-"),
                                   (.tokens.goal // "-"),
                                   (.terminal_title_stripped // .terminal_title // "-")
@@ -318,30 +318,39 @@ function herdr-agents() {
             if (!($1 in allsess)) { allsess[$1] = 1; nsess++ }
             if (agents_only && $2 == "-") next
             r++
-            sess[r] = $1; pane[r] = $2; st[r] = $3
-            c = $4; sub("^" home, "~", c); cwd[r] = c
-            goal[r] = clip($5, 28); title[r] = $6
-            w1 = widen(w1, $1); w2 = widen(w2, $2)
-            w3 = widen(w3, $3); w4 = widen(w4, c); w5 = widen(w5, goal[r])
+            sess[r] = $1; pane[r] = $2; knd[r] = $3; st[r] = $4
+            c = $5; sub("^" home, "~", c); cwd[r] = c
+            goal[r] = clip($6, 28); title[r] = $7
+            w1 = widen(w1, $1); w2 = widen(w2, $2); wk = widen(wk, $3)
+            w3 = widen(w3, $4); w4 = widen(w4, c); w5 = widen(w5, goal[r])
             if ($2 != "-") {
                 live++
-                busy += ($3 == "working")
+                busy += ($4 == "working")
+                if (!($3 in kinds)) { kinds[$3] = 0; korder[++nkinds] = $3 }
+                kinds[$3]++
                 if (!($1 in seen)) { seen[$1] = 1; withagents++ }
             }
         }
         END {
             if (!r) { print "no running herdr sessions"; exit }
-            w1 = widen(w1, "SESSION"); w2 = widen(w2, "PANE"); w3 = widen(w3, "STATUS")
+            w1 = widen(w1, "SESSION"); w2 = widen(w2, "PANE"); wk = widen(wk, "KIND")
+            w3 = widen(w3, "STATUS")
             w4 = widen(w4, "CWD");     w5 = widen(w5, "GOAL")
-            tw = cols - (w1 + w2 + w3 + w4 + w5 + 10)
+            tw = cols - (w1 + w2 + wk + w3 + w4 + w5 + 12)
 
-            fmt = "%-" w1 "s  %-" w2 "s  %-" w3 "s  %-" w4 "s  %-" w5 "s  %s\n"
-            printf fmt, "SESSION", "PANE", "STATUS", "CWD", "GOAL", "TITLE"
+            fmt = "%-" w1 "s  %-" w2 "s  %-" wk "s  %-" w3 "s  %-" w4 "s  %-" w5 "s  %s\n"
+            printf fmt, "SESSION", "PANE", "KIND", "STATUS", "CWD", "GOAL", "TITLE"
             for (i = 1; i <= r; i++)
-                printf fmt, sess[i], pane[i], st[i], cwd[i], goal[i], clip(title[i], tw)
+                printf fmt, sess[i], pane[i], knd[i], st[i], cwd[i], goal[i], clip(title[i], tw)
 
-            printf "\n%d live %sagent%s in %d of %d herdr sessions, %d working\n",
+            # "10 live agents (7 claude, 3 codex)" -- the split is the point of
+            # the default being every kind, so never make it a second command.
+            mix = ""
+            for (i = 1; i <= nkinds; i++)
+                mix = mix (mix == "" ? "" : ", ") kinds[korder[i]] " " korder[i]
+            printf "\n%d live %sagent%s%s in %d of %d herdr sessions, %d working\n",
                 live + 0, (kind == "any" ? "" : kind " "), (live == 1 ? "" : "s"),
+                (nkinds > 1 ? " (" mix ")" : ""),
                 withagents + 0, nsess + 0, busy + 0
         }
     '
