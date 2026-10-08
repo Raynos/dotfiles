@@ -27,6 +27,9 @@ to every rm/rmdir, recursive or not. Shapes mirrored from the 2.1.270 binary:
   - `~/dir/*`, `../dir/*`, or any unexpanded `$` in a `dir/*` target
   - globs in a directory component, or more than one glob level (`a/*/*`)
   - the working directory itself or one of its ancestors
+  - a bare `$var` assigned from a command substitution in the same command
+    (2026-10-08: `tmp=$(cd "$(mktemp -d …)" && pwd -P); … rm -rf $tmp` stalled
+    the shard-platform coordinator; `$(cd …)` prints the cwd when it fails)
 """
 
 import json
@@ -129,8 +132,17 @@ VAR_ROOTED = re.compile(
 )
 CD_COMMANDS = {"cd", "pushd", "popd", "chdir"}
 
+# `name=$(…)` or `name="$(…)"` / backticks anywhere in the command.
+SUBST_ASSIGN = re.compile(r"""(?:^|[\s;&|(])([A-Za-z_][A-Za-z0-9_]*)=["']?(?:\$\(|`)""")
+BARE_VAR = re.compile(r"""^["']*\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))["']*/?$""")
 
-def unresolvable(cmd, target, saw_cd, cwd):
+
+def subst_vars(command):
+    """Variables the command assigns from a command substitution."""
+    return {m.group(1) for m in SUBST_ASSIGN.finditer(command)}
+
+
+def unresolvable(cmd, target, saw_cd, cwd, substituted=frozenset()):
     """Reason the built-in dangerousRemoval check would *ask* about `target`.
 
     Returns None when the target is statically resolvable and therefore never
@@ -142,6 +154,11 @@ def unresolvable(cmd, target, saw_cd, cwd):
 
     if VAR_ROOTED.match(t):
         return f"{t!r} is rooted at a shell variable that may be empty or unset"
+
+    bare = BARE_VAR.match(t)
+    if bare and (bare.group(1) or bare.group(2)) in substituted:
+        return (f"{t!r} is a variable set from a command substitution in this same command "
+                "(it can be empty, or the cwd when a `$(cd …)` fails)")
 
     if ends_glob:
         if saw_cd and not is_abs:
@@ -176,7 +193,9 @@ UNRESOLVABLE_HELP = (
     "  - `find /abs/dir -mindepth 1 -maxdepth 1 -type f -exec rm -f {} +`\n"
     "  - a relative `rm -f sub/*` issued as its own command, with the shell "
     "already in that directory (no cd, no $VAR, no ~, no .. in the same command)\n"
-    "  - explicit file names: `rm -f /abs/dir/a.mp4 /abs/dir/b.mp4`"
+    "  - explicit file names: `rm -f /abs/dir/a.mp4 /abs/dir/b.mp4`\n"
+    "  - for a temp dir made with mktemp: delete it in a separate command with its "
+    "literal path (print the path first, then `rm -rf /private/tmp/…/rc.AbC1`)"
 )
 
 
@@ -195,6 +214,7 @@ def main():
     cwd = payload.get("cwd") or os.getcwd()
 
     saw_cd = False
+    substituted = frozenset(subst_vars(command))
     for segment in SEPARATORS.split(command):
         segment = segment.strip()
         if not segment:
@@ -224,7 +244,7 @@ def main():
         flags, targets = targets_and_flags(tokens[1:])
 
         for target in targets:
-            reason = unresolvable(cmd, target, saw_cd, cwd)
+            reason = unresolvable(cmd, target, saw_cd, cwd, substituted)
             if reason:
                 print(
                     f"Blocked by guard-rm hook: {reason}.\n"
