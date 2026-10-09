@@ -118,7 +118,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/auto-allow.sh\"",
+            "command": "\"$HOME/.claude/hooks/auto-deny.sh\"",
             "timeout": 5
           }
         ]
