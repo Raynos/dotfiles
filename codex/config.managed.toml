@@ -12,6 +12,11 @@ service_tier = "default"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
 
+[shell_environment_policy]
+# Pass the launching process's exported environment to commands.
+inherit = "all"
+ignore_default_excludes = true
+
 [tui]
 pet = "dewey"
 

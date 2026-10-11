@@ -11,7 +11,10 @@ defaults, and install/check the shared tool capability inventory.
 - `config.managed.toml` — model and permission defaults. `approval_policy =
   "never"` plus `sandbox_mode = "danger-full-access"` intentionally mirrors
   the approved Claude Code bypass-permissions behavior. It also enables the
-  experimental structured `request_user_input` tool.
+  experimental structured `request_user_input` tool and passes the launching
+  process's exported environment to commands through
+  `shell_environment_policy.inherit = "all"` and
+  `ignore_default_excludes = true`.
 - `../agent-common/tooling.json` — Context7, Playwright, Chrome DevTools, and
   Browser Use capability intent.
 
@@ -19,8 +22,16 @@ defaults, and install/check the shared tool capability inventory.
 
 `~/.codex/config.toml` also contains project trust, marketplace locations,
 plugin state, and OAuth-related data. The installer updates only the declared
-top-level scalar settings; it never replaces the file. OAuth, session data,
-plugin caches, and project trust records are never versioned.
+top-level scalar settings and declared table sections; it never replaces the
+file. App-owned subtables, including `shell_environment_policy.set`, remain
+intact. OAuth, session data, plugin caches, and project trust records are never
+versioned.
+
+Export variables before starting a new CLI session, for example run
+`export MY_FLAG=1` and then `codex`. Herdr-provided variables such as `HERDR_ENV` are
+inherited when Codex is launched from that pane. The policy cannot recover
+variables absent from the Codex process's environment; an already-running
+app-server daemon must receive them at startup or through its client.
 
 Codex has no documented equivalent of Claude Code's terminal status line or
 `Notification` lifecycle hook. The existing Herdr `SessionStart` integration
