@@ -14,7 +14,8 @@ defaults, and install/check the shared tool capability inventory.
   experimental structured `request_user_input` tool and passes the launching
   process's exported environment to commands through
   `shell_environment_policy.inherit = "all"` and
-  `ignore_default_excludes = true`.
+  `ignore_default_excludes = true`. `features.daemon_auto_start = false`
+  disables automatic startup of the shared app-server daemon.
 - `../agent-common/tooling.json` — Context7, Playwright, Chrome DevTools, and
   Browser Use capability intent.
 
@@ -28,10 +29,18 @@ intact. OAuth, session data, plugin caches, and project trust records are never
 versioned.
 
 Export variables before starting a new CLI session, for example run
-`export MY_FLAG=1` and then `codex`. Herdr-provided variables such as `HERDR_ENV` are
-inherited when Codex is launched from that pane. The policy cannot recover
-variables absent from the Codex process's environment; an already-running
-app-server daemon must receive them at startup or through its client.
+`export MY_FLAG=1` and then `codex`. With no shared daemon running, CLI
+sessions execute locally and inherit Herdr-provided variables such as
+`HERDR_ENV` from the launching pane. No shell alias or command wrapper is
+installed.
+
+Disabling automatic startup does not bypass a daemon that is already running.
+Use `codex --no-daemon` or `codex --no-daemon resume <session-id>` to bypass
+one. To restore the plain `codex` behavior, inspect its sessions with
+`codex agents`, then stop it with `codex app-server daemon stop` when it is
+safe to interrupt them. The shared-daemon environment issue and workaround
+are tracked in [Codex #24638](https://github.com/openai/codex/issues/24638)
+and [Herdr #4649](https://github.com/herdrdev/herdr/issues/4649).
 
 Codex has no documented equivalent of Claude Code's terminal status line or
 `Notification` lifecycle hook. The existing Herdr `SessionStart` integration

@@ -22,6 +22,8 @@ pet = "dewey"
 
 [features]
 hooks = true
+# Keep CLI sessions in the launching terminal's environment.
+daemon_auto_start = false
 
 [notice]
 hide_rate_limit_model_nudge = true
