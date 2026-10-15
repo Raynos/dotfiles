@@ -9,6 +9,12 @@
 export BUN_INSTALL="$HOME/.bun"
 [ -d "$BUN_INSTALL/bin" ] && export PATH="$BUN_INSTALL/bin:$PATH"
 
+# Node's compile cache defaults to $TMPDIR/node-compile-cache, and macOS empties
+# $TMPDIR at boot before login: 110k cache files there on 2026-10-15, after
+# millions of leftover export files had held the laptop at the login bar for
+# hours. A persistent cache folder survives reboots and costs boot nothing.
+export NODE_COMPILE_CACHE="$HOME/Library/Caches/node-compile-cache"
+
 [[ $- == *i* ]] || return 0
 
 # test if the prompt var is not set
