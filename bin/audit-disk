@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# Read-only disk audit: what is eating the SSD, and will the next boot stall?
+#
+# ## Why this exists
+#
+# On 2026-10-15 the Mac hung at the post-password progress bar after every restart and was
+# reinstalled twice. It was not broken: at boot, before login, macOS's `dirhelper` deletes everything
+# in /private/tmp and $TMPDIR (/private/var/folders/*/*/T), and agents had left millions of files there
+# (per-commit `git archive | tar -x` copies of the game repos). A reinstall only "fixed" it by emptying
+# those folders. See ../disk/README.md.
+#
+# ## Usage
+#
+#     audit-disk            # everything below
+#     audit-disk temp       # only the boot-purge section (fast; run before a restart)
+#
+# Clean up with `cleanup-temp` and `cleanup-disk` (both dry-run by default).
+
+set -uo pipefail
+PROJECTS="${PROJECTS_DIR:-$HOME/projects}"
+count() { find "$1" -xdev 2>/dev/null | wc -l | tr -d ' '; }
+size() { du -sh "$1" 2>/dev/null | cut -f1; }
+
+echo "== Free space =="
+df -h /System/Volumes/Data | tail -1 | awk '{print "  " $4 " free of " $2 " (" $5 " used)"}'
+
+echo
+echo "== Boot purge: files macOS deletes before login (keep well under 100,000) =="
+total=0
+for d in /private/tmp "${TMPDIR%/}"; do
+  n=$(count "$d"); total=$((total + n))
+  printf '%10s  %s\n' "$n" "$d"
+done
+printf '%10s  TOTAL\n' "$total"
+echo "  biggest entries:"
+for d in /private/tmp "${TMPDIR%/}"; do
+  for e in "$d"/* "$d"/.[!.]*; do
+    [ -e "$e" ] && printf '%10s  %s\n' "$(count "$e")" "$e"
+  done
+done | sort -rn | head -8
+[ "${1:-}" = "temp" ] && exit 0
+
+echo
+echo "== Git repos under $PROJECTS: checkout, .git, ./tmp, worktrees =="
+printf '  %-46s %8s %8s %8s  %s\n' repo checkout .git tmp worktrees
+find "$PROJECTS" -maxdepth 3 -name .git -type d -prune 2>/dev/null | sort | while read -r g; do
+  r="${g%/.git}"
+  wt=$(git -C "$r" worktree list --porcelain 2>/dev/null | grep -c '^worktree ')
+  dead=$(git -C "$r" worktree list --porcelain 2>/dev/null | grep -c '^prunable')
+  printf '  %-46s %8s %8s %8s  %s\n' "${r#$PROJECTS/}" "$(size "$r")" "$(size "$g")" \
+    "$( [ -d "$r/tmp" ] && size "$r/tmp" || echo -)" "$((wt - 1)) extra$( [ "$dead" -gt 0 ] && echo ", $dead dead")"
+done | sort -k3 -h -r | head -20
+
+echo
+echo "== Build mirror slots (one persistent copy each; idle ones can go with cleanup-disk) =="
+for m in "$PROJECTS"/*/tmp/build-mirror "$PROJECTS"/*/*/tmp/build-mirror; do
+  [ -d "$m" ] || continue
+  for s in "$m"/*/; do
+    s="${s%/}"; [ -d "$s/tree" ] || continue
+    age=$(( ( $(date +%s) - $(stat -f %m "$s/HEAD" 2>/dev/null || echo 0) ) / 86400 ))
+    printf '  %8s  %3sd idle  %s%s\n' "$(size "$s")" "$age" "$s" "$( [ -d "$s.lock" ] && echo '  (locked)')"
+  done
+done
+
+echo
+echo "== Agent and tool state =="
+for d in "$HOME/.claude/projects" "$HOME/.codex/sessions" "$HOME/.codex/worktrees" "$HOME/.Trash" \
+         "$HOME/Library/pnpm/store" "$HOME/Library/Caches" "${TMPDIR%/}/node-compile-cache"; do
+  [ -e "$d" ] && printf '  %8s  %s\n' "$(size "$d")" "$d"
+done
+
+echo
+echo "== Biggest folders under $PROJECTS (2 levels) =="
+du -h -d 2 "$PROJECTS" 2>/dev/null | sort -h -r | sed -n '2,16p' | sed 's/^/  /'

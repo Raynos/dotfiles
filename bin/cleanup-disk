@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+#
+# Reclaim disk from things that rebuild themselves. Never touches commits, branches, refs or
+# uncommitted work. Dry run unless --yes. See audit-disk and ../disk/README.md.
+#
+#   - dead `git worktree` registrations in every repo under ~/projects (git worktree prune)
+#   - build-mirror slots (<repo>/tmp/build-mirror/<slot>) idle for --days (default 7) and not locked;
+#     the next build re-syncs them
+#   - wildshard preview builds in <repo>/tmp/serve that no registered server uses
+#   - Node's compile cache in $TMPDIR (node-compile-cache)
+#
+#     cleanup-disk              # list
+#     cleanup-disk --yes        # delete
+#     cleanup-disk --days 2 --yes
+
+set -uo pipefail
+PROJECTS="${PROJECTS_DIR:-$HOME/projects}"
+days=7; yes=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --yes) yes=1; shift;;
+    --days) days="$2"; shift 2;;
+    *) echo "usage: cleanup-disk [--days N] [--yes]" >&2; exit 64;;
+  esac
+done
+drop() {  # drop <path> <why>
+  printf '%s %8s  %s  (%s)\n' "$( [ $yes -eq 1 ] && echo deleting || echo 'would delete')" "$(du -sh "$1" 2>/dev/null | cut -f1)" "$1" "$2"
+  [ $yes -eq 1 ] && rm -rf -- "$1"
+  return 0
+}
+
+echo "== Dead worktree registrations =="
+find "$PROJECTS" -maxdepth 3 -name .git -type d -prune 2>/dev/null | while read -r g; do
+  r="${g%/.git}"
+  dead=$(git -C "$r" worktree list --porcelain 2>/dev/null | grep -c '^prunable')
+  [ "$dead" -gt 0 ] || continue
+  echo "  ${r#$PROJECTS/}: $dead dead"
+  [ $yes -eq 1 ] && git -C "$r" worktree prune
+done
+
+echo "== Idle build-mirror slots (> $days days) =="
+cutoff=$(( $(date +%s) - days * 86400 ))
+for s in "$PROJECTS"/*/tmp/build-mirror/*/ "$PROJECTS"/*/*/tmp/build-mirror/*/; do
+  s="${s%/}"; [ -d "$s/tree" ] || continue
+  [ -d "$s.lock" ] && continue
+  [ "$(stat -f %m "$s/HEAD" 2>/dev/null || echo 0)" -lt "$cutoff" ] && drop "$s" "idle slot"
+done
+
+echo "== Preview builds nothing serves =="
+reg="${SERVE_REG_DIR:-$HOME/.dev-servers}"
+for d in "$PROJECTS"/*/tmp/serve/*/ "$PROJECTS"/*/*/tmp/serve/*/; do
+  d="${d%/}"; [ -d "$d" ] || continue
+  grep -qs " $d " "$reg"/* && continue
+  pgrep -f "$d" >/dev/null 2>&1 && continue
+  drop "$d" "no registered preview"
+done
+
+echo "== Node compile cache =="
+[ -d "${TMPDIR%/}/node-compile-cache" ] && drop "${TMPDIR%/}/node-compile-cache" "rebuilt on demand"
+
+[ $yes -eq 1 ] || echo "Run with --yes to delete."

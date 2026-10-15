@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+#
+# Delete stale temp entries so the next boot doesn't stall deleting them (see audit-disk, ../disk/README.md).
+#
+# Only top-level entries of /private/tmp and $TMPDIR that you own, whose newest file is older than
+# --hours (default 24), that no running process has open, and that aren't sockets or live session
+# folders. Dry run unless --yes.
+#
+#     cleanup-temp              # list what would go
+#     cleanup-temp --yes        # delete it
+#     cleanup-temp --hours 6 --yes
+
+set -uo pipefail
+hours=24; yes=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --yes) yes=1; shift;;
+    --hours) hours="$2"; shift 2;;
+    *) echo "usage: cleanup-temp [--hours N] [--yes]" >&2; exit 64;;
+  esac
+done
+keep='^(claude-[0-9]+|cc-socks|hssh-[0-9]+|codex-browser-use|com\.apple\..*|TemporaryItems|\.LINKS)$'
+cutoff=$(( $(date +%s) - hours * 3600 ))
+freed=0; n=0
+
+for d in /private/tmp "${TMPDIR%/}"; do
+  for e in "$d"/* "$d"/.[!.]*; do
+    [ -e "$e" ] || [ -L "$e" ] || continue
+    name="$(basename "$e")"
+    [[ "$name" =~ $keep ]] && continue
+    [ -O "$e" ] || continue
+    [ -S "$e" ] || [ -p "$e" ] && continue
+    newest=$(find "$e" -xdev -exec stat -f %m {} + 2>/dev/null | sort -n | tail -1)
+    [ -n "$newest" ] && [ "$newest" -gt "$cutoff" ] && continue
+    if [ -d "$e" ]; then lsof +D "$e" >/dev/null 2>&1 && continue; else lsof "$e" >/dev/null 2>&1 && continue; fi
+    files=$(find "$e" -xdev 2>/dev/null | wc -l | tr -d ' ')
+    kb=$(du -sk "$e" 2>/dev/null | cut -f1)
+    freed=$((freed + kb)); n=$((n + files))
+    if [ $yes -eq 1 ]; then rm -rf -- "$e" && printf 'deleted %8s files  %s\n' "$files" "$e"
+    else printf 'would delete %8s files  %s\n' "$files" "$e"; fi
+  done
+done
+printf '%s %s files, %s MB\n' "$( [ $yes -eq 1 ] && echo Deleted || echo 'Would delete')" "$n" "$((freed / 1024))"
+[ $yes -eq 1 ] || echo "Run with --yes to delete."
