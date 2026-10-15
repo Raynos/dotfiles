@@ -23,7 +23,7 @@ Where the files came from: per-run copies of the game repos.
 
 ## Routine
 
-    audit-disk temp      # before a restart: boot-purge file count (keep well under 100,000)
+    audit-disk temp      # before a restart: boot-purge file count (warning at 500,000)
     audit-disk           # who is using the SSD: repos, .git, ./tmp, mirror slots, agent state
     cleanup-temp         # stale /tmp + $TMPDIR entries (dry run; --yes deletes)
     cleanup-disk         # dead worktrees, idle mirror slots, orphaned previews (dry run; --yes)

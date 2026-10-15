@@ -26,7 +26,7 @@ echo "== Free space =="
 df -h /System/Volumes/Data | tail -1 | awk '{print "  " $4 " free of " $2 " (" $5 " used)"}'
 
 echo
-echo "== Boot purge: files macOS deletes before login (keep well under 100,000) =="
+echo "== Boot purge: files macOS deletes before login (warning at 500,000) =="
 total=0
 for d in /private/tmp "${TMPDIR%/}"; do
   n=$(count "$d"); total=$((total + n))
