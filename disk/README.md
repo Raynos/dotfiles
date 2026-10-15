@@ -62,6 +62,7 @@ Where the files came from: per-run copies of the game repos.
 - wildshard keeps 4 mirror slots (build, commit, gate, serve; about 8 GB in total) so jobs never wait on each other.
   They share the repo's `.git`: only the checked-out files are copied, because tsc/vite need real files, and
   the shared checkout carries other agents' uncommitted work.
+  They get cheaper once wildshard's repo is compacted, which is planned after the shard platform plan.
 - wildshard weekly budget: 100 MB, a warning only, until the repo is compacted (`2eb68df24`). 1 MB per file,
   10 MB per push and the forbidden types stay hard.
 - rockhop `.git` (38 GB; about 24 GB is 5 Codex turn-diff checkpoint refs) and the clean-history
