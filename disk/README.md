@@ -45,12 +45,14 @@ Where the files came from: per-run copies of the game repos.
 - rockhop `4ec6e7128`, `35bfe6124`: build mirror; `store-build` and timelapse moved onto it; scratch
   moved to `./tmp`; `node_modules` repaired (it pointed into a deleted `/tmp` export).
 - wildshard `1e722a4f4`, `8306e195a` (pushed): build mirror. The pre-commit check (slot `commit`), push
-  gate (slot `gate`, full tree), `serve-build --head/--rev` (slot `serve`, builds in `./tmp/serve`),
+  gate (slot `gate`, Vercel's tree), `serve-build --head/--rev` (slot `serve`, builds in `./tmp/serve`),
   green-prefix probes and prepare-to-exit all use it.
 - Deleted about 22 GB: old rockhop clones, wildshard `.git/commit-export*`, a stale agent worktree,
   `.native-build`, `.wildshard/cache`, a 13 GB Codex worktree, and 13 dead worktree registrations.
-- wildshard storage policy (rockhop's checker and budgets, 50 MB/week, migration mode, no history
-  rewrite): in progress.
+- wildshard storage policy (`docs/process/STORAGE.md`, `scripts/repo-size.mjs`): 1 MB per blob, 10 MB
+  of new binary per push, 50 MB a week outside the runtime roots, migration mode (existing files
+  grandfathered), enforced in pre-commit, pre-push and CI (`.github/workflows/storage.yml`).
+- wildshard auto-push removed from post-commit; landing recipe and feature worktrees removed (`37c6bd193`).
 
 ## Decisions (2026-10-15)
 
