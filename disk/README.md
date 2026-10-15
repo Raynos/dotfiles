@@ -50,7 +50,7 @@ Where the files came from: per-run copies of the game repos.
 - Deleted about 22 GB: old rockhop clones, wildshard `.git/commit-export*`, a stale agent worktree,
   `.native-build`, `.wildshard/cache`, a 13 GB Codex worktree, and 13 dead worktree registrations.
 - wildshard storage policy (`docs/process/STORAGE.md`, `scripts/repo-size.mjs`): 1 MB per blob, 10 MB
-  of new binary per push, 50 MB a week outside the runtime roots, migration mode (existing files
+  of new binary per push, 100 MB a week (warning only) outside the runtime roots, migration mode (existing files
   grandfathered), enforced in pre-commit, pre-push and CI (`.github/workflows/storage.yml`).
 - wildshard auto-push removed from post-commit; landing recipe and feature worktrees removed (`37c6bd193`).
 
@@ -59,6 +59,11 @@ Where the files came from: per-run copies of the game repos.
 - wildshard auto-push after every commit: **off for good.** Push with `scripts/push-main.sh`.
 - Landing recipes and feature worktrees: **removed.** Agents work on `main` in the one checkout.
 - The push gate builds Vercel's tree (no art/progress/sources): a 1 GB mirror slot, not 7 GB.
+- wildshard keeps 4 mirror slots (build, commit, gate, serve; about 8 GB in total) so jobs never wait on each other.
+  They share the repo's `.git`: only the checked-out files are copied, because tsc/vite need real files, and
+  the shared checkout carries other agents' uncommitted work.
+- wildshard weekly budget: 100 MB, a warning only, until the repo is compacted (`2eb68df24`). 1 MB per file,
+  10 MB per push and the forbidden types stay hard.
 - rockhop `.git` (38 GB; about 24 GB is 5 Codex turn-diff checkpoint refs) and the clean-history
   cutover (`~/projects/games/rockhop-replacement`): Jake handles these.
 - wildshard `progress/` videos: kept until a history rewrite. The storage policy blocks new ones.
