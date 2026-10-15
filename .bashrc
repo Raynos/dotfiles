@@ -4,10 +4,6 @@
 # "bash: hash: hashing disabled" on every shell start. Hashing is on by design;
 # anything that changes PATH (nvm included) already calls `hash -r` itself.
 
-# Node's compile cache, also here because herdr panes run interactive non-login
-# shells that never read .bash_profile, and the herdr server was started with
-# NODE_COMPILE_CACHE pointing into $TMPDIR (which macOS empties at boot).
-export NODE_COMPILE_CACHE="$HOME/Library/Caches/node-compile-cache"
 
 [[ $- == *i* ]] || return 0
 

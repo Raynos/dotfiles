@@ -17,10 +17,10 @@ fi
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 
 # See .exports — non-interactive/login shells that never source .bashrc still
-# want node's V8 compile cache. Kept under the OS temp dir so stale entries are
-# reaped for us; see the long note there.
-if [ -n "$TMPDIR" ]; then
-    export NODE_COMPILE_CACHE="${TMPDIR%/}/node-compile-cache"
+# want node's V8 compile cache. Kept out of $TMPDIR, which macOS empties at
+# boot before login; see the note there (2026-10-15).
+if [ "$(uname)" = Darwin ]; then
+    export NODE_COMPILE_CACHE="$HOME/Library/Caches/node-compile-cache"
 else
-    export NODE_COMPILE_CACHE="/tmp/node-compile-cache-$(id -u)"
+    export NODE_COMPILE_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/node-compile-cache"
 fi
