@@ -17,9 +17,9 @@ Second job (2026-09-13): pre-empt Claude Code's built-in `dangerousRemoval`
 safety check. That check is bypass-immune (fires under bypassPermissions, cannot
 be allow-ruled, ignores a hook "allow") and its only output is an interactive
 *ask* -- exactly the dialog that stalls an overnight agent. Sessions run in
-`dontAsk` mode so the ask becomes a deny, but a dontAsk deny carries no reason
-and the agent just retries the same shape. So this hook denies the same target
-shapes first, with a message that says how to rewrite the command. This applies
+`bypassPermissions` mode, so nothing turns that ask into a deny: it sits as a
+dialog until someone answers it. So this hook denies the same target shapes
+first, with a message that says how to rewrite the command. This applies
 to every rm/rmdir, recursive or not. Shapes mirrored from the 2.1.270 binary:
 
   - relative `dir/*` when the command also contains cd/pushd/popd
