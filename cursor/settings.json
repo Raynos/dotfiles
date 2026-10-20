@@ -122,5 +122,6 @@
     "git.openRepositoryInParentFolders": "never",
     "claudeCode.useTerminal": true,
     "claudeCode.preferredLocation": "sidebar",
-    "cursor.composer.codeBlockWordWrap": true
+    "cursor.composer.codeBlockWordWrap": true,
+    "cursor.composer.queueMessageDefaultBehavior": "steer"
 }
