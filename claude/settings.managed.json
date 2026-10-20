@@ -23,7 +23,7 @@
       "Bash(git reset --hard:*)",
       "Bash(git clean -f:*)"
     ],
-    "defaultMode": "dontAsk"
+    "defaultMode": "bypassPermissions"
   },
   "hooks": {
     "PreToolUse": [
