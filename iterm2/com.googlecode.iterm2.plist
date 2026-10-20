@@ -1527,7 +1527,7 @@
 	<string>389F166A-D86F-43D1-BDC9-19F71CD7D746</string>
 	<key>GlobalKeyMap</key>
 	<dict>
-		<key>0xd-0x20000-0x24</key>
+		<key>0xd-0x20000-0x24-0x1</key>
 		<dict>
 			<key>Action</key>
 			<integer>12</integer>
