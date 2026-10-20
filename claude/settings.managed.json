@@ -8,8 +8,7 @@
       "NotebookEdit",
       "WebFetch",
       "WebSearch",
-      "Agent",
-      "mcp__*"
+      "Agent"
     ],
     "deny": [
       "Bash(sudo:*)",
