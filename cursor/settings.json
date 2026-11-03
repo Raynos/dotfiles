@@ -123,5 +123,6 @@
     "claudeCode.useTerminal": true,
     "claudeCode.preferredLocation": "sidebar",
     "cursor.composer.codeBlockWordWrap": true,
-    "cursor.composer.queueMessageDefaultBehavior": "steer"
+    "cursor.composer.queueMessageDefaultBehavior": "steer",
+    "cursor.composer.queueManualSendBehavior2": "steer"
 }
