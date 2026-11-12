@@ -15,6 +15,12 @@ export BUN_INSTALL="$HOME/.bun"
 # hours. A persistent cache folder survives reboots and costs boot nothing.
 export NODE_COMPILE_CACHE="$HOME/Library/Caches/node-compile-cache"
 
+# Compact Claude Code sessions at 400k tokens instead of near the 1M window
+# (wildshard meta AUTO-COMPACT-TRIAL-PLAN, Jake 2026-11-12). The same value is in
+# claude/settings.managed.json "env"; this copy covers anything that reads the
+# shell env before Claude Code loads its settings. Change both together.
+export CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000
+
 [[ $- == *i* ]] || return 0
 
 # test if the prompt var is not set

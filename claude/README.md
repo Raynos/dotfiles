@@ -42,7 +42,9 @@ So the repo owns a subset of top-level keys in `settings.managed.json` —
 `permissions`, `hooks`, `statusLine`, `extraKnownMarketplaces`,
 `skipDangerousModePermissionPrompt`, `cleanupPeriodDays`, `model`,
 `effortLevel`, `askUserQuestionTimeout`, `tui`, `theme`,
-`preferredNotifChannel`, `env` — and `scripts/apply-managed-settings.mjs`
+`preferredNotifChannel`, `env` (which sets `CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000`, so
+every session and subagent compacts at 400k tokens instead of near 1M; `.bash_profile` exports the same value, change
+both together) — and `scripts/apply-managed-settings.mjs`
 merges just those into the live file, replacing each wholesale. Everything else
 (`enabledPlugins`, `autoMode`, and any key the app adds later) stays app-owned
 and is never touched. `--check` reports drift without writing.
