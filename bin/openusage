@@ -1,18 +1,21 @@
 #!/usr/bin/python3 -I
-"""Thin wrapper around OpenUsage.app's CLI (/usr/local/bin/openusage) that never hangs.
+"""Read OpenUsage.app's usage numbers without ever touching the keychain.
 
-The real CLI refreshes every provider in one process and waits up to 120 s for the slowest one. A Claude
-account whose keychain item OpenUsage may not read (claude-swap writes items only /usr/bin/security can open)
-raises a macOS "allow access" dialog, and the CLI then blocks the full 120 s and prints the other providers
-late or not at all (2026-10-26). This wrapper asks for each provider id in parallel with a short timeout
-(OPENUSAGE_TIMEOUT, default 8 s). A provider that times out or fails gets OpenUsage.app's last-good snapshot
-instead, marked "stale": true with "source": "app-snapshot" and its age, so Codex numbers print when Claude
-fails and nothing comes back empty.
+OpenUsage.app refreshes every provider every 5 min and keeps the result in its prefs
+(com.robinebers.openusage, openusage.providerSnapshots.v9). This prints that snapshot and never runs the real CLI
+(/usr/local/bin/openusage). Each real-CLI run reads every Claude account's keychain item on its own; an item it
+may not read (claude-swap's per-account items, or any item a /login just rewrote) raises a macOS "allow access"
+dialog. The old wrapper ran one CLI per provider and killed it after a few seconds, which left its dialog on
+screen with nobody waiting on it, so every call and the hourly usage-log cron piled up more of them (2026-10-26).
+Now only the app asks the keychain, at most once per account until "Always Allow" is clicked.
 
-Output is the CLI's JSON schema plus, on each provider, "ageMinutes" (and "source" for fallbacks), and at the
-top level "claudeActive": the provider id of the account Claude Code is logged in to (~/.claude.json), which
-is the one that paces Opus lanes. `--brief` prints one human line per provider instead of JSON.
-Usage: openusage [provider] [--force] [--brief]     (-h / -v go to the real CLI)
+Output is the CLI's JSON shape plus, on each provider, "ageMinutes" and "source": "app-snapshot", "stale": true
+when the snapshot is older than STALE_MINUTES (the app has not managed to refresh it), and at the top level
+"claudeActive": the provider id of the account Claude Code is logged in to (~/.claude.json), which is the one that
+paces Opus lanes. `--brief` prints one human line per provider instead of JSON.
+Usage: openusage [provider] [--brief]
+       openusage ... --force      hands over to the real CLI for a live fetch (may raise keychain dialogs)
+       -h / -v                    go to the real CLI
 """
 import datetime
 import json
@@ -20,11 +23,10 @@ import os
 import plistlib
 import subprocess
 import sys
-import time
 
 REAL = "/usr/local/bin/openusage"
 DOMAIN = "com.robinebers.openusage"
-TIMEOUT = float(os.environ.get("OPENUSAGE_TIMEOUT") or 8)
+STALE_MINUTES = 15
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
 
@@ -60,8 +62,10 @@ def snapshot_provider(snapshot):
             "remaining": limit - line["used"], "resetsAt": line.get("resetsAt"),
             "windowSeconds": (line.get("periodDurationMs") or 0) // 1000 or None}
     fetched = snapshot.get("refreshedAt")
+    age = age_minutes(fetched)
     return {"displayName": snapshot.get("displayName"), "plan": snapshot.get("plan"), "resources": resources,
-            "fetchedAt": fetched, "stale": True, "source": "app-snapshot", "ageMinutes": age_minutes(fetched)}
+            "fetchedAt": fetched, "stale": age is None or age > STALE_MINUTES, "source": "app-snapshot",
+            "ageMinutes": age}
 
 
 def active_claude(produced):
@@ -74,10 +78,9 @@ def active_claude(produced):
 
 
 def main(argv):
-    if any(a in ("-h", "--help", "-v", "--version") for a in argv):
-        os.execv(REAL, [REAL] + argv)
+    if any(a in ("-h", "--help", "-v", "--version", "--force") for a in argv):
+        os.execv(REAL, [REAL] + [a for a in argv if a != "--brief"])
     brief = "--brief" in argv
-    flags = [a for a in argv if a == "--force"]
     wanted = [a for a in argv if not a.startswith("-")]
     p = prefs()
     try:
@@ -85,49 +88,21 @@ def main(argv):
     except ValueError:
         store = {}
     snapshots, produced = store.get("snapshots") or {}, store.get("producedByIdentityKeys") or {}
-    ids = list(p.get("openusage.enabledProviders.v1") or produced or ["claude", "codex"])
+    ids = list(p.get("openusage.enabledProviders.v1") or produced or snapshots)
     if wanted:
-        ids = [i for i in ids if i == wanted[0] or i.startswith(wanted[0] + "@")] or wanted[:1]
+        ids = [i for i in ids if i == wanted[0] or i.startswith(wanted[0] + "@")]
 
-    procs = {i: subprocess.Popen([REAL, i] + flags, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-             for i in ids}
-    start = time.monotonic()
-    providers, errors, schema = {}, [], None
-    for pid, proc in procs.items():
-        # The app refreshes every provider every 5 min; a snapshot older than 30 min means the app cannot
-        # refresh this one either (same code, same keychain), so don't wait long for the CLI to try.
-        stuck = (age_minutes((snapshots.get(pid) or {}).get("refreshedAt")) or 0) > 30
-        budget = min(TIMEOUT, 2) if stuck else TIMEOUT
-        try:
-            out, err = proc.communicate(timeout=max(0.1, start + budget - time.monotonic()))
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.communicate()
-            why = "app has not refreshed it for 30+ min" if stuck else "OPENUSAGE_TIMEOUT"
-            errors.append({"providerId": pid, "message": "no answer in %gs (%s)" % (budget, why)})
-            continue
-        try:
-            data = json.loads(out)
-        except ValueError:
-            errors.append({"providerId": pid, "message": (err or "invalid JSON").strip()[:200]})
-            continue
-        schema = schema or data.get("schema")
-        got = (data.get("providers") or {}).get(pid)
-        if got:
-            got["ageMinutes"] = age_minutes(got.get("fetchedAt"))
-            providers[pid] = got
-        errors += [e for e in data.get("errors") or [] if e.get("providerId") == pid]
-
+    providers, errors = {}, []
     for pid in ids:
-        failed = any(e.get("providerId") == pid for e in errors)
-        if (pid not in providers or failed) and pid in snapshots:
-            # Prefer the app's snapshot when it is newer than what the CLI returned.
-            fallback = snapshot_provider(snapshots[pid])
-            mine = providers.get(pid)
-            if mine is None or (age_minutes(mine.get("fetchedAt")) or 1e9) > (fallback["ageMinutes"] or 1e9):
-                providers[pid] = fallback
+        if pid in snapshots:
+            providers[pid] = snapshot_provider(snapshots[pid])
+            if providers[pid]["stale"]:
+                errors.append({"providerId": pid, "message": "OpenUsage.app has not refreshed it for %s min"
+                               % providers[pid]["ageMinutes"]})
+        else:
+            errors.append({"providerId": pid, "message": "no snapshot in OpenUsage.app yet"})
 
-    result = {"schema": schema, "generatedAt": NOW.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+    result = {"schema": None, "generatedAt": NOW.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
               "claudeActive": active_claude(produced), "providers": providers, "errors": errors}
     if brief:
         for pid, prov in providers.items():

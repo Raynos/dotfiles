@@ -4,13 +4,13 @@
 #
 # Each line: when, the account Claude Code is logged in as (~/.claude.json oauthAccount → email + uuid, so /login
 # swaps show up), and every Claude account OpenUsage tracks (5h session, weekly, Fable weekly: used % + resets).
-# Source: `openusage claude` (OpenUsage.app's shared 5-minute cache). Read the week with:
+# Source: `~/bin/openusage claude`: OpenUsage.app's 5-minute snapshot, read from its prefs (never the keychain). Read the week with:
 #   jq -r '[.at, .active_email, (.accounts[] | "\(.name): wk \(.weekly_used)% 5h \(.session_used)%")] | join("  ")' \
 #     ~/.claude/usage-log/$(date -u +%G-W%V).jsonl
 set -uo pipefail
 dir="$HOME/.claude/usage-log"
 mkdir -p "$dir"
-raw="$(/usr/local/bin/openusage claude 2>/dev/null || true)"
+raw="$(/Users/raynos/bin/openusage claude 2>/dev/null || true)"
 line="$(RAW="$raw" /usr/bin/python3 - <<'PY'
 import json, os, datetime
 now = datetime.datetime.now(datetime.timezone.utc)
