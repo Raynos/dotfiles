@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# git multi-status [--fetch] [--dirty] [DIR...]
+#
+# One line per git repo: branch, uncommitted files, ahead/behind its upstream,
+# and how old the last commit is. With no DIRs it checks every repo directly
+# under the current directory, so `git multi-status` in ~/projects/games/wildshard
+# covers all of them. `git multi-status *` works too.
+#
+#   --fetch   git fetch each repo first (quiet), so behind counts are fresh
+#   --dirty   only print repos that are dirty, ahead or behind
+#
+# Exit status: 0 when every repo is clean and in sync, 1 otherwise.
+
+fetch=0
+only_dirty=0
+dirs=()
+for arg in "$@"; do
+  case "$arg" in
+    --fetch) fetch=1 ;;
+    --dirty) only_dirty=1 ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) dirs+=("$arg") ;;
+  esac
+done
+if [ ${#dirs[@]} -eq 0 ]; then
+  for d in */; do dirs+=("${d%/}"); done
+fi
+
+if [ -t 1 ]; then
+  red=$'\e[31m' green=$'\e[32m' yellow=$'\e[33m' dim=$'\e[2m' reset=$'\e[0m'
+else
+  red='' green='' yellow='' dim='' reset=''
+fi
+
+status=0
+for dir in "${dirs[@]}"; do
+  [ -e "$dir/.git" ] || continue
+  if [ "$fetch" -eq 1 ]; then
+    git -C "$dir" fetch --quiet 2>/dev/null
+  fi
+  branch=$(git -C "$dir" branch --show-current 2>/dev/null)
+  [ -n "$branch" ] || branch="(detached)"
+  dirty=$(git -C "$dir" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  counts=$(git -C "$dir" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null)
+  if [ -n "$counts" ]; then
+    behind=${counts%%[[:space:]]*}
+    ahead=${counts##*[[:space:]]}
+  else
+    behind='-'
+    ahead='-'
+  fi
+  age=$(git -C "$dir" log -1 --format=%cr 2>/dev/null)
+
+  clean=1
+  [ "$dirty" != 0 ] && clean=0
+  [ "$ahead" != 0 ] && [ "$ahead" != '-' ] && clean=0
+  [ "$behind" != 0 ] && [ "$behind" != '-' ] && clean=0
+  [ "$clean" -eq 0 ] && status=1
+  if [ "$only_dirty" -eq 1 ] && [ "$clean" -eq 1 ]; then
+    continue
+  fi
+
+  if [ "$clean" -eq 1 ]; then
+    mark="${green}ok   ${reset}"
+  else
+    mark="${red}DIRTY${reset}"
+  fi
+  parts=""
+  [ "$dirty" != 0 ] && parts+="${yellow}${dirty} changed${reset} "
+  [ "$ahead" != 0 ] && [ "$ahead" != '-' ] && parts+="${yellow}${ahead} ahead${reset} "
+  [ "$behind" != 0 ] && [ "$behind" != '-' ] && parts+="${yellow}${behind} behind${reset} "
+  [ "$ahead" = '-' ] && parts+="${dim}no upstream${reset} "
+  printf '%s  %-22s %-12s %s%s\n' "$mark" "$dir" "[$branch]" "$parts" "${dim}${age}${reset}"
+done
+exit "$status"
