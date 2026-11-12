@@ -20,9 +20,13 @@ AGENTS_DIR="$HOME/.agents"
 BACKUP_DIR="$AGENTS_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 
 # Curated items, path-relative to BOTH the repo dir and ~/.agents.
+# parity.json holds the accepted one-sided items for repo-kit's
+# `agent-parity.mjs --global`, which reads ~/.agents/parity.json.
 ITEMS=(
+  parity.json
   skills/find-skills
   skills/herdr
+  skills/handoff
   skills/agent-browser
 )
 

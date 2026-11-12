@@ -1,0 +1,76 @@
+{
+  "$comment": "One safety policy, two outputs (MULTI-AGENT-TOOLING MA9/MA8). repo-kit scripts/agent-policy.mjs writes claude/settings.managed.json permissions.deny and codex/safety.rules from this file; dcg stays the shared guard.",
+  "deny": [
+    {
+      "prefix": [
+        "sudo"
+      ],
+      "reason": "no root from an agent session"
+    },
+    {
+      "prefix": [
+        "chmod",
+        "-R"
+      ],
+      "reason": "no recursive permission changes"
+    },
+    {
+      "prefix": [
+        "chmod",
+        "777"
+      ],
+      "reason": "no world-writable files"
+    },
+    {
+      "prefix": [
+        "chown",
+        "-R"
+      ],
+      "reason": "no recursive ownership changes"
+    },
+    {
+      "prefix": [
+        "dd"
+      ],
+      "reason": "raw disk writes"
+    },
+    {
+      "prefix": [
+        "mkfs"
+      ],
+      "reason": "formats a disk"
+    },
+    {
+      "prefix": [
+        "git",
+        "push",
+        "--force"
+      ],
+      "reason": "never rewrite shared history"
+    },
+    {
+      "prefix": [
+        "git",
+        "push",
+        "-f"
+      ],
+      "reason": "never rewrite shared history"
+    },
+    {
+      "prefix": [
+        "git",
+        "reset",
+        "--hard"
+      ],
+      "reason": "discards work, often another agent's"
+    },
+    {
+      "prefix": [
+        "git",
+        "clean",
+        "-f"
+      ],
+      "reason": "deletes untracked work, often another agent's"
+    }
+  ]
+}

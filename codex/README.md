@@ -6,8 +6,22 @@ defaults, and install/check the shared tool capability inventory.
 
 ## What is managed
 
-- `AGENTS.md` — global, personal working agreements.
-- `hooks.json` — the Codex Herdr `SessionStart` adapter.
+- `AGENTS.md` — a link to `../agent-common/global-rules.md`, the global rules
+  both tools read; `~/.claude/CLAUDE.md` imports the same file and keeps only
+  the Claude-only parts (status line, sounds).
+- `hooks.json` — the Codex Herdr `SessionStart` adapter, plus the PreToolUse
+  guards shared with Claude Code: `dcg`, `guard-chrome-keychain.py` and
+  `guard-rm.py` (the scripts live in `../claude/hooks/`). Sounds, the session
+  label reminder, `clear-herdr-tag.sh` and `auto-deny.sh` stay Claude-only;
+  the reasons are in `../agents/parity.json`.
+- `rules/safety.rules` — Codex execpolicy refusals, generated with Claude's
+  `permissions.deny` from `../agent-common/safety.json` by repo-kit's
+  `scripts/agent-policy.mjs`. Edit the spec, not either output.
+
+`node <repo-kit>/scripts/agent-parity.mjs --global --strict` checks
+`~/.claude` against `~/.codex` and `~/.agents`; one-sided items are accepted
+in `../agents/parity.json`. Changing a hook's text changes Codex's trust hash:
+open `codex` once and choose "Trust all and continue".
 - `config.managed.toml` — model and permission defaults. `approval_policy =
   "never"` plus `sandbox_mode = "danger-full-access"` intentionally mirrors
   the approved Claude Code bypass-permissions behavior. It also enables the

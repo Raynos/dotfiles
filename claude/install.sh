@@ -33,6 +33,7 @@ ITEMS=(
   hooks
   skills/handoff
   skills/herdr
+  skills/find-skills
   sounds
 )
 
