@@ -114,11 +114,17 @@ rare tool that genuinely must match a node version.
 
 ## Vercel
 
-The CLI is authenticated; its token lives at
-`~/Library/Application Support/com.vercel.cli/auth.json` under the key `token`,
-which is what to use for the REST API (`https://api.vercel.com`) when something
-is not exposed as a CLI flag — project rename and deployment protection both
-are not. Scope is `raynos-projects`.
+For the REST API (`https://api.vercel.com`), when something is not exposed as a
+CLI flag (project rename and deployment protection both are not), use the
+**long-lived token in `~/.config/vercel/api-token`** (mode 600, created
+2026-11-10, no expiry). Read it from the file; never print it. Scope is
+`raynos-projects`.
+
+Don't use the CLI's own token in
+`~/Library/Application Support/com.vercel.cli/auth.json` for REST calls: since
+CLI 59.x it expires after 8 hours, and only the CLI renews it on its next
+command. The CLI itself stays logged in that way; if it says the login expired,
+run `vercel whoami` before asking Jake to `vercel login`.
 
 **Name the project before the first deploy.** `vercel deploy --prod --yes` run
 from a build-output directory names the Vercel project after *that directory*,
