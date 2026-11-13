@@ -1,4 +1,5 @@
 {
   "headed": false,
-  "idleTimeout": "5m"
+  "idleTimeout": "5m",
+  "args": "--mute-audio"
 }

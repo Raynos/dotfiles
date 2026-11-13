@@ -15,6 +15,12 @@ CASES = [
     ('cd /x; git log -1; grep -rn ignoreDefaultArgs scripts', 0),
     ('node scripts/foo.mjs', 0),
     ('agent-browser open http://localhost:3000', 0),
+    ('agent-browser --args "--use-angle=metal" open http://localhost:3000', 2),
+    ('AGENT_BROWSER_ARGS=--use-angle=metal agent-browser open http://localhost:3000', 2),
+    ('agent-browser --args "--mute-audio,--use-angle=metal" open http://localhost:3000', 0),
+    ('grep -n -- --args ~/.agent-browser/config.json; agent-browser open about:blank', 0),
+    ('export AGENT_BROWSER_ARGS=--use-angle=metal', 2),
+    ('python3 -c "print(1)" # an agent-browser --args override must keep the mute', 0),
 ]
 bad = 0
 for cmd, want in CASES:

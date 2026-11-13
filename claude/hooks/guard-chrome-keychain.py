@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """PreToolUse (Claude Code + Codex) guard: refuse a shell command that launches a Chromium / Chrome for Testing
 binary by hand without --use-mock-keychain and --password-store=basic (macOS "Safe Storage" keychain dialog) or
-without --mute-audio (Jake, 2026-11-13: "headless chromium with volume off"), or that drops Playwright's defaults with ignoreDefaultArgs. Exit 2 + stderr = block. Fails open on any parse error.
-Scripts run by name (node x.mjs) are not read here; repo static checks cover those. Undo: remove the hook entry."""
+without --mute-audio (Jake, 2026-11-13: "headless chromium with volume off"), or that drops Playwright's defaults
+with ignoreDefaultArgs. agent-browser is muted by its config's "args" (dotfiles agent-browser/config.json); a command
+that overrides them with --args or AGENT_BROWSER_ARGS must keep --mute-audio. Exit 2 + stderr = block. Fails open on
+any parse error. Scripts run by name (node x.mjs) are not read here; repo static checks cover those.
+Undo: remove the hook entry."""
 import json, re, sys
 
 FLAGS = ("--use-mock-keychain", "--password-store=basic", "--mute-audio")
@@ -19,6 +22,12 @@ def verdict(cmd):
     cmd = "\n".join(s for s in re.split(r"[;\n]|&&|\|\||\|", cmd) if not READONLY.match(s))
     if re.search(r"ignoreDefaultArgs", cmd):
         return "ignoreDefaultArgs drops Playwright's --use-mock-keychain/--password-store=basic"
+    for seg in cmd.split("\n"):
+        # only a segment that runs agent-browser or sets its args variable, so prose in a message never matches
+        runs = re.match(r"\s*(?:export\s+)?(?:\w+=\S*\s+)*(?:npx\s+)?agent-browser\b", seg)
+        sets = re.match(r"\s*(?:export\s+)?(?:\w+=\S*\s+)*AGENT_BROWSER_ARGS=", seg)
+        if (runs and re.search(r"(?:^|\s)--args\b|\bAGENT_BROWSER_ARGS=", seg) or sets) and "--mute-audio" not in seg:
+            return "agent-browser --args / AGENT_BROWSER_ARGS replaces the config's --mute-audio and lacks it"
     if not (BROWSER.search(cmd) and LAUNCH.search(cmd)):
         return None
     missing = [f for f in FLAGS if f not in cmd]
