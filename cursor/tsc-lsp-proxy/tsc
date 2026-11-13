@@ -1,0 +1,11 @@
+#!/bin/sh
+# Launcher Cursor's TypeScript (native preview) extension runs in place of its
+# server, selected by "typescript.native-preview.tsdk" in settings.json.
+# It starts proxy.js, which caps the server's cores and memory and keeps it to
+# the window's own workspace folders. Falls back to the real server, capped at
+# 4 cores, if node is missing. To undo: delete the tsdk line in settings.json.
+dir=$(cd "$(dirname "$0")" && pwd -P)
+node=$(command -v node || ls "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | tail -1)
+[ -x "$node" ] && exec "$node" "$dir/proxy.js" "$@"
+real=$(ls -d "$HOME"/.cursor/extensions/typescriptteam.native-preview-*/lib/tsc | tail -1)
+GOMAXPROCS=4 exec "$real" "$@"

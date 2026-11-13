@@ -68,6 +68,17 @@ for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
 
+# settings.json points "typescript.native-preview.tsdk" at this stable path;
+# the TypeScript 7 extension runs the launcher there in place of its server.
+PROXY_LINK="$HOME/.local/share/tsc-lsp-proxy"
+if [ -L "$PROXY_LINK" ] && [ "$(readlink "$PROXY_LINK")" = "$REPO_DIR/tsc-lsp-proxy" ]; then
+  echo "ok    tsc-lsp-proxy"
+else
+  mkdir -p "$(dirname "$PROXY_LINK")"
+  ln -sfn "$REPO_DIR/tsc-lsp-proxy" "$PROXY_LINK"
+  echo "link   ${PROXY_LINK#$HOME/} -> ${REPO_DIR#$HOME/}/tsc-lsp-proxy"
+fi
+
 # Install extensions declaratively from extensions.txt (VS Code-extensions
 # style, same pattern as claude/plugins.json).
 if command -v cursor >/dev/null; then

@@ -17,7 +17,6 @@
     "extensions.ignoreRecommendations": true,
     "javascript.preferGoToSourceDefinition": true,
     "typescript.preferGoToSourceDefinition": true,
-    "typescript.experimental.useTsgo": true,
     "[typescript]": {
       "editor.defaultFormatter": "TypeScriptTeam.native-preview"
     },
@@ -25,7 +24,44 @@
     "git.autofetch": false,
     "git.pullTags": false,
     "git.confirmSync": false,
-    "typescript.tsserver.log": "verbose",
+    "typescript.tsserver.log": "off",
+    "js/ts.server.goMemLimit": "4GiB",
+    "typescript.native-preview.tsdk": "/Users/raynos/.local/share/tsc-lsp-proxy",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/.pnpm-store/**": true,
+        "**/dist/**": true,
+        "**/.next/**": true,
+        "**/.turbo/**": true,
+        "**/coverage/**": true,
+        "**/.tap/**": true,
+        "**/.nyc_output/**": true,
+        "**/blob-store/**": true,
+        "**/submodules/**": true
+    },
+    "search.followSymlinks": false,
+    "terraform.languageServer.indexing.ignoreDirectoryNames": [
+        "node_modules",
+        ".git",
+        "dist",
+        "dist-tests",
+        ".next",
+        ".turbo",
+        "coverage",
+        ".tap",
+        "blob-store",
+        "submodules"
+    ],
+    "terraform.languageServer.indexing.ignorePaths": [
+        "workspaces",
+        "submodules",
+        "node_modules",
+        "blob-store",
+        "experiments",
+        ".git"
+    ],
     "cursor.composer.shouldChimeAfterChatFinishes": true,
     "cursor.preferNotificationsSameAsChat": true,
     "accessibility.signals.chatResponseReceived": {
@@ -124,5 +160,7 @@
     "claudeCode.preferredLocation": "sidebar",
     "cursor.composer.codeBlockWordWrap": true,
     "cursor.composer.queueMessageDefaultBehavior": "steer",
-    "cursor.composer.queueManualSendBehavior2": "steer"
+    "cursor.composer.queueManualSendBehavior2": "steer",
+    "js/ts.experimental.useTsgo": true,
+    "typescript.experimental.useTsgo": true
 }

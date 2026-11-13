@@ -10,6 +10,16 @@ here, so edits made in Cursor's settings UI flow straight into git.
 - `settings.json` — editor/TS/git preferences, plus the big
   "silence every accessibility signal" block.
 - `keybindings.json` — custom keybindings.
+- `tsc-lsp-proxy/` — a launcher and proxy the TypeScript 7 extension runs in
+  place of its own server (`typescript.native-preview.tsdk` in
+  `settings.json`). It caps the server at 4 cores and 4 GiB and ignores files
+  outside the window's workspace folders, so files agents open from other
+  worktrees stop loading a whole extra copy of a monorepo each. `install.sh`
+  links it at `~/.local/share/tsc-lsp-proxy`. The memory limit follows
+  `js/ts.server.goMemLimit` in `settings.json`; the core cap is the constant at
+  the top of `proxy.js`. Extra directories to treat as inside the workspace go
+  one per line in `~/.config/tsc-lsp-proxy/extra-roots`. To turn it off, delete the `tsdk` line and restart the TS
+  server.
 - `extensions.txt` — declarative extension list, one id per line
   (`cursor --list-extensions` format). `install.sh` installs anything missing;
   it never uninstalls extras.
