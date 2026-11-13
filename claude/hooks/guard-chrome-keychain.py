@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """PreToolUse (Claude Code + Codex) guard: refuse a shell command that launches a Chromium / Chrome for Testing
-binary by hand without --use-mock-keychain and --password-store=basic (macOS "Safe Storage" keychain dialog), or
-that drops Playwright's defaults with ignoreDefaultArgs. Exit 2 + stderr = block. Fails open on any parse error.
+binary by hand without --use-mock-keychain and --password-store=basic (macOS "Safe Storage" keychain dialog) or
+without --mute-audio (Jake, 2026-11-13: "headless chromium with volume off"), or that drops Playwright's defaults with ignoreDefaultArgs. Exit 2 + stderr = block. Fails open on any parse error.
 Scripts run by name (node x.mjs) are not read here; repo static checks cover those. Undo: remove the hook entry."""
 import json, re, sys
 
-FLAGS = ("--use-mock-keychain", "--password-store=basic")
+FLAGS = ("--use-mock-keychain", "--password-store=basic", "--mute-audio")
 BROWSER = re.compile(r"ms-playwright|agent-browser/browsers|Google Chrome for Testing|chrome-headless-shell|"
                      r"executablePath\(\)|Chromium\.app|/chromium\b", re.I)
 LAUNCH = re.compile(r"--user-data-dir|--remote-debugging-port|--headless|launchPersistentContext|\bspawn\(|"
@@ -32,6 +32,7 @@ try:
 except Exception:
     sys.exit(0)
 if why:
-    sys.stderr.write("BLOCKED (keychain dialog): " + why + ". Every Chromium launch passes --use-mock-keychain and "
-                     "--password-store=basic; use Playwright launch() defaults, never ignoreDefaultArgs.\n")
+    sys.stderr.write("BLOCKED (keychain dialog / sound): " + why + ". Every Chromium launch passes "
+                     "--use-mock-keychain, --password-store=basic and --mute-audio (Jake, 2026-11-13: headless "
+                     "Chromium with volume off); keep Playwright launch() defaults, never ignoreDefaultArgs.\n")
     sys.exit(2)

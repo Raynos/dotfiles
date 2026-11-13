@@ -3,7 +3,9 @@ H = str(pathlib.Path(__file__).with_name("guard-chrome-keychain.py"))
 BIN = '"/U/Library/Caches/ms-playwright/chromium-1254/Google Chrome for Testing"'
 CASES = [
     (BIN + " --headless=new --user-data-dir=/tmp/p", 2),
-    (BIN + " --headless=new --user-data-dir=/tmp/p --use-mock-keychain --password-store=basic", 0),
+    (BIN + " --headless=new --user-data-dir=/tmp/p --use-mock-keychain --password-store=basic --mute-audio", 0),
+    (BIN + " --headless=new --user-data-dir=/tmp/p --use-mock-keychain --password-store=basic", 2),
+    (BIN + " --headless=new --mute-audio", 2),
     (BIN + " --headless=new --use-mock-keychain", 2),
     ('node -e "chromium.launch({ignoreDefaultArgs:true})"', 2),
     ('node -e "spawn(chromium.executablePath(),[\'--headless\'])"', 2),
