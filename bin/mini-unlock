@@ -17,7 +17,14 @@ fi
 
 HOST=${1:-Jakes-Mac-Mini.local}
 
-if ssh -o BatchMode=yes -o ConnectTimeout=5 "jakeverbaten@$HOST" true 2>/dev/null; then
+# Liveness probe only: HOST may be a bare IP missing from known_hosts, so don't
+# check host keys here (key auth, runs `true`, sends nothing secret).
+alive() {
+  ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR "jakeverbaten@$HOST" true 2>/dev/null
+}
+
+if alive; then
   echo "mini-unlock: $HOST is already unlocked (key login works)."
   exit 0
 fi
@@ -34,7 +41,7 @@ SSH_ASKPASS="$0" SSH_ASKPASS_REQUIRE=force MINI_UNLOCK_ASKPASS=1 DISPLAY="${DISP
 rc=$?
 echo "mini-unlock: ssh exited $rc; waiting for the unlocked system to answer..."
 for _ in $(seq 1 36); do
-  if ssh -o BatchMode=yes -o ConnectTimeout=5 "jakeverbaten@$HOST" true 2>/dev/null; then
+  if alive; then
     echo "mini-unlock: unlocked, key login works."
     exit 0
   fi
