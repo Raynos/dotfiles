@@ -1,0 +1,44 @@
+#!/bin/bash
+# mini-unlock: unlock the Mac mini's FileVault at its pre-boot SSH screen.
+#
+#   mini-unlock [host]      # default host: Jakes-Mac-Mini.local
+#
+# After a restart, an Apple silicon Mac on macOS 26+ with Remote Login on waits
+# at the FileVault screen but answers SSH, asking for an admin password. This
+# logs in as the `unlock` admin account, whose password lives only in this
+# laptop's Keychain (service mini-filevault, account unlock), passed via
+# SSH_ASKPASS so it never shows on screen or in a process list.
+# Pre-boot uses its own host key, kept in ~/.ssh/known_hosts_mini_preboot.
+set -uo pipefail
+
+if [ "${MINI_UNLOCK_ASKPASS:-}" = 1 ]; then
+  exec security find-generic-password -s mini-filevault -a unlock -w
+fi
+
+HOST=${1:-Jakes-Mac-Mini.local}
+
+if ssh -o BatchMode=yes -o ConnectTimeout=5 "jakeverbaten@$HOST" true 2>/dev/null; then
+  echo "mini-unlock: $HOST is already unlocked (key login works)."
+  exit 0
+fi
+
+security find-generic-password -s mini-filevault -a unlock >/dev/null 2>&1 || {
+  echo "mini-unlock: no Keychain item (service mini-filevault, account unlock)" >&2; exit 1; }
+
+echo "mini-unlock: $HOST is locked or unreachable; trying the FileVault unlock as 'unlock'..."
+SSH_ASKPASS="$0" SSH_ASKPASS_REQUIRE=force MINI_UNLOCK_ASKPASS=1 DISPLAY="${DISPLAY:-:0}" \
+  ssh -o ConnectTimeout=10 -o NumberOfPasswordPrompts=1 \
+      -o PubkeyAuthentication=no -o PreferredAuthentications=keyboard-interactive,password \
+      -o UserKnownHostsFile="$HOME/.ssh/known_hosts_mini_preboot" -o StrictHostKeyChecking=accept-new \
+      "unlock@$HOST" </dev/null
+rc=$?
+echo "mini-unlock: ssh exited $rc; waiting for the unlocked system to answer..."
+for _ in $(seq 1 36); do
+  if ssh -o BatchMode=yes -o ConnectTimeout=5 "jakeverbaten@$HOST" true 2>/dev/null; then
+    echo "mini-unlock: unlocked, key login works."
+    exit 0
+  fi
+  perl -e 'select(undef,undef,undef,5)'
+done
+echo "mini-unlock: still no key login after 3 minutes." >&2
+exit 1
