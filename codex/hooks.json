@@ -4,7 +4,7 @@
       {
         "hooks": [
           {
-            "command": "/Users/raynos/.local/bin/dcg",
+            "command": "\"$HOME/.local/bin/dcg\"",
             "type": "command"
           }
         ],
@@ -30,7 +30,7 @@
       {
         "hooks": [
           {
-            "command": "bash '/Users/raynos/.codex/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.codex/herdr-agent-state.sh\" session",
             "timeout": 10,
             "type": "command"
           }

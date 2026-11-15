@@ -22,6 +22,11 @@ defaults, and install/check the shared tool capability inventory.
 `~/.claude` against `~/.codex` and `~/.agents`; one-sided items are accepted
 in `../agents/parity.json`. Changing a hook's text changes Codex's trust hash:
 open `codex` once and choose "Trust all and continue".
+Hook commands use `$HOME`, never a literal home path, so the same file works
+for every user. `herdr integration install codex` does not recognise the
+`$HOME` form and appends a second `SessionStart` entry with this machine's
+absolute path (written through the symlink into this repo): delete that
+entry, keep the `$HOME` one, and never commit it.
 - `config.managed.toml` — model and permission defaults. `approval_policy =
   "never"` plus `sandbox_mode = "danger-full-access"` intentionally mirrors
   the approved Claude Code bypass-permissions behavior. It also enables the

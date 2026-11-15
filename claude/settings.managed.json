@@ -53,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/raynos/.local/bin/dcg"
+            "command": "\"$HOME/.local/bin/dcg\""
           }
         ]
       },
@@ -89,12 +89,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/raynos/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash '/Users/raynos/.claude/hooks/clear-herdr-tag.sh'",
+            "command": "bash \"$HOME/.claude/hooks/clear-herdr-tag.sh\"",
             "timeout": 10
           }
         ]

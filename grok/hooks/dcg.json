@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/raynos/.local/bin/dcg",
+            "command": "\"$HOME/.local/bin/dcg\"",
             "timeout": 5
           }
         ]
