@@ -2674,7 +2674,7 @@
 			<key>Window Type</key>
 			<integer>0</integer>
 			<key>Working Directory</key>
-			<string>/Users/raynos</string>
+			<string>~</string>
 		</dict>
 		<dict>
 			<key>ASCII Anti Aliased</key>
@@ -3639,7 +3639,7 @@
 			<key>Window Type</key>
 			<integer>0</integer>
 			<key>Working Directory</key>
-			<string>/Users/raynos</string>
+			<string>~</string>
 		</dict>
 		<dict>
 			<key>ASCII Anti Aliased</key>
@@ -4839,7 +4839,7 @@
 			<key>Window Type</key>
 			<integer>0</integer>
 			<key>Working Directory</key>
-			<string>/Users/raynos</string>
+			<string>~</string>
 		</dict>
 		<dict>
 			<key>ASCII Anti Aliased</key>
@@ -5733,7 +5733,7 @@
 			<key>Disable Window Resizing</key>
 			<true/>
 			<key>Dynamic Profile Filename</key>
-			<string>/Users/raynos/Library/Application Support/iTerm2/DynamicProfiles/Wildshard.json</string>
+			<string>~/Library/Application Support/iTerm2/DynamicProfiles/Wildshard.json</string>
 			<key>Dynamic Profile Parent Name</key>
 			<string>Vibe</string>
 			<key>Flashing Bell</key>
@@ -6023,7 +6023,7 @@
 			<key>Window Type</key>
 			<integer>0</integer>
 			<key>Working Directory</key>
-			<string>/Users/raynos</string>
+			<string>~</string>
 		</dict>
 	</array>
 	<key>PMPrintingPanelSize</key>
