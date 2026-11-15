@@ -70,7 +70,10 @@ done
 
 # settings.json points "typescript.native-preview.tsdk" at this stable path;
 # the TypeScript 7 extension runs the launcher there in place of its server.
-PROXY_LINK="$HOME/.local/share/tsc-lsp-proxy"
+# The extension takes the path literally (no ~ or $HOME), and settings.json is
+# a symlink shared by every Mac, so the link lives at a path that is the same
+# for every user: /Users/Shared (sticky, writable by all, no sudo needed).
+PROXY_LINK="/Users/Shared/tsc-lsp-proxy"
 if [ -L "$PROXY_LINK" ] && [ "$(readlink "$PROXY_LINK")" = "$REPO_DIR/tsc-lsp-proxy" ]; then
   echo "ok    tsc-lsp-proxy"
 else

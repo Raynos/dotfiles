@@ -26,7 +26,7 @@
     "git.confirmSync": false,
     "typescript.tsserver.log": "off",
     "js/ts.server.goMemLimit": "4GiB",
-    "typescript.native-preview.tsdk": "/Users/raynos/.local/share/tsc-lsp-proxy",
+    "typescript.native-preview.tsdk": "/Users/Shared/tsc-lsp-proxy",
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
