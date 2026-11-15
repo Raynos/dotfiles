@@ -19,7 +19,7 @@ Where the files came from: per-run copies of the game repos.
 ## In an emergency
 
 `~/recovery-tools/diagnose.sh` and `~/recovery-tools/fix-boot.sh` work from the Recovery Terminal
-(`bash /Volumes/Data/Users/raynos/recovery-tools/diagnose.sh`). Waiting also works; it finishes.
+(`bash /Volumes/Data/Users/<your-user>/recovery-tools/diagnose.sh`). Waiting also works; it finishes.
 
 ## Routine
 

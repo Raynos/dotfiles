@@ -1,6 +1,6 @@
 #!/bin/bash
 # Append one line of Claude plan usage per run to ~/.claude/usage-log/<ISO week>.jsonl (append-only, never rewritten).
-# Run hourly from cron:  17 * * * * /Users/raynos/.claude/usage-log.sh
+# Run hourly from cron:  17 * * * * ~/.claude/usage-log.sh
 #
 # Each line: when, the account Claude Code is logged in as (~/.claude.json oauthAccount → email + uuid, so /login
 # swaps show up), and every Claude account OpenUsage tracks (5h session, weekly, Fable weekly: used % + resets).
@@ -10,7 +10,7 @@
 set -uo pipefail
 dir="$HOME/.claude/usage-log"
 mkdir -p "$dir"
-raw="$(/Users/raynos/bin/openusage claude 2>/dev/null || true)"
+raw="$("$HOME/bin/openusage" claude 2>/dev/null || true)"
 line="$(RAW="$raw" /usr/bin/python3 - <<'PY'
 import json, os, datetime
 now = datetime.datetime.now(datetime.timezone.utc)

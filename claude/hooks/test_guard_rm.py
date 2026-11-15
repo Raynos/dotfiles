@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 HOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "guard-rm.py")
-CWD = "/Users/raynos/projects/games/wildshard-singleplayer"
+CWD = os.path.expanduser("~/projects/games/wildshard-singleplayer")
 
 CASES = [
     # 2026-10-08: the command that stalled the shard-platform coordinator on the built-in ask.
