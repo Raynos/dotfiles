@@ -22,7 +22,7 @@ Runtime state in `~/.claude` is never touched.
 | `settings.managed.json`    | The subset of `settings.json` this repo owns (merged, not linked) |
 | `set-label.sh`             | Sets the status-line goal label (+ herdr tag)           |
 | `session-label-remind.sh`  | `UserPromptSubmit` hook: nudge to refresh a stale label |
-| `statusline.sh`            | Renders the terminal status line                        |
+| `statusline.sh`            | Status-line goal + usage cache; the first widget of [ccstatusline](../ccstatusline/settings.json) |
 | `usage-log.sh`             | Hourly cron (`17 * * * *`, symlinked to `~/.claude/usage-log.sh`): appends OpenUsage limits per account + the active login email to `~/.claude/usage-log/<ISO week>.jsonl` |
 | `hooks/`                   | `herdr-agent-state.sh`, `clear-herdr-tag.sh`            |
 | `skills/herdr/`            | The custom `herdr` skill                                |

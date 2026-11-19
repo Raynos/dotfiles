@@ -1,0 +1,62 @@
+{
+  "version": 4,
+  "lines": [
+    [
+      {
+        "id": "goal",
+        "type": "custom-command",
+        "commandPath": "~/.claude/statusline.sh --goal-only",
+        "timeout": 2000,
+        "color": "white"
+      }
+    ],
+    [
+      {
+        "id": "model",
+        "type": "model",
+        "color": "cyan",
+        "rawValue": true
+      },
+      {
+        "id": "model-gap",
+        "type": "custom-text",
+        "customText": " "
+      },
+      {
+        "id": "effort",
+        "type": "thinking-effort",
+        "color": "cyan",
+        "rawValue": true
+      },
+      {
+        "id": "sep-3",
+        "type": "separator"
+      },
+      {
+        "id": "context",
+        "type": "context-percentage",
+        "color": "brightBlack"
+      },
+      {
+        "id": "sep-4",
+        "type": "separator"
+      },
+      {
+        "id": "cost",
+        "type": "session-cost",
+        "color": "green"
+      },
+      {
+        "id": "sep-5",
+        "type": "separator"
+      },
+      {
+        "id": "branch",
+        "type": "git-branch",
+        "color": "magenta"
+      }
+    ]
+  ],
+  "colorLevel": 2,
+  "gitCacheTtlSeconds": 5
+}

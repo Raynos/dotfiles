@@ -103,7 +103,11 @@ if [ "${#desc}" -gt 50 ]; then
   desc="${desc:0:49}…"
 fi
 
-if [ -n "$desc" ]; then
+# --goal-only: print just the description. ccstatusline's first widget uses this,
+# and its own model / thinking-effort widgets show the model on line 2.
+if [ "${1:-}" = "--goal-only" ]; then
+  printf '%s' "${desc:-$model}"
+elif [ -n "$desc" ]; then
   printf '%s — %s' "$model" "$desc"
 else
   printf '%s' "$model"
