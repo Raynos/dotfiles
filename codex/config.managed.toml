@@ -28,6 +28,12 @@ daemon_auto_start = false
 [notice]
 hide_rate_limit_model_nudge = true
 
+[history]
+# Keep every session forever (Jake, 2026-11-18). Codex never prunes
+# ~/.codex/sessions rollouts; save-all with no max_bytes keeps
+# history.jsonl untruncated too.
+persistence = "save-all"
+
 [mcp_servers.openaiDeveloperDocs]
 default_tools_approval_mode = "approve"
 url = "https://developers.openai.com/mcp"

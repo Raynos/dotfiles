@@ -153,7 +153,7 @@
   },
   "skipDangerousModePermissionPrompt": true,
   "model": "opus",
-  "cleanupPeriodDays": 180,
+  "cleanupPeriodDays": 36500,
   "effortLevel": "high",
   "askUserQuestionTimeout": "10m",
   "tui": "fullscreen",

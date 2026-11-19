@@ -53,10 +53,12 @@ Note that the preference keys **are** managed, so the app and the repo do fight
 over them: switch model in-app and the next `install.sh` switches it back. The
 fix is to edit `settings.managed.json`, not the live file.
 
-`cleanupPeriodDays: 180` is load-bearing — it sets how long
+`cleanupPeriodDays: 36500` (100 years, i.e. keep forever; Jake, 2026-11-18: "I want to keep all the Claude
+and Code sessions forever") is load-bearing — it sets how long
 `~/.claude/projects/**` transcripts survive, **including the per-subagent
 `<session-id>/subagents/agent-*.jsonl` logs**, which are ~90% of the bytes.
-Unset, Claude Code defaults to 30 days and silently deletes the rest.
+Unset, Claude Code defaults to 30 days and silently deletes the rest. Never set it to `0`: that
+disables transcript persistence rather than keeping them.
 
 The general rule this repo follows: **symlink directories and files only you
 edit; merge files the app writes.**
