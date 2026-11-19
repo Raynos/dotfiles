@@ -703,6 +703,14 @@ export default class Spaces extends View {
   // collects the spaces in this order (see foldered).
   grouped(t, collapsed, seen = []) {
     const rows = this.ordered(), ps = panes();
+    // LOCAL CHANGE (dotfiles): each space's agents (panes running one), for
+    // the count after its name in row(). Counted here, once per draw.
+    const tabOf = new Map(spaces().flatMap((s) => (s.tabs ?? []).map((tb) => [tb.id, s.id])));
+    this.agentsIn = {};
+    for (const p of ps) {
+      const sid = p.program?.agent && tabOf.get(p.tab);
+      if (sid) this.agentsIn[sid] = (this.agentsIn[sid] ?? 0) + 1;
+    }
     const remote = [...new Set([...rows.map(r => r.w.machine).filter(Boolean), ...this.machines.map(m => m.name)])].sort();
     const guests = remote.map((m) => {
       const mine = rows.filter((r) => r.w.machine === m);
@@ -795,6 +803,7 @@ export default class Spaces extends View {
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).text_color(t.dim)))
           .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
           .child(div().flex_shrink(0).max_w(150).truncate().text_color(t.foreground).child(w.name))
+          .when(Boolean(this.agentsIn?.[w.id]), (el) => el.child(div().flex_none().ml(-5).text_color(t.dim).child(`(${this.agentsIn[w.id]})`)))
           .child(g ? this.gitTail(g, tree, w.name, t) : div().flex_1()),
       );
   }

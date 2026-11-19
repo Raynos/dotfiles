@@ -52,7 +52,6 @@ ITEMS=(
   herdr-app/keys.json
   herdr-app/layouts/main-folders.json
   herdr-app/mods/space-folders
-  herdr-app/mods/over9k-usage
   herdr-app/mods/github
   herdr-app/mods/github-button
 )

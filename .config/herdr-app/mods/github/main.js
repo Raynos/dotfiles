@@ -223,6 +223,10 @@ export default class GitHub extends View {
       cx.notify();
     });
     cx.timer.every(60000, (cx) => this.screen === "list" && !this.busy && this.loadAll(cx));
+    // LOCAL CHANGE (dotfiles): a PR's screen takes ~3s from GitHub, so the one
+    // the list rests on is fetched ahead (see prefetch).
+    this.details = new Map(); // key → { d, at, p: the request in flight }
+    cx.timer.every(300, (cx) => this.prefetch(cx));
 
     // Key bindings and `herdr-app do`: github.escape, github.demo, github.next,
     // github.prev, github.reload.
@@ -290,8 +294,12 @@ export default class GitHub extends View {
   async start(cx) {
     this.err = "";
     try {
-      if (!this.demo) await this.findGitHub();
-      else this.login = "sam";
+      // LOCAL CHANGE (dotfiles): with the machine and login known from last
+      // time, the lists start at once and the sign-in check (~0.8s) runs
+      // beside them; a failed request looks again anyway (gh()).
+      if (this.demo) this.login = "sam";
+      else if (this.on != null && this.login) this.findGitHub().catch(() => {});
+      else await this.findGitHub();
     } catch (e) {
       this.err = `Not signed in to GitHub on any machine: ${e?.message ?? e}. Run gh auth login on one.`;
       return cx.notify();
@@ -333,7 +341,46 @@ export default class GitHub extends View {
     this.cache = JSON.parse((await fs.readFile(CACHE, "utf8").catch(() => null)) ?? "{}");
     this.login ||= this.cache.login ?? "";
     for (const t of ["mine", "review"]) this.seed(t, this.cache.lists?.[t]);
+    for (const [k, v] of Object.entries(this.cache.details ?? {})) if (!this.details.has(k)) this.details.set(k, { d: v.d, at: 0 });
     cx.notify();
+  }
+
+  // LOCAL CHANGE (dotfiles): the PR the list has rested on for a tick gets its
+  // screen fetched, unless that's under a minute old, so enter shows it at
+  // once. The newest 20 are kept in the cache file for the next opening,
+  // where they show at once while a fresh copy loads.
+  prefetch(cx) {
+    if (this.demo || this.screen !== "list" || this.pickingRepo()) return;
+    const pr = this.shown?.[this.at];
+    if (!pr) return;
+    if (pr.key !== this.resting) return void (this.resting = pr.key);
+    const c = this.details.get(pr.key);
+    if (c?.p || (c && Date.now() - c.at < 60000)) return;
+    this.fetchDetail(pr).catch(() => {});
+  }
+
+  // One request per PR at a time: a second ask waits on the first (.p).
+  fetchDetail(pr) {
+    const c = this.details.get(pr.key);
+    if (c?.p) return c.p;
+    const p = this.gh({ op: "detail", pr: prID(pr) }).then((d) => {
+      this.details.delete(pr.key);
+      this.details.set(pr.key, { d, at: Date.now() });
+      this.keepDetails();
+      return d;
+    }, (e) => {
+      this.details.set(pr.key, { d: c?.d, at: c?.at ?? 0 });
+      throw e;
+    });
+    this.details.set(pr.key, { d: c?.d, at: c?.at ?? 0, p });
+    return p;
+  }
+
+  keepDetails() {
+    if (this.demo) return;
+    const c = (this.cache ??= {});
+    c.details = Object.fromEntries([...this.details].filter(([, v]) => v.d).slice(-20).map(([k, v]) => [k, { d: v.d }]));
+    fs.writeFile(CACHE, JSON.stringify(c)).catch(() => {});
   }
 
   seed(tab, kept) {
@@ -479,7 +526,10 @@ export default class GitHub extends View {
   openPR(pr, cx, direct = false) {
     this.screen = "pr";
     this.cur = pr;
-    this.detail = null;
+    // LOCAL CHANGE (dotfiles): a fetched-ahead screen shows at once; a fresh one follows.
+    const kept = this.details?.get(pr.key)?.d ?? null;
+    this.detail = kept;
+    if (kept) this.cur = { ...pr, ...kept };
     this.menu = null;
     this.err = this.flash = "";
     this.direct = direct;
@@ -491,9 +541,11 @@ export default class GitHub extends View {
 
   loadDetail(cx) {
     const pr = this.cur;
+    // LOCAL CHANGE (dotfiles): one already on its way (fetched ahead) is
+    // waited on rather than asked for again.
     cx.spawn(async (cx) => {
       try {
-        const d = await this.gh({ op: "detail", pr: prID(pr) });
+        const d = await this.fetchDetail(pr);
         if (this.cur?.key !== pr.key) return;
         this.detail = d;
         this.cur = { ...pr, ...d };

@@ -219,16 +219,6 @@
       "size": {
         "weight": 1
       }
-    },
-    {
-      "id": "over9k-usage-strip",
-      "type": "block",
-      "content": {
-        "mod": "over9k-usage"
-      },
-      "size": {
-        "px": 30
-      }
     }
   ]
 }
