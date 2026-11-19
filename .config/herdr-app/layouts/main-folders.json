@@ -112,13 +112,13 @@
                   }
                 },
                 {
-                  "id": "tab-bar-extras",
+                  "id": "github-button",
                   "type": "block",
                   "size": {
-                    "px": 90
+                    "px": 96
                   },
                   "content": {
-                    "mod": "tab-bar-extras"
+                    "mod": "github-button"
                   }
                 }
               ]

@@ -54,7 +54,7 @@ ITEMS=(
   herdr-app/mods/space-folders
   herdr-app/mods/over9k-usage
   herdr-app/mods/github
-  herdr-app/mods/tab-bar-extras
+  herdr-app/mods/github-button
 )
 
 link_one() {
