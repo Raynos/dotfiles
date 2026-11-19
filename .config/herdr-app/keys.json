@@ -57,7 +57,8 @@
     "ctrl-6": "space.select:6",
     "ctrl-7": "space.select:7",
     "ctrl-8": "space.select:8",
-    "ctrl-9": "space.select:9"
+    "ctrl-9": "space.select:9",
+    "cmd-g": "mod.open:github"
   },
   "terminal": {
     "cmd-f": "terminal.search",
@@ -79,5 +80,8 @@
     "alt-up": "space-folders.prev",
     "ctrl-shift-pagedown": "space-folders.next",
     "ctrl-shift-pageup": "space-folders.prev"
+  },
+  "mod:github": {
+    "escape": "github.escape"
   }
 }

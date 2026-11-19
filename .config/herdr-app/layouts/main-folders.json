@@ -169,6 +169,18 @@
                   "min": 280,
                   "max": 900,
                   "hidden": true
+                },
+                {
+                  "id": "pr-flow",
+                  "type": "block",
+                  "size": {
+                    "px": 340
+                  },
+                  "min": 280,
+                  "max": 600,
+                  "content": {
+                    "mod": "pr-flow"
+                  }
                 }
               ],
               "padding": 8,

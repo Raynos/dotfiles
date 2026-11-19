@@ -53,6 +53,8 @@ ITEMS=(
   herdr-app/layouts/main-folders.json
   herdr-app/mods/space-folders
   herdr-app/mods/over9k-usage
+  herdr-app/mods/pr-flow
+  herdr-app/mods/github
 )
 
 link_one() {
