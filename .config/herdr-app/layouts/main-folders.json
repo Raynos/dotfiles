@@ -94,15 +94,34 @@
           "type": "column",
           "children": [
             {
-              "id": "tabs",
-              "type": "block",
+              "id": "tab-bar",
+              "type": "row",
               "size": {
                 "px": 42
               },
-              "window_drag": true,
-              "content": {
-                "mod": "tabs"
-              }
+              "children": [
+                {
+                  "id": "tabs",
+                  "type": "block",
+                  "size": {
+                    "weight": 1
+                  },
+                  "window_drag": true,
+                  "content": {
+                    "mod": "tabs"
+                  }
+                },
+                {
+                  "id": "tab-bar-extras",
+                  "type": "block",
+                  "size": {
+                    "px": 150
+                  },
+                  "content": {
+                    "mod": "tab-bar-extras"
+                  }
+                }
+              ]
             },
             {
               "id": "work-body",
@@ -158,6 +177,13 @@
                           "content": {
                             "mod": "changes"
                           }
+                        },
+                        {
+                          "id": "pr-flow",
+                          "type": "block",
+                          "content": {
+                            "mod": "pr-flow"
+                          }
                         }
                       ],
                       "active": "files"
@@ -169,18 +195,6 @@
                   "min": 280,
                   "max": 900,
                   "hidden": true
-                },
-                {
-                  "id": "pr-flow",
-                  "type": "block",
-                  "size": {
-                    "px": 340
-                  },
-                  "min": 280,
-                  "max": 600,
-                  "content": {
-                    "mod": "pr-flow"
-                  }
                 }
               ],
               "padding": 8,
