@@ -351,12 +351,16 @@ export default class GitHub extends View {
   // where they show at once while a fresh copy loads.
   prefetch(cx) {
     if (this.demo || this.screen !== "list" || this.pickingRepo()) return;
-    const pr = this.shown?.[this.at];
+    // this.shown is set in render(), which a timer doesn't see: work it out.
+    const pr = this.shownList()[this.at];
     if (!pr) return;
     if (pr.key !== this.resting) return void (this.resting = pr.key);
     const c = this.details.get(pr.key);
     if (c?.p || (c && Date.now() - c.at < 60000)) return;
-    this.fetchDetail(pr).catch(() => {});
+    // In a task of its own: work started bare from a timer isn't driven.
+    cx.spawn(async () => {
+      await this.fetchDetail(pr).catch(() => {});
+    });
   }
 
   // One request per PR at a time: a second ask waits on the first (.p).
@@ -968,7 +972,7 @@ export default class GitHub extends View {
     else if (k === "left" && !this.filter) this.step(-1, cx);
     // LOCAL CHANGE (dotfiles): cmd-enter opens the chosen PR on GitHub, cmd-e
     // shows or hides drafts (plain letters go to the filter).
-    else if (k === "cmd-enter" && !this.pickingRepo() && this.shown?.[this.at]) this.open(this.shown[this.at].url, cx);
+    else if (k === "cmd-enter" && !this.pickingRepo() && this.shownList()[this.at]) this.open(this.shownList()[this.at].url, cx);
     else if (k === "cmd-e") this.toggleDrafts(cx);
     else return false;
     const l = this.lists[this.tab];
@@ -1300,7 +1304,7 @@ export default class GitHub extends View {
       k(["↑", "↓"], "choose", () => {}, "f-ch"),
       k(["enter"], "open", (cx) => this.enter(cx), "f-go"),
       // LOCAL CHANGE (dotfiles): open on GitHub, and the drafts toggle.
-      k(["cmd-enter"], "GitHub", (cx) => { const pr = this.shown?.[this.at]; if (pr && !this.pickingRepo()) this.open(pr.url, cx); }, "f-o"),
+      k(["cmd-enter"], "GitHub", (cx) => { const pr = this.shownList()[this.at]; if (pr && !this.pickingRepo()) this.open(pr.url, cx); }, "f-o"),
       k(["cmd-e"], this.drafts ? "hide drafts" : `show drafts${this.hiddenDrafts() ? ` (${this.hiddenDrafts()})` : ""}`, (cx) => this.toggleDrafts(cx), "f-dr"),
       k(["←", "→"], "tabs", (cx) => this.step(1, cx), "f-tab"),
       k(["esc"], "close", (cx) => this.escape(cx), "f-esc"),
