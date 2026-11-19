@@ -102,6 +102,22 @@ const TABS = [
   { id: "repo", label: "This repo", icon: "pr" },
 ];
 
+// LOCAL CHANGE (dotfiles): the Review requested tab is narrowed to
+//   is:pr review-requested:@me archived:false sort:updated-desc
+//   (author:mixmix OR author:nabsul OR author:rchatrath7 OR author:Raynos)
+//   is:open updated:>@today-1w
+// The search itself is fixed in the herdr-github binary (tabQueries in
+// source.go: open, not archived, review-requested:@me, newest first), so the
+// authors and the week are applied here, to its rows; it's newest first, so
+// paging stops at the first row older than the week.
+const REVIEW_AUTHORS = new Set(["mixmix", "nabsul", "rchatrath7", "raynos"]);
+function reviewSince() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime() - 7 * 24 * 3600 * 1000;
+}
+const inReview = (pr) => REVIEW_AUTHORS.has((pr.author ?? "").toLowerCase()) && pr.updated > reviewSince();
+
 // A ticket's key in a branch or title ("sam/hal-212-merge", "HAL-212: …"), as
 // Recap finds one: its Linear issue, a link to the Linear mod.
 const TICKET = /(?:^|[^a-z0-9])([a-z][a-z0-9]{1,9})-([1-9][0-9]{0,5})(?=[^a-z0-9]|$)/gi;
@@ -166,6 +182,8 @@ export default class GitHub extends View {
     this.repos = null;
     this.sessions = {};
     this.trees = JSON.parse(localStorage.getItem("trees") ?? "{}");
+    // LOCAL CHANGE (dotfiles): drafts are hidden until cmd-e shows them.
+    this.drafts = localStorage.getItem("drafts") === "1";
     this.login = "";
     this.on = localStorage.getItem("on"); // the machine gh is signed in on ("" here)
     this.width = 900;
@@ -349,6 +367,8 @@ export default class GitHub extends View {
         const res = await this.gh({ op: "list", tab, repo: this.repoSpec(), cursor: more ? l.next : "" });
         l.prs = more ? [...l.prs, ...res.prs] : res.prs;
         l.next = res.next;
+        // Review: nothing past the week can match (see inReview), so stop there.
+        if (tab === "review" && l.prs.length && l.prs[l.prs.length - 1].updated <= reviewSince()) l.next = "";
         l.warning = res.warning ?? "";
         l.error = "";
         l.cached = false;
@@ -359,7 +379,27 @@ export default class GitHub extends View {
       l.loading = false;
       l.loaded = true;
       cx.notify();
+      // Review: a page can be all other authors; keep paging through the week.
+      if (tab === "review" && l.next && !l.error) this.load(tab, cx, true);
     });
+  }
+
+  // LOCAL CHANGE (dotfiles): what a tab shows of its rows: no drafts unless
+  // cmd-e showed them, and the Review tab's authors and week (inReview).
+  visible(tab) {
+    return (this.lists[tab]?.prs ?? []).filter((pr) => (this.drafts || !pr.draft) && (tab !== "review" || inReview(pr)));
+  }
+
+  hiddenDrafts() {
+    if (this.drafts) return 0;
+    return (this.lists[this.tab]?.prs ?? []).filter((pr) => pr.draft && (this.tab !== "review" || inReview(pr))).length;
+  }
+
+  toggleDrafts(cx) {
+    this.drafts = !this.drafts;
+    localStorage.setItem("drafts", this.drafts ? "1" : "0");
+    this.at = 0;
+    cx.notify();
   }
 
   reload(cx) {
@@ -388,7 +428,7 @@ export default class GitHub extends View {
 
   shownList() {
     if (this.pickingRepo()) return [];
-    return (this.lists[this.tab]?.prs ?? []).filter((pr) => this.matches(pr));
+    return this.visible(this.tab).filter((pr) => this.matches(pr));
   }
 
   enter(cx) {
@@ -874,6 +914,10 @@ export default class GitHub extends View {
     else if (k === "pageup" && n) (this.at = Math.max(0, this.at - 6)), this.follow();
     else if (k === "right" && !this.filter) this.step(1, cx);
     else if (k === "left" && !this.filter) this.step(-1, cx);
+    // LOCAL CHANGE (dotfiles): cmd-enter opens the chosen PR on GitHub, cmd-e
+    // shows or hides drafts (plain letters go to the filter).
+    else if (k === "cmd-enter" && !this.pickingRepo() && this.shown?.[this.at]) this.open(this.shown[this.at].url, cx);
+    else if (k === "cmd-e") this.toggleDrafts(cx);
     else return false;
     const l = this.lists[this.tab];
     if (!this.pickingRepo() && l?.next && this.at >= n - 4) this.load(this.tab, cx, true);
@@ -958,7 +1002,7 @@ export default class GitHub extends View {
         const on = tb.id === this.tab;
         const l = this.lists[tb.id];
         const label = this.tabLabel(tb, this.width < 700);
-        const n = l?.loaded && (tb.id !== "repo" || this.repo) ? `${l.prs.length}${l.next ? "+" : ""}` : "";
+        const n = l?.loaded && (tb.id !== "repo" || this.repo) ? `${this.visible(tb.id).length}${l.next ? "+" : ""}` : "";
         return h_flex().id(`tab-${tb.id}`).flex_none().h(28).px(10).gap(7).items_center().rounded(7).cursor_pointer().text_size(12.5)
           .when(on, (el) => el.bg(o.raised).shadow_sm())
           .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
@@ -1106,8 +1150,12 @@ export default class GitHub extends View {
             .child(icon("back", o.muted, 13))
             .child(div().text_size(12).text_color(o.muted).child(from)))
           .when(Boolean(stateWord), (el) => el.child(chip(o, "state", [icon(look.icon, look.color, 12), stateWord], { color: look.color })))
-          .child(div().font_family(MONO).text_size(12.5).text_color(o.muted).child(`#${pr.number}`))
-          .child(div().text_size(12.5).text_color(o.dim).child(pr.repo))
+          // LOCAL CHANGE (dotfiles): the number and repo link to the PR on GitHub.
+          .child(h_flex().id("gh-link").gap(8).items_center().px(4).rounded(5).cursor_pointer().hover((s) => s.bg(o.raised))
+            .on_click((_e, cx) => this.open(pr.url, cx))
+            .child(div().font_family(MONO).text_size(12.5).text_color(o.accent).child(`#${pr.number}`))
+            .child(div().text_size(12.5).text_color(o.muted).child(pr.repo))
+            .child(icon("external", o.dim, 12)))
           .child(div().flex_1())
           .when(Boolean(pr.updated), (el) => el.child(div().text_size(12).text_color(o.dim).child(`updated ${ago(pr.updated, now)}`))),
       )
@@ -1199,6 +1247,9 @@ export default class GitHub extends View {
     return [
       k(["↑", "↓"], "choose", () => {}, "f-ch"),
       k(["enter"], "open", (cx) => this.enter(cx), "f-go"),
+      // LOCAL CHANGE (dotfiles): open on GitHub, and the drafts toggle.
+      k(["cmd-enter"], "GitHub", (cx) => { const pr = this.shown?.[this.at]; if (pr && !this.pickingRepo()) this.open(pr.url, cx); }, "f-o"),
+      k(["cmd-e"], this.drafts ? "hide drafts" : `show drafts${this.hiddenDrafts() ? ` (${this.hiddenDrafts()})` : ""}`, (cx) => this.toggleDrafts(cx), "f-dr"),
       k(["←", "→"], "tabs", (cx) => this.step(1, cx), "f-tab"),
       k(["esc"], "close", (cx) => this.escape(cx), "f-esc"),
     ];

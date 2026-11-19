@@ -115,7 +115,7 @@
                   "id": "tab-bar-extras",
                   "type": "block",
                   "size": {
-                    "px": 150
+                    "px": 90
                   },
                   "content": {
                     "mod": "tab-bar-extras"
@@ -175,14 +175,12 @@
                           "id": "changes",
                           "type": "block",
                           "content": {
-                            "mod": "changes"
-                          }
-                        },
-                        {
-                          "id": "pr-flow",
-                          "type": "block",
-                          "content": {
-                            "mod": "pr-flow"
+                            "mod": "gitview",
+                            "props": {
+                              "replaces": {
+                                "mod": "changes"
+                              }
+                            }
                           }
                         }
                       ],
