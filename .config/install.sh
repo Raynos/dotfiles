@@ -52,7 +52,6 @@ ITEMS=(
   herdr-app/keys.json
   herdr-app/layouts/main-folders.json
   herdr-app/mods/space-folders
-  herdr-app/mods/insights
   herdr-app/mods/over9k-usage
 )
 
@@ -88,22 +87,6 @@ echo "Linking config into $CONFIG_DIR"
 for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
-
-# The insights mod (GaganSD/coding-agent-toolkit herdr-insights) runs its helpers
-# with the Node named in runtime.json. Herdr is a GUI app without nvm on its PATH,
-# so write this machine's absolute node path; it's per machine, so gitignored.
-# Upstream's own installer does the same, but it refuses symlinked layouts and mods.
-# The path keeps working after an `nvm install` (old versions stay on disk);
-# re-run this after `nvm uninstall` of that version.
-insights_runtime="$REPO_DIR/herdr-app/mods/insights/runtime.json"
-if node_bin="$(command -v node)"; then
-  printf '{"node":"%s"}\n' "$node_bin" > "$insights_runtime"
-  mkdir -p "$CONFIG_DIR/herdr-app/data/insights"
-  chmod 700 "$CONFIG_DIR/herdr-app/data/insights"
-  echo "ok    herdr-app/mods/insights/runtime.json -> $node_bin"
-else
-  echo "skip  herdr-app/mods/insights/runtime.json (no node on PATH)"
-fi
 
 # herdr reads config.toml at startup; a running server needs a nudge to pick up
 # a freshly linked file. Harmless when no server is running.
