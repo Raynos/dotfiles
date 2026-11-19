@@ -51,3 +51,33 @@ except Exception:
     pass
 ' "$tag" >/dev/null 2>&1 || true
 fi
+
+# The Herdr desktop app (herdr-app; terminals run in herdr-core, which sets
+# $HC_TERMINAL_ID). Its tabs have no agents-panel token, but an unnamed tab is
+# called by its number, and the app's Go-to picker (cmd-p) lists agents by tab
+# name: every agent showed as "1" (Jake, 2026-11-19: "why are these things 1").
+# So the tab takes the tag while its name is still a number (nobody named it) or
+# is the tag this session set last time (kept in <session>.tag). A name the
+# person gave it stays, and so does one another agent in the same tab set first.
+if [ -n "${HC_TERMINAL_ID:-}" ] && command -v herdr-app >/dev/null 2>&1; then
+  tag=$(printf '%s' "$2" | tr '\n\t' '  ' | sed -E 's/  +/ /g; s/^ +//; s/ +$//' | cut -c1-24)
+  last_file="$dir/$CLAUDE_CODE_SESSION_ID.tag"
+  last=$(cat "$last_file" 2>/dev/null || true)
+  herdr-app ls 2>/dev/null | /usr/bin/python3 -c '
+import json, subprocess, sys
+term, tag, last = sys.argv[1:4]
+try:
+    for s in json.load(sys.stdin)["spaces"]:
+        for t in s["tabs"]:
+            if any(x.get("terminal") == term for x in t.get("terminals", [])):
+                name = t.get("name", "")
+                if name != tag and (name.isdigit() or (last and name == last)):
+                    subprocess.run(["herdr-app", "do", "tab.rename", json.dumps({"id": t["id"], "name": tag})], capture_output=True)
+                raise SystemExit
+except SystemExit:
+    pass
+except Exception:
+    pass
+' "$HC_TERMINAL_ID" "$tag" "$last" >/dev/null 2>&1 || true
+  printf '%s' "$tag" > "$last_file"
+fi
