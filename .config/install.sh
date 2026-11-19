@@ -44,7 +44,9 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 # herdr-app 0.1.16 (`herdr-app do app.zoom_in` changed the repo file's zoom; the
 # repo file's inode changed, the link didn't). Re-verify after a major upgrade.
 # A mod linked as a folder doesn't hot-reload when its files change (upstream
-# space-folders README): restart Herdr after editing it.
+# space-folders README). Re-creating its link reloads it with no restart
+# (verified 2026-11-19 on herdr-app 0.1.16):
+#   rm ~/.config/herdr-app/mods/<name> && ./.config/install.sh
 ITEMS=(
   herdr/config.toml
   herdr/herdr-cwd-labels.sh
