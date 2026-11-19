@@ -29,6 +29,14 @@ rl=$(printf '%s' "$input" | jq -c '.rate_limits // empty' 2>/dev/null)
 if [ -n "$rl" ]; then
   printf '%s' "$input" | jq -c '{cached_at: now, model: (.model.display_name // "unknown"), rate_limits}' \
     > "$HOME/.claude/usage-cache.json" 2>/dev/null
+  # Same limits for the Herdr app's over9k-usage strip, in the shape its own
+  # optional status line writes ({at, five_hour, seven_day}). Writing it here keeps
+  # ccstatusline as the status line, and hides the strip's "Show its limits" link,
+  # which would replace statusLine in ~/.claude/settings.json.
+  o9k="$HOME/.cache/over9k/usage"
+  mkdir -p "$o9k" \
+    && printf '%s' "$rl" | jq -c '{at: (now | floor), five_hour, seven_day}' > "$o9k/claude.json.tmp" 2>/dev/null \
+    && mv "$o9k/claude.json.tmp" "$o9k/claude.json" || rm -f "$o9k/claude.json.tmp"
 fi
 
 model=$(printf '%s' "$input" | jq -r '.model.display_name // "unknown"' | tr ' ' '-')

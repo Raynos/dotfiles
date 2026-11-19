@@ -17,3 +17,4 @@ __pycache__/
 .config/herdr-app/mods/*/gpui-kit.d.ts
 .config/herdr-app/mods/*/herdr.d.ts
 .config/herdr-app/mods/*/jsconfig.json
+.config/herdr-app/mods/insights/runtime.json
