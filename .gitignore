@@ -12,3 +12,8 @@ sublime/User/Package Control.cache
 markdown/
 **/.claude/settings.local.json
 __pycache__/
+
+# Written into every mod folder by the Herdr app; regenerated on start
+.config/herdr-app/mods/*/gpui-kit.d.ts
+.config/herdr-app/mods/*/herdr.d.ts
+.config/herdr-app/mods/*/jsconfig.json

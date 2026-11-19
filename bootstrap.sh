@@ -18,6 +18,7 @@ function doIt() {
     --exclude ".gitignore" \
     --exclude ".DS_Store" \
     --exclude ".config/herdr/" \
+    --exclude ".config/herdr-app/" \
     --exclude "pnpm/" \
     --exclude "agent-browser/" \
     --exclude "cursor/" \

@@ -33,9 +33,25 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 #
 #   ls -la ~/.config/herdr/config.toml   # still a symlink?
 #
+#
+# herdr-app (the Herdr desktop app) keeps the same split: only what's ours is
+# linked. Its own files there (AGENTS.md, *.d.ts, the shipped layouts/ and mods/,
+# frame/, icons/, data/, shared.json, view.json, layouts/.state/) are rewritten by
+# the app on every start and stay local. Personal layouts and mods are ours.
+# settings.json and keys.json are written by the app's Settings screen too. That
+# is safe: herdr-app resolves the link and renames its temp file over the TARGET,
+# so the symlink stays and the write lands in the repo. Verified 2026-11-19 on
+# herdr-app 0.1.16 (`herdr-app do app.zoom_in` changed the repo file's zoom; the
+# repo file's inode changed, the link didn't). Re-verify after a major upgrade.
+# A mod linked as a folder doesn't hot-reload when its files change (upstream
+# space-folders README): restart Herdr after editing it.
 ITEMS=(
   herdr/config.toml
   herdr/herdr-cwd-labels.sh
+  herdr-app/settings.json
+  herdr-app/keys.json
+  herdr-app/layouts/main-folders.json
+  herdr-app/mods/space-folders
 )
 
 link_one() {
