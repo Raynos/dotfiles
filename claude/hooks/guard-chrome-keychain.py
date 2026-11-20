@@ -7,6 +7,7 @@ that overrides them with --args or AGENT_BROWSER_ARGS must keep --mute-audio. Ex
 any parse error. Scripts run by name (node x.mjs) are not read here; repo static checks cover those.
 Undo: remove the hook entry."""
 import json, re, sys
+from urllib.parse import parse_qs, urlsplit
 
 FLAGS = ("--use-mock-keychain", "--password-store=basic", "--mute-audio")
 BROWSER = re.compile(r"ms-playwright|agent-browser/browsers|Google Chrome for Testing|chrome-headless-shell|"
@@ -15,6 +16,21 @@ LAUNCH = re.compile(r"--user-data-dir|--remote-debugging-port|--headless|launchP
                     r"\bexecFile(Sync)?\(|\blaunchServer\(")
 READONLY = re.compile(r"^\s*(?:sudo\s+)?(?:grep|egrep|rg|ps|ls|cat|sed|awk|head|tail|find|git|pkill|kill|pgrep|wc|echo|"
                       r"printf|open\s+-R|stat|du|rm|mv|cp|tee|test|\[)\b")
+
+
+def hosted_game_urls(command):
+    for address in re.findall(r"https?://[^\s\"'<>]+", command, re.I):
+        url = urlsplit(address)
+        host = (url.hostname or "").lower()
+        if host == "wildshard.io" or host.endswith(".wildshard.io"):
+            yield url
+
+
+def missing_actor(command):
+    user_agent = re.search(r"(?:--user-agent(?:=|\s+)|AGENT_BROWSER_USER_AGENT=)(?:\"([^\"]*)\"|'([^']*)'|(\S+))", command)
+    if user_agent and any(value and "WildshardAgent/1" in value.split() for value in user_agent.groups()):
+        return False
+    return any(not parse_qs(url.query).get("agent") for url in hosted_game_urls(command))
 
 
 def verdict(cmd):
@@ -28,10 +44,16 @@ def verdict(cmd):
         sets = re.match(r"\s*(?:export\s+)?(?:\w+=\S*\s+)*AGENT_BROWSER_ARGS=", seg)
         if (runs and re.search(r"(?:^|\s)--args\b|\bAGENT_BROWSER_ARGS=", seg) or sets) and "--mute-audio" not in seg:
             return "agent-browser --args / AGENT_BROWSER_ARGS replaces the config's --mute-audio and lacks it"
+        if runs and re.search(r"(?:--user-agent\b|\bAGENT_BROWSER_USER_AGENT=)", seg) and missing_actor(seg):
+            return "a Wildshard browser user-agent override needs WildshardAgent/1 or an ?agent= navigation"
     if not (BROWSER.search(cmd) and LAUNCH.search(cmd)):
         return None
     missing = [f for f in FLAGS if f not in cmd]
-    return ("browser launch without " + " and ".join(missing)) if missing else None
+    if missing:
+        return "browser launch without " + " and ".join(missing)
+    if missing_actor(cmd):
+        return "a raw browser launch at Wildshard needs WildshardAgent/1 or an ?agent= navigation"
+    return None
 
 
 try:

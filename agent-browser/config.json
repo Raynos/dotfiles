@@ -1,5 +1,6 @@
 {
   "headed": false,
+  "userAgent": "WildshardAgent/1 (agent-browser)",
   "idleTimeout": "5m",
   "args": "--mute-audio"
 }

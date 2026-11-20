@@ -22,6 +22,17 @@ CASES = [
     ('export AGENT_BROWSER_ARGS=--use-angle=metal', 2),
     ('python3 -c "print(1)" # an agent-browser --args override must keep the mute', 0),
 ]
+SAFE_FLAGS = ' --headless=new --use-mock-keychain --password-store=basic --mute-audio'
+CASES += [
+    (BIN + SAFE_FLAGS + ' https://staging.wildshard.io/', 2),
+    (BIN + SAFE_FLAGS + " 'https://staging.wildshard.io/?agent=proof'", 0),
+    (BIN + SAFE_FLAGS + ' https://play.wildshard.io/?agent=', 2),
+    (BIN + SAFE_FLAGS + ' https://staging.wildshard.io.example.com/', 0),
+    (BIN + SAFE_FLAGS + ' --user-agent="Chrome WildshardAgent/1 (proof)" https://play.wildshard.io/', 0),
+    ('agent-browser --user-agent Chrome open https://staging.wildshard.io/', 2),
+    ('agent-browser --user-agent Chrome open https://staging.wildshard.io/?agent=proof', 0),
+    ('agent-browser open https://staging.wildshard.io/', 0),
+]
 bad = 0
 for cmd, want in CASES:
     p = subprocess.run([sys.executable, H], input=json.dumps({"tool_input": {"command": cmd}}), text=True, capture_output=True)
