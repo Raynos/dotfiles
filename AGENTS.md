@@ -1,7 +1,7 @@
 # AGENTS.md
 
- - Agents/claude/cursor/codex never edit GLOBAL_AGENTS.md, 
-    AGENTS.md / the root README.md, that's humans only.
+ - Agents/claude/cursor/codex never edit AGENTS.md / 
+    the root README.md, that's humans only.
  - Agents put proposed AGENTS.md changes in AGENTS_SUGGEST.md; 
     the human applies them and deletes it.
 
@@ -23,7 +23,7 @@ Git hygiene
 
 Shared checkout
 
- - Many agents work here, git add only for new files, use git commit -- <filespec>
+ - Many agents work here, git add only for new files, use git commit -- <file>
  - Never git add -A / . / -u, never git commit -a, never bare git commit.
  - Never stash, checkout, restore or delete what you didn't author.
 
