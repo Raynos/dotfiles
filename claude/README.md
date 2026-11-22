@@ -18,7 +18,7 @@ Runtime state in `~/.claude` is never touched.
 
 | Item                       | What it is                                              |
 | -------------------------- | ------------------------------------------------------- |
-| `CLAUDE.md`                | Global instructions for all sessions                    |
+| `../GLOBAL_AGENTS.md`      | The one global rules file, linked as `~/.claude/CLAUDE.md` (and as `~/.codex/AGENTS.md`) |
 | `settings.managed.json`    | The subset of `settings.json` this repo owns (merged, not linked) |
 | `set-label.sh`             | Sets the status-line goal label (+ herdr tag)           |
 | `session-label-remind.sh`  | `UserPromptSubmit` hook: nudge to refresh a stale label |
@@ -26,7 +26,7 @@ Runtime state in `~/.claude` is never touched.
 | `usage-log.sh`             | Hourly cron (`17 * * * *`, symlinked to `~/.claude/usage-log.sh`): appends OpenUsage limits per account + the active login email to `~/.claude/usage-log/<ISO week>.jsonl` |
 | `hooks/`                   | `herdr-agent-state.sh`, `clear-herdr-tag.sh`            |
 | `skills/herdr/`            | The custom `herdr` skill                                |
-| `sounds/`                  | Notification-sound scripts + `warcraft3-en/` wav assets |
+| `sounds/`                  | Notification-sound scripts + `warcraft3-en/` wav assets; see [sounds/README.md](sounds/README.md) |
 
 ### Why `settings.json` is merged, not symlinked
 

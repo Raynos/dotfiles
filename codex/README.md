@@ -6,9 +6,8 @@ defaults, and install/check the shared tool capability inventory.
 
 ## What is managed
 
-- `AGENTS.md` — a link to `../agent-common/global-rules.md`, the global rules
-  both tools read; `~/.claude/CLAUDE.md` imports the same file and keeps only
-  the Claude-only parts (status line, sounds).
+- `~/.codex/AGENTS.md` — a link to `../GLOBAL_AGENTS.md`, the one global rules
+  file; `~/.claude/CLAUDE.md` links to the same file.
 - `hooks.json` — the Codex Herdr `SessionStart` adapter, plus the PreToolUse
   guards shared with Claude Code: `dcg`, `guard-chrome-keychain.py` and
   `guard-rm.py` (the scripts live in `../claude/hooks/`). Sounds, the session

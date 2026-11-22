@@ -2,7 +2,7 @@
 #
 # Install sirmalloc/ccstatusline (Claude Code's status line renderer) as a user-level pnpm global,
 # never npm -g, which installs per node version and vanishes on every nvm upgrade
-# (agent-common/global-rules.md), and link its config from this repo.
+# (GLOBAL_AGENTS.md, bin/node-global-doctor), and link its config from this repo.
 #
 # claude/settings.managed.json points statusLine at `ccstatusline`. The first widget runs
 # ~/.claude/statusline.sh, so the set-label.sh goal and the usage cache keep working.
