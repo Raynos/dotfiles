@@ -1,13 +1,11 @@
 # Codex tooling
 
 Curated personal Codex configuration, parallel to `../claude/`. Run
-`./install.sh` to link global guidance and hooks, apply the managed scalar
+`./install.sh` to link hooks and safety rules, apply the managed scalar
 defaults, and install/check the shared tool capability inventory.
 
 ## What is managed
 
-- `~/.codex/AGENTS.md` — a link to `../GLOBAL_AGENTS.md`, the one global rules
-  file; `~/.claude/CLAUDE.md` links to the same file.
 - `hooks.json` — the Codex Herdr `SessionStart` adapter, plus the PreToolUse
   guards shared with Claude Code: `dcg`, `guard-chrome-keychain.py` and
   `guard-rm.py` (the scripts live in `../claude/hooks/`). Sounds, the session

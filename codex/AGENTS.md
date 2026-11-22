@@ -1,1 +1,0 @@
-../agent-common/global-rules.md

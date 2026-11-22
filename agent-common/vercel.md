@@ -1,7 +1,5 @@
 # Vercel notes for agents
 
-The one-line rule is in `GLOBAL_AGENTS.md`. This is the detail behind it.
-
 ## REST API token
 
  - Some things have no CLI flag, such as renaming a project or changing deployment protection.

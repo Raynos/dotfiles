@@ -2,7 +2,7 @@
 #
 # Install Vercel's agent-browser (browser automation CLI for agents: Chrome via CDP, `-p ios` drives
 # iOS simulators, `skills get core` for usage) as a user-level pnpm global — never npm -g, which
-# installs per node version and vanishes on every nvm upgrade (GLOBAL_AGENTS.md, bin/node-global-doctor).
+# installs per node version and vanishes on every nvm upgrade (bin/node-global-doctor).
 #
 # Idempotent: install only when the pinned version is missing, then link managed files.
 # Update procedure: bump version, refresh the upstream skill, re-run ./install.sh.

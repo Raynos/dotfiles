@@ -18,7 +18,6 @@ Runtime state in `~/.claude` is never touched.
 
 | Item                       | What it is                                              |
 | -------------------------- | ------------------------------------------------------- |
-| `../GLOBAL_AGENTS.md`      | The one global rules file, linked as `~/.claude/CLAUDE.md` (and as `~/.codex/AGENTS.md`) |
 | `settings.managed.json`    | The subset of `settings.json` this repo owns (merged, not linked) |
 | `set-label.sh`             | Sets the status-line goal label (+ herdr tag)           |
 | `session-label-remind.sh`  | `UserPromptSubmit` hook: nudge to refresh a stale label |

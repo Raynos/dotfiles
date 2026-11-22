@@ -15,7 +15,6 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOTFILES_DIR="$(cd "$REPO_DIR/.." && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 BACKUP_DIR="$CLAUDE_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 
@@ -37,15 +36,13 @@ ITEMS=(
   sounds
 )
 
-# link_one <item> [source]: link ~/.claude/<item> to the same path in this dir,
-# or to [source] when the real file lives elsewhere in the repo.
 link_one() {
   local item="$1"
-  local src="${2:-$REPO_DIR/$item}"
+  local src="$REPO_DIR/$item"
   local dst="$CLAUDE_DIR/$item"
 
   if [ ! -e "$src" ]; then
-    echo "skip (missing in repo): ${src#$DOTFILES_DIR/}"
+    echo "skip (missing in repo): $item"
     return
   fi
 
@@ -73,17 +70,9 @@ for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
 
-# ~/.claude/CLAUDE.md is the one global rules file, GLOBAL_AGENTS.md at the repo
-# root; codex/install.sh links ~/.codex/AGENTS.md to the same file. It is not
-# called claude/CLAUDE.md on purpose: Claude Code loads any CLAUDE.md below the
-# working directory as project rules, so that file was loaded a second time
-# whenever a dotfiles session read something in claude/.
-# An empty rules file would silently drop every global rule, so it is not linked.
-if [ -s "$DOTFILES_DIR/GLOBAL_AGENTS.md" ]; then
-  link_one CLAUDE.md "$DOTFILES_DIR/GLOBAL_AGENTS.md"
-else
-  echo "skip  CLAUDE.md (GLOBAL_AGENTS.md is missing or empty)"
-fi
+# There is no global rules file (~/.claude/CLAUDE.md) on purpose: it grew to 9KB
+# loaded into every session. The one rule worth keeping, setting the session
+# label, is injected by session-label-remind.sh when the label is unset or stale.
 
 # Merge the managed subset of settings.json in place, leaving app-owned keys
 # (model, theme, enabledPlugins, ...) exactly as Claude Code left them.
