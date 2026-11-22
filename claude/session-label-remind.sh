@@ -28,5 +28,7 @@ fi
 
 mkdir -p "$dir"
 touch "$remind"
-echo "[status-line reminder] This session's status-line label is unset or stale. If the high-level goal is clear, set it (<=50 chars, PR-title style): ~/.claude/set-label.sh \"your goal\". Skip if the goal is still ambiguous."
+# The usage and the style are spelled out here because this line is what the
+# agent actually reads: set-label.sh needs BOTH arguments and exits 2 without them.
+echo "[status-line reminder] This session's status-line label is unset or stale. If the high-level goal is clear, set it: ~/.claude/set-label.sh \"<=50 char goal, imperative, PR-title style>\" \"<=24 char tag>\" (both arguments are required). It is the headline, not a progress log. Skip if the goal is still ambiguous."
 exit 0
