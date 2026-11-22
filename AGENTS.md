@@ -11,7 +11,6 @@ What this repo is
      so edit here, never the ~ copy.
  - Each tool has a dir with its own install.sh (
     claude/, codex/, .config/, agents/, pnpm/ ...); bootstrap.sh runs them all.
- - Rules for every agent: GLOBAL_AGENTS.md 
  - Herdr app mods: .config/herdr-app/mods/. Reload one with: 
     rm ~/.config/herdr-app/mods/<name> && ./.config/install.sh
 
