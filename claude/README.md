@@ -41,10 +41,11 @@ So the repo owns a subset of top-level keys in `settings.managed.json` —
 `permissions`, `hooks`, `statusLine`, `extraKnownMarketplaces`,
 `skipDangerousModePermissionPrompt`, `cleanupPeriodDays`, `model`,
 `effortLevel`, `askUserQuestionTimeout`, `tui`, `theme`,
-`preferredNotifChannel`, `env` (which sets `CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000`, so
-every session and subagent compacts at 400k tokens instead of near 1M; `.bash_profile` exports the same value, change
-both together) — and `scripts/apply-managed-settings.mjs`
-merges just those into the live file, replacing each wholesale. Everything else
+`preferredNotifChannel`, `env` (which sets
+`CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000`, so every session and subagent compacts
+at 400k tokens instead of near 1M; `.bash_profile` exports the same value,
+change both together) — and `scripts/apply-managed-settings.mjs` merges just
+those into the live file, replacing each wholesale. Everything else
 (`enabledPlugins`, `autoMode`, and any key the app adds later) stays app-owned
 and is never touched. `--check` reports drift without writing.
 
@@ -52,12 +53,13 @@ Note that the preference keys **are** managed, so the app and the repo do fight
 over them: switch model in-app and the next `install.sh` switches it back. The
 fix is to edit `settings.managed.json`, not the live file.
 
-`cleanupPeriodDays: 36500` (100 years, i.e. keep forever; Jake, 2026-11-18: "I want to keep all the Claude
-and Code sessions forever") is load-bearing — it sets how long
-`~/.claude/projects/**` transcripts survive, **including the per-subagent
-`<session-id>/subagents/agent-*.jsonl` logs**, which are ~90% of the bytes.
-Unset, Claude Code defaults to 30 days and silently deletes the rest. Never set it to `0`: that
-disables transcript persistence rather than keeping them.
+`cleanupPeriodDays: 36500` (100 years, i.e. keep forever; Jake, 2026-11-18: "I
+want to keep all the Claude and Code sessions forever") is load-bearing — it
+sets how long `~/.claude/projects/**` transcripts survive, **including the
+per-subagent `<session-id>/subagents/agent-*.jsonl` logs**, which are ~90% of
+the bytes. Unset, Claude Code defaults to 30 days and silently deletes the rest.
+Never set it to `0`: that disables transcript persistence rather than keeping
+them.
 
 The general rule this repo follows: **symlink directories and files only you
 edit; merge files the app writes.**
@@ -65,10 +67,11 @@ edit; merge files the app writes.**
 ## What's NOT tracked (deliberately)
 
 Everything else in `~/.claude` is machine-local runtime state, not tooling, and
-must never enter git: `.claude.json` (session/project state, auth), `history.jsonl`,
-`projects/`, `sessions/`, `session-env/`, `shell-snapshots/`, `todos/`, `tasks/`,
-`jobs/`, `backups/`, `cache/`, `daemon*`, `debug/`, `file-history/`, `paste-cache/`,
-`stats-cache.json`, and installed plugin CODE under `plugins/cache|marketplaces|data`.
+must never enter git: `.claude.json` (session/project state, auth),
+`history.jsonl`, `projects/`, `sessions/`, `session-env/`, `shell-snapshots/`,
+`todos/`, `tasks/`, `jobs/`, `backups/`, `cache/`, `daemon*`, `debug/`,
+`file-history/`, `paste-cache/`, `stats-cache.json`, and installed plugin CODE
+under `plugins/cache|marketplaces|data`.
 
 `settings.local.json` is a tiny per-machine permission allowlist that Claude
 rewrites automatically — left machine-local on purpose.
@@ -78,8 +81,8 @@ rewrites automatically — left machine-local on purpose.
 Claude Code has a headless plugin CLI (`claude plugin list/install`,
 `claude plugin marketplace add`) — the exact analog of VS Code's
 `code --list-extensions` / `code --install-extension`. So plugins sync the same
-way VS Code extensions do in a dotfiles repo: **version the derived list, not the
-install dir.**
+way VS Code extensions do in a dotfiles repo: **version the derived list, not
+the install dir.**
 
 - **`plugins.json`** — the committed list (marketplace `name`+`repo`, plugin
   `id`+`scope`), derived from the CLI. This is the source of truth.

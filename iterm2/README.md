@@ -17,8 +17,8 @@ points iTerm2 at this directory; restart iTerm2 afterwards.
   safe to edit while it runs (the plist is not: iTerm2 rewrites it on every
   auto-save, clobbering hand edits). Each declares a plist profile as
   `Dynamic Profile Parent Name` and overrides colors only.
-  - `Wildshard.json` — the `wildshard` herdr session. Late afternoon in a
-    pine forest, lifted from the game's `progress/004-late-afternoon-lighting.png`:
+  - `Wildshard.json` — the `wildshard` herdr session. Late afternoon in a pine
+    forest, lifted from the game's `progress/004-late-afternoon-lighting.png`:
     forest-floor umber bg `#1a1410`, hazy parchment fg `#dcd3bf`, sun-amber
     cursor `#f0a830`, olive-grass green `#7a9a3c`, haze-sky blue `#5d8aa8`,
     pine-shade water cyan `#4f9a8a`, rust red `#c25a3c`, heather magenta

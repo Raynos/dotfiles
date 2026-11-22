@@ -3,7 +3,8 @@
 `SKILL.md` here is the **canonical upstream herdr agent guide**, installed
 verbatim so Claude Code sessions know how to drive herdr from inside a pane.
 
-- **Source:** https://raw.githubusercontent.com/ogulcancelik/herdr/master/SKILL.md
+- **Source:**
+  https://raw.githubusercontent.com/ogulcancelik/herdr/master/SKILL.md
 - **Do not hand-edit `SKILL.md`** — it is replaced wholesale on refresh.
 - **Refresh it (keeps it from going stale):**
 
@@ -13,9 +14,9 @@ verbatim so Claude Code sessions know how to drive herdr from inside a pane.
 
 herdr ships no official skill-install command (re-verified 2026-07-26 against
 herdr 0.7.5 — `herdr integration install <agent>` only installs the lifecycle
-hook, not the skill), so `update.sh` is the recommended way: it fetches upstream,
-sanity-checks that it still starts with valid frontmatter, and swaps it in
-atomically (leaving the old copy untouched on any failure).
+hook, not the skill), so `update.sh` is the recommended way: it fetches
+upstream, sanity-checks that it still starts with valid frontmatter, and swaps
+it in atomically (leaving the old copy untouched on any failure).
 
 **Re-run `update.sh` after every `herdr update`.** The skill goes stale fast and
 silently. Between 0.6.x and 0.7.5 the guide was rewritten (300 → 195 lines) and

@@ -1,9 +1,10 @@
 # dcg (Destructive Command Guard)
 
-Pinned install of [dcg](https://github.com/Dicklesworthstone/destructive_command_guard),
-a Rust `PreToolUse` hook that blocks destructive shell commands before an agent
-can run them. It reads the proposed command as JSON on stdin and returns a
-verdict — it never executes anything itself.
+Pinned install of
+[dcg](https://github.com/Dicklesworthstone/destructive_command_guard), a Rust
+`PreToolUse` hook that blocks destructive shell commands before an agent can run
+them. It reads the proposed command as JSON on stdin and returns a verdict — it
+never executes anything itself.
 
 Agents here run with `defaultMode: bypassPermissions`, so this is a real gate,
 not a second opinion. The scope is deliberately narrow (see *What's NOT
@@ -102,7 +103,8 @@ recovery, and dcg cannot tell "create a new file" from "truncate a real one":
 
 What still works, cheapest first:
 
-- **relative paths** — `echo x > ./foo.txt` (allowed; only absolute/`~` targets are guarded)
+- **relative paths** — `echo x > ./foo.txt` (allowed; only absolute/`~` targets
+  are guarded)
 - **append** — `echo x >> ~/projects/foo.txt`
 - **literal temp** — `echo x > /tmp/…` or `/private/tmp/…`
 - **the Write/Edit tools** — they don't go through Bash, so no hook fires. This
