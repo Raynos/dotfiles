@@ -91,6 +91,14 @@ for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
 
+# herdr-app writes the window zoom into settings.json on every zoom in / out,
+# and each one showed up in this repo as a change to commit. The clean filter
+# named in herdr-app/.gitattributes drops that key from what git sees, so zoom
+# stays per machine and the rest of the file stays tracked. It needs jq; without
+# jq git falls back to the plain file and zoom changes show up again.
+git -C "$REPO_DIR" config filter.herdr-app-zoom.clean "jq --indent 2 'del(.zoom)'" \
+  || echo "note: could not set the herdr-app zoom filter (not a git checkout?)"
+
 # herdr reads config.toml at startup; a running server needs a nudge to pick up
 # a freshly linked file. Harmless when no server is running.
 if command -v herdr >/dev/null; then

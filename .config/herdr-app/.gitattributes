@@ -1,0 +1,4 @@
+# herdr-app saves the window zoom into settings.json on every zoom in / out.
+# This filter (configured by ../install.sh) hides that one key from git, so
+# zooming no longer shows up as a change. The rest of the file is still tracked.
+settings.json filter=herdr-app-zoom
