@@ -38,11 +38,15 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 # linked. Its own files there (AGENTS.md, *.d.ts, the shipped layouts/ and mods/,
 # frame/, icons/, data/, shared.json, view.json, layouts/.state/) are rewritten by
 # the app on every start and stay local. Personal layouts and mods are ours.
-# settings.json and keys.json are written by the app's Settings screen too. That
-# is safe: herdr-app resolves the link and renames its temp file over the TARGET,
-# so the symlink stays and the write lands in the repo. Verified 2026-11-19 on
-# herdr-app 0.1.16 (`herdr-app do app.zoom_in` changed the repo file's zoom; the
-# repo file's inode changed, the link didn't). Re-verify after a major upgrade.
+# settings.json stays local as well: the app saves the window zoom into it on
+# every zoom in / out, which showed up here as a change each time, and the rest
+# of it was defaults.
+# keys.json is written by the app's Settings screen too. That is safe: herdr-app
+# resolves the link and renames its temp file over the TARGET, so the symlink
+# stays and the write lands in the repo. Verified 2026-11-19 on herdr-app 0.1.16
+# with settings.json, which was linked then (`herdr-app do app.zoom_in` changed
+# the repo file; its inode changed, the link didn't). Re-verify after a major
+# upgrade.
 # A mod linked as a folder doesn't hot-reload when its files change (upstream
 # space-folders README). Re-creating its link reloads it with no restart
 # (verified 2026-11-19 on herdr-app 0.1.16):
@@ -50,7 +54,6 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 ITEMS=(
   herdr/config.toml
   herdr/herdr-cwd-labels.sh
-  herdr-app/settings.json
   herdr-app/keys.json
   herdr-app/layouts/main-folders.json
   herdr-app/mods/space-folders
@@ -90,14 +93,6 @@ echo "Linking config into $CONFIG_DIR"
 for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
-
-# herdr-app writes the window zoom into settings.json on every zoom in / out,
-# and each one showed up in this repo as a change to commit. The clean filter
-# named in herdr-app/.gitattributes drops that key from what git sees, so zoom
-# stays per machine and the rest of the file stays tracked. It needs jq; without
-# jq git falls back to the plain file and zoom changes show up again.
-git -C "$REPO_DIR" config filter.herdr-app-zoom.clean "jq --indent 2 'del(.zoom)'" \
-  || echo "note: could not set the herdr-app zoom filter (not a git checkout?)"
 
 # herdr reads config.toml at startup; a running server needs a nudge to pick up
 # a freshly linked file. Harmless when no server is running.
