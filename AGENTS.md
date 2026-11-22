@@ -1,7 +1,7 @@
 # AGENTS.md
 
- - Agents/claude/cursor/codex never edit AGENTS.md 
-    / the root README.md, that's humans only.
+ - Agents/claude/cursor/codex never edit GLOBAL_AGENTS.md, 
+    AGENTS.md / the root README.md, that's humans only.
  - Agents put proposed AGENTS.md changes in AGENTS_SUGGEST.md; 
     the human applies them and deletes it.
 
@@ -11,8 +11,7 @@ What this repo is
      so edit here, never the ~ copy.
  - Each tool has a dir with its own install.sh (
     claude/, codex/, .config/, agents/, pnpm/ ...); bootstrap.sh runs them all.
- - Rules for every agent: agent-common/global-rules.md. 
-    Claude-only rules: claude/CLAUDE.md.
+ - Rules for every agent: GLOBAL_AGENTS.md 
  - Herdr app mods: .config/herdr-app/mods/. Reload one with: 
     rm ~/.config/herdr-app/mods/<name> && ./.config/install.sh
 
