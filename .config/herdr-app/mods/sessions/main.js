@@ -151,7 +151,7 @@ export default class Sessions extends View {
       const status = sp.filter((x) => of[x.id] === k.name).map((x) => x.status)
         .reduce((a, b) => ((RANK[b] ?? 0) > (RANK[a] ?? 0) ? b : a), null);
       const on = k.name === active, dragged = this.pressed === k.name;
-      const dot = RANK[status] ? (status === "blocked" ? t.blocked : t.done) : null;
+      const dot = status === "blocked" ? t.blocked : status === "done" ? t.done : null;
       return h_flex().id(`session-${k.name}`).h(26).px(12).gap(7).items_center().rounded(7).cursor_pointer()
         .text_size(12.5).text_color(on ? t.foreground : t.muted)
         .when(on, (el) => el.bg(t.selected).font_semibold())
@@ -167,6 +167,7 @@ export default class Sessions extends View {
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "sessions", kind: "popup", width: 260, height: 160, props: { menu: k.name } }); })
         .when(Boolean(k.machine), (el) => el.child(svg("mods/workspace-chrome/server.svg").size(12).flex_none()))
         .child(k.name)
+        .when(Boolean(n[k.name]), (el) => el.child(div().text_size(11.5).text_color(on ? t.muted : t.dim).child(String(n[k.name]))))
         .when(status === "working", (el) => el.child(svg("mods/workspace-chrome/spinner.svg").size(11).flex_none().text_color(t.working).spin(900)))
         .when(Boolean(dot), (el) => el.child(div().size(7).rounded(4).flex_none().bg(dot)));
     };
@@ -186,7 +187,6 @@ export default class Sessions extends View {
     return h_flex().id("sessions").size_full().pl(lights).pr(10).gap(4).items_center().bg(t.chrome)
       .on_mouse_up("left", (_e, cx) => { if (this.pressed !== null) { this.pressed = null; cx.notify(); } })
       .children(shown.map(tab))
-      .child(div().flex_1())
       .when(empty.length > 0, (el) => el.child(more))
       .child(add);
   }
