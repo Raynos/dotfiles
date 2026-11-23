@@ -59,6 +59,7 @@ ITEMS=(
   herdr-app/mods/space-folders
   herdr-app/mods/github
   herdr-app/mods/github-button
+  herdr-app/mods/two-pane-spaces
 )
 
 link_one() {

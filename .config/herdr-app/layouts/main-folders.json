@@ -120,6 +120,16 @@
                   "content": {
                     "mod": "github-button"
                   }
+                },
+                {
+                  "id": "two-pane",
+                  "type": "block",
+                  "content": {
+                    "mod": "two-pane-spaces"
+                  },
+                  "size": {
+                    "px": 0
+                  }
                 }
               ]
             },
