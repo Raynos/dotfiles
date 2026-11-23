@@ -28,6 +28,11 @@ import { spaces, machines, panes, run, openOverlay, closeOverlay, props, exec, h
 const FILE = "~/.config/herdr-space-folders.json";
 // The session in front (mods/sessions). Without that mod (another layout) every
 // space shows.
+// LOCAL CHANGE (dotfiles): the panel's text is this much bigger than Herdr's own
+// sizes (the menus and the folder dialog keep theirs). Same knob in session-agents.
+const FONT = 1.2;
+const fs = (n) => Math.round(n * FONT * 2) / 2;
+
 const sessions = () => shared("sessions");
 const inSession = (s) => { const x = sessions(); return !x?.active || (x.of?.[s.id] ?? x.active) === x.active; };
 const key = (machine) => machine ?? "";
@@ -600,7 +605,7 @@ export default class Spaces extends View {
       .when(f.folded && Boolean(status) && status !== "working", (el) => el.child(div().flex_none().text_color(tone(t, status)).child(glyph(status))))
       .child(div().id(`folder-add-${f.id}`).flex_none().px(4).rounded(4).text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))
         .on_click((_e, cx) => { cx.stop_propagation(); newSpaceIn(machine, f.id); }).child("+"))
-      .child(div().flex_none().text_size(11.5).text_color(t.dim).child(String(inside.length)))
+      .child(div().flex_none().text_size(fs(11.5)).text_color(t.dim).child(String(inside.length)))
       .child(svg(`mods/workspace-chrome/chevron-${f.folded ? "right" : "down"}.svg`).size(11).flex_none().text_color(t.dim));
   }
 
@@ -676,7 +681,7 @@ export default class Spaces extends View {
   }
 
   loadingRow(m, t, collapsed) {
-    return div().id(`machine-loading-${m ?? "local"}`).h(28).flex_none().px(8).text_size(12).text_color(t.dim).child(collapsed ? "…" : "Loading…");
+    return div().id(`machine-loading-${m ?? "local"}`).h(28).flex_none().px(8).text_size(fs(12)).text_color(t.dim).child(collapsed ? "…" : "Loading…");
   }
 
   // A machine's header and, unless it's folded, its folders and spaces. In a
@@ -686,7 +691,7 @@ export default class Spaces extends View {
     const machine = this.machines.find(k => k.name === m);
     const connected = !m || machine?.state === "connected";
     const folded = this.folded.has(m);
-    const head = h_flex().id(`machine-${m ?? "local"}`).h(26).flex_none().pl(collapsed ? 2 : nested ? 26 : 8).pr(collapsed ? 2 : 8).gap(7).items_center().text_size(11).text_color(t.dim)
+    const head = h_flex().id(`machine-${m ?? "local"}`).h(26).flex_none().pl(collapsed ? 2 : nested ? 26 : 8).pr(collapsed ? 2 : 8).gap(7).items_center().text_size(fs(11)).text_color(t.dim)
       .cursor_pointer().hover(s => s.bg(t.hover))
       .on_click((_e, cx) => {
         folded ? this.folded.delete(m) : this.folded.add(m);
@@ -703,7 +708,7 @@ export default class Spaces extends View {
         .child(div().size(6).rounded(3).flex_none().bg(connected ? t.ansi2 : t.dim))
         .child(svg(`mods/workspace-chrome/chevron-${folded ? "right" : "down"}.svg`).size(11).flex_none()));
     const empty = h_flex().id(`machine-new-${m ?? "local"}`).h(28).flex_none().pl(indent(null, nested)).pr(8).gap(7).items_center().rounded(7)
-      .text_size(12).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
+      .text_size(fs(12)).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
       .on_click(() => newSpaceIn(m, null))
       .child(svg("mods/workspace-chrome/plus.svg").size(12)).when(!collapsed, el => el.child("New space there"));
     const body = mine.length || guests.length ? this.foldered(mine, m, t, collapsed, { guests, nested, hidden: hidden || folded, seen })
@@ -756,7 +761,7 @@ export default class Spaces extends View {
       .gap(5)
       .justify_end()
       .items_center()
-      .text_size(11.5)
+      .text_size(fs(11.5))
       .text_color(t.dim)
       .when(Boolean(where), (el) => el.child(div().min_w(0).truncate().child(where)))
       .when(g.ahead > 0, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
@@ -814,7 +819,7 @@ export default class Spaces extends View {
           .gap(9)
           .items_center()
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).text_color(t.dim)))
-          .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
+          .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(fs(10.5)).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
           .child(div().flex_shrink(0).max_w(150).truncate().text_color(t.foreground).child(w.name))
           .when(Boolean(this.agentsIn?.[w.id]), (el) => el.child(div().flex_none().ml(-5).text_color(t.dim).child(`(${this.agentsIn[w.id]})`)))
           .child(g ? this.gitTail(g, tree, w.name, t) : div().flex_1()),
@@ -859,8 +864,8 @@ export default class Spaces extends View {
       .hover(s => s.bg(t.hover).text_color(t.foreground)).on_click(action).child(svg(`mods/workspace-chrome/${icon}.svg`).size(14));
     const seen = [], rows = this.grouped(t, collapsed, seen);
     this.seen = seen;
-    return v_flex().size_full().min_h(0).bg(t.chrome).text_size(13)
-      .child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(11.5).text_color(t.dim)
+    return v_flex().size_full().min_h(0).bg(t.chrome).text_size(fs(13))
+      .child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(fs(11.5)).text_color(t.dim)
         .when(!collapsed, el => el.child("Spaces"))
         .child(h_flex().gap(2)
           .when(!collapsed, el => el.child(button("folder-new", "folder-plus", () => this.newFolder(null))))
@@ -875,7 +880,7 @@ export default class Spaces extends View {
         .children(rows)
         .when(leaving && !collapsed, el => el.child(div().id("folder-out").mt(6).h(34).flex_none().flex().items_center().justify_center()
           .rounded(8).border_1().border_dashed().border_color(this.overFolder === "out" ? t.accent : t.border)
-          .text_size(12).text_color(this.overFolder === "out" ? t.foreground : t.dim)
+          .text_size(fs(12)).text_color(this.overFolder === "out" ? t.foreground : t.dim)
           .on_mouse_move((_e, cx) => { if (this.overFolder !== "out") { this.overFolder = "out"; this.over = null; cx.notify(); } })
           .child("Drop here to take it out of its folder"))));
   }

@@ -15,6 +15,11 @@ function inSession(spaceId) {
   return !s?.active || (s.of?.[spaceId] ?? s.active) === s.active;
 }
 
+// LOCAL CHANGE (dotfiles): the panel's text is this much bigger than Herdr's own
+// sizes (the sort menu keeps its own). Same knob in space-folders.
+const FONT = 1.2;
+const fs = (n) => Math.round(n * FONT * 2) / 2;
+
 function find(node, id) {
   if (node?.id === id) return node;
   for (const child of node?.children ?? []) {
@@ -223,8 +228,8 @@ export default class Agents extends View {
   status(t, a, compact = false) {
     const color = t[a.status] ?? t.dim;
     if (a.status === "working") return svg("mods/workspace-chrome/spinner.svg").size(12).mx(1).flex_none().text_color(t.working).spin(900);
-    if (a.status === "blocked" && compact) return div().size(14).flex_none().rounded(4).bg(t.blocked + "26").text_size(10.5).font_bold().text_color(t.blocked).flex().items_center().justify_center().child("!");
-    if (a.status === "blocked") return div().flex_none().px(6).h(18).rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).flex().items_center().child("Needs you");
+    if (a.status === "blocked" && compact) return div().size(14).flex_none().rounded(4).bg(t.blocked + "26").text_size(fs(10.5)).font_bold().text_color(t.blocked).flex().items_center().justify_center().child("!");
+    if (a.status === "blocked") return div().flex_none().px(6).h(18).rounded(5).bg(t.blocked + "26").text_size(fs(10.5)).font_semibold().text_color(t.blocked).flex().items_center().child("Needs you");
     // Idle: a ring; done: a dot.
     if (a.status === "idle") return div().size(7).mx(3).flex_none().rounded(4).border(1.5).border_color(t.idle ?? t.dim);
     return div().size(7).mx(3).flex_none().rounded(4).bg(a.status === "done" ? color : t.dim + "00");
@@ -279,7 +284,7 @@ export default class Agents extends View {
         .flex()
         .items_center()
         .rounded(4)
-        .text_size(11)
+        .text_size(fs(11))
         .text_color(open ? t.dim : (t[top] ?? t.dim))
         .cursor_pointer()
         .hover((s) => s.bg(t.hover).text_color(t.foreground))
@@ -382,10 +387,10 @@ export default class Agents extends View {
         .child(h_flex().flex_1().min_w(0).gap(5).items_center()
           .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle ? t.muted : t.foreground).child(name))
           .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
-        .when(Boolean(machine), el => el.child(div().text_size(10).text_color(t.dim).child(machine)))
+        .when(Boolean(machine), el => el.child(div().text_size(fs(10)).text_color(t.dim).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
         .when(this.hovered === a.address, el => el.child(pin))
-        .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(11).text_color(t.dim).child(duration(now - when))))
+        .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(fs(11)).text_color(t.dim).child(duration(now - when))))
         .child(this.status(t, a, byPriority && !isPinned));
     };
 
@@ -411,7 +416,7 @@ export default class Agents extends View {
         .flex_none()
         .gap(6)
         .items_center()
-        .text_size(11)
+        .text_size(fs(11))
         .font_medium()
         .cursor_pointer()
         .hover((s) => s.text_color(t.foreground))
@@ -436,7 +441,7 @@ export default class Agents extends View {
       .bg(t.chrome)
       .border_t(1)
       .border_color(t.border)
-      .text_size(13)
+      .text_size(fs(13))
       .when(!collapsed, (el) =>
         el.child(
           h_flex()
@@ -447,11 +452,11 @@ export default class Agents extends View {
             .flex_none()
             .items_center()
             .justify_between()
-            .child(div().text_size(11.5).font_medium().text_color(t.dim).child("Agents"))
+            .child(div().text_size(fs(11.5)).font_medium().text_color(t.dim).child("Agents"))
             .child(
               div()
                 .id("ag-sort")
-                .text_size(11)
+                .text_size(fs(11))
                 .text_color(t.dim)
                 .hover((s) => s.text_color(t.foreground))
                 .on_click(() => openOverlay({ mod: "session-agents", kind: "popup", width: 200, height: 140, props: { sortMenu: true } }))
@@ -461,7 +466,7 @@ export default class Agents extends View {
         ),
       )
       .when(list.length === 0 && !collapsed, (el) =>
-        el.child(div().px(12).text_size(12).text_color(t.dim).child("No agent status yet. Agents show up here when they report their status. Older versions and agents inside tmux may not.")),
+        el.child(div().px(12).text_size(fs(12)).text_color(t.dim).child("No agent status yet. Agents show up here when they report their status. Older versions and agents inside tmux may not.")),
       )
       .child(v_flex().id("ag-list").flex_1().min_h(0).px(collapsed ? 0 : 8).overflow_y_scrollbar().mode("always").children(rows))
       .when(collapsed, (el) =>
@@ -473,7 +478,7 @@ export default class Agents extends View {
             .child(
               div()
                 .id("collapse")
-                .text_size(13)
+                .text_size(fs(13))
                 .text_color(t.dim)
                 .hover((s) => s.text_color(t.foreground))
                 .on_click(toggleSidebar)
