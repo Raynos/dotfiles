@@ -8,7 +8,8 @@
 // rest wait in the menu on the right (the one in front is always a tab).
 // Click a session to go to it (the space you were last in there, or a new one
 // if it has none: on its machine, if it names one). Right-click one to move
-// the space in front into it, or to edit or delete it; + adds one. A new space
+// the space in front into it, or to edit or delete it. New sessions are rare:
+// add them to the file below (ask an agent). A new space
 // joins the session in front. Going to a space another way (an agent's
 // notification, a key) brings its session in front.
 //
@@ -177,18 +178,12 @@ export default class Sessions extends View {
       .on_mouse_down("left", stop)
       .on_click(() => openOverlay({ mod: "sessions", kind: "popup", width: 220, height: 44 + 30 * empty.length, props: { more: true } }))
       .child(`${empty.length} more`).child(svg("mods/workspace-chrome/chevron-down.svg").size(11));
-    const add = div().id("session-add").size(26).flex_none().flex().items_center().justify_center().rounded(7).cursor_pointer()
-      .text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))
-      .on_mouse_down("left", stop)
-      .on_click(() => openOverlay({ mod: "sessions", kind: "dialog", width: 420, props: { edit: null } }))
-      .child(svg("mods/workspace-chrome/plus.svg").size(13));
     // The window's buttons sit at the top left: start after them (not in full screen).
     const lights = window()?.fullscreen ? 12 : 84;
     return h_flex().id("sessions").size_full().pl(lights).pr(10).gap(4).items_center().bg(t.chrome)
       .on_mouse_up("left", (_e, cx) => { if (this.pressed !== null) { this.pressed = null; cx.notify(); } })
       .children(shown.map(tab))
-      .when(empty.length > 0, (el) => el.child(more))
-      .child(add);
+      .when(empty.length > 0, (el) => el.child(more));
   }
 
   // The sessions without agents (the "more" menu); right-click one for its menu.
