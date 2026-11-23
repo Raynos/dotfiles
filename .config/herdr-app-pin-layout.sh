@@ -3,8 +3,17 @@
 # Keep the Herdr app on one layout: main-folders.
 #
 # Herdr rewrites its own layouts (main, terminals, win98) on every start, so
-# they can't be deleted, and it has no "start on this layout" setting: after a
-# restart it can come back on main. This runs from the launchd agent that
+# they can't be deleted, and it has no "start on this layout" setting.
+#
+# Why it came back on main: at start, Herdr silently drops the remembered
+# layout when it uses a mod that isn't installed, boots on main, and saves
+# "main" over the choice (switching by hand works fine). main-folders uses
+# gitview, which ./herdr-gitview/install.sh installs; it was missing after
+# Herdr's 2026-11-22 config wipe. Verified on herdr-app 0.1.16 by restarting:
+# terminals and main-folders-with-gitview stick; main-folders without
+# gitview, symlinked or a real file, falls back to main.
+#
+# This is the safety net for that. It runs from the launchd agent that
 # .config/install.sh writes (dev.dotfiles.herdr-app-layout), whenever the app's
 # shared.json changes and every 30 seconds, and switches the open window back.
 #
