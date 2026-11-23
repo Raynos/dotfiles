@@ -60,6 +60,10 @@ ITEMS=(
   herdr-app/mods/github
   herdr-app/mods/github-button
   herdr-app/mods/two-pane-spaces
+  herdr-app/mods/sessions
+  herdr-app/mods/session-agents
+  herdr-app/themes/vibe.json
+  herdr-app/themes/house.json
 )
 
 link_one() {

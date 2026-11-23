@@ -10,6 +10,10 @@
 // working in folders matching its rules. A folder on this computer collects
 // another machine too, with its header and spaces, when a rule matches the
 // machine's name or the folder one of its spaces works in.
+//
+// LOCAL CHANGE (dotfiles): only the spaces of the session in front (mods/sessions)
+// show, and only the other machines that have one of them or that session claims.
+// Rows keep their place in spaces(), so drags and space.move are unchanged.
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
@@ -21,6 +25,10 @@ import { spaces, machines, panes, run, openOverlay, closeOverlay, props, exec, h
 // shared state holds them per machine ("" is this computer), so the sidebar, a
 // folder's menu and its edit dialog see a change at once.
 const FILE = "~/.config/herdr-space-folders.json";
+// The session in front (mods/sessions). Without that mod (another layout) every
+// space shows.
+const sessions = () => shared("sessions");
+const inSession = (s) => { const x = sessions(); return !x?.active || (x.of?.[s.id] ?? x.active) === x.active; };
 const key = (machine) => machine ?? "";
 const all = () => shared("space-folders") ?? {};
 const folders = (machine) => all()[key(machine)] ?? { list: [], of: {} };
@@ -639,7 +647,7 @@ export default class Spaces extends View {
     const sp = spaces(), ps = panes();
     const ready = (w) => this.shown.has(w.id) || where(w, ps) in this.git || Date.now() - (this.born[w.id] ??= Date.now()) > 1500;
     for (const w of sp) if (!this.shown.has(w.id) && ready(w)) this.shown.add(w.id);
-    const list = sp.map((w, i) => ({ w, i, g: this.git[where(w, ps)] ?? null })).filter((r) => this.shown.has(r.w.id));
+    const list = sp.map((w, i) => ({ w, i, g: this.git[where(w, ps)] ?? null })).filter((r) => this.shown.has(r.w.id) && inSession(r.w));
     const mains = new Set(list.filter((r) => r.g && !r.g.linked).map((r) => r.g.repo));
     const nested = (r) => r.g?.linked && mains.has(r.g.repo);
     const out = [];
@@ -711,7 +719,9 @@ export default class Spaces extends View {
       const sid = p.program?.agent && tabOf.get(p.tab);
       if (sid) this.agentsIn[sid] = (this.agentsIn[sid] ?? 0) + 1;
     }
-    const remote = [...new Set([...rows.map(r => r.w.machine).filter(Boolean), ...this.machines.map(m => m.name)])].sort();
+    // A machine with no space in this session shows only in the session claiming it.
+    const x = sessions(), claimedHere = (m) => !x?.active || x.claims?.[m] === x.active;
+    const remote = [...new Set([...rows.map(r => r.w.machine).filter(Boolean), ...this.machines.map(m => m.name).filter(claimedHere)])].sort();
     const guests = remote.map((m) => {
       const mine = rows.filter((r) => r.w.machine === m);
       return { m, rows: mine, folder: machineFolder(m, mine, ps) };
@@ -719,6 +729,10 @@ export default class Spaces extends View {
     const housed = guests.filter((g) => g.folder);
     const loose = guests.filter((g) => !g.folder);
     const local = rows.filter((r) => !r.w.machine);
+    // A session on another machine (mini): no "This computer" while it has none of its spaces.
+    if (x?.active && Object.values(x.claims ?? {}).includes(x.active) && !local.length && !housed.length && loose.length) {
+      return loose.flatMap((g) => this.machineSection(g.m, g.rows, t, collapsed, { seen }));
+    }
     if (!loose.length) {
       return this.machineLoading(null) && !local.length && !housed.length ? [this.loadingRow(null, t, collapsed)] : this.foldered(local, null, t, collapsed, { guests: housed, seen });
     }

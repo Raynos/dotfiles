@@ -21,6 +21,17 @@
   },
   "children": [
     {
+      "id": "session-bar",
+      "type": "block",
+      "content": {
+        "mod": "sessions"
+      },
+      "size": {
+        "px": 38
+      },
+      "window_drag": true
+    },
+    {
       "id": "body",
       "type": "row",
       "children": [
@@ -58,7 +69,7 @@
                   "id": "agents",
                   "type": "block",
                   "content": {
-                    "mod": "agents"
+                    "mod": "session-agents"
                   },
                   "size": {
                     "weight": 1
