@@ -12,7 +12,7 @@
 // machine's name or the folder one of its spaces works in.
 //
 // LOCAL CHANGE (dotfiles): only the spaces of the session in front (mods/sessions)
-// show, and only the other machines that have one of them or that session claims.
+// show. Every machine keeps its header, so where a space runs stays clear.
 // A folder shows where it has spaces, and while empty in the session it was made in.
 // Rows keep their place in spaces(), so drags and space.move are unchanged.
 
@@ -724,9 +724,7 @@ export default class Spaces extends View {
       const sid = p.program?.agent && tabOf.get(p.tab);
       if (sid) this.agentsIn[sid] = (this.agentsIn[sid] ?? 0) + 1;
     }
-    // A machine with no space in this session shows only in the session claiming it.
-    const x = sessions(), claimedHere = (m) => !x?.active || x.claims?.[m] === x.active;
-    const remote = [...new Set([...rows.map(r => r.w.machine).filter(Boolean), ...this.machines.map(m => m.name).filter(claimedHere)])].sort();
+    const remote = [...new Set([...rows.map(r => r.w.machine).filter(Boolean), ...this.machines.map(m => m.name)])].sort();
     const guests = remote.map((m) => {
       const mine = rows.filter((r) => r.w.machine === m);
       return { m, rows: mine, folder: machineFolder(m, mine, ps) };
@@ -734,10 +732,6 @@ export default class Spaces extends View {
     const housed = guests.filter((g) => g.folder);
     const loose = guests.filter((g) => !g.folder);
     const local = rows.filter((r) => !r.w.machine);
-    // A session on another machine (mini): no "This computer" while it has none of its spaces.
-    if (x?.active && Object.values(x.claims ?? {}).includes(x.active) && !local.length && !housed.length && loose.length) {
-      return loose.flatMap((g) => this.machineSection(g.m, g.rows, t, collapsed, { seen }));
-    }
     if (!loose.length) {
       return this.machineLoading(null) && !local.length && !housed.length ? [this.loadingRow(null, t, collapsed)] : this.foldered(local, null, t, collapsed, { guests: housed, seen });
     }

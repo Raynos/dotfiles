@@ -62,6 +62,7 @@ ITEMS=(
   herdr-app/mods/two-pane-spaces
   herdr-app/mods/sessions
   herdr-app/mods/session-agents
+  herdr-app/mods/session-picker
   herdr-app/themes/vibe.json
   herdr-app/themes/house.json
 )

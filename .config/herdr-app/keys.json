@@ -16,7 +16,7 @@
     "cmd-[": "agent.prev",
     "cmd-shift-l": "layout.switch:main-folders",
     "cmd-n": "space.new",
-    "cmd-p": "mod.open:picker",
+    "cmd-p": "mod.open:session-picker",
     "cmd-shift-p": "app.palette",
     "cmd-,": "app.settings",
     "cmd-d": "pane.split:right",
