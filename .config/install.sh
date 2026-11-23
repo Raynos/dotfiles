@@ -104,4 +104,31 @@ if command -v herdr >/dev/null; then
     || echo "herdr: no running server to reload (config applies on next start)"
 fi
 
+# herdr-app: make main-folders the shown layout. The app remembers the shown
+# layout as "layout" in its own shared.json, which it reset to "main" on the
+# 2026-11-22 update, so set it on every install. With the window open, switch
+# it live; otherwise merge the key into shared.json for the next start.
+HERDR_APP_LAYOUT=main-folders
+if command -v herdr-app >/dev/null; then
+  if herdr-app status >/dev/null 2>&1; then
+    herdr-app do layout.switch --name "$HERDR_APP_LAYOUT" >/dev/null \
+      && echo "herdr-app: layout -> $HERDR_APP_LAYOUT" \
+      || echo "herdr-app: layout switch failed"
+  else
+    python3 - "$CONFIG_DIR/herdr-app/shared.json" "$HERDR_APP_LAYOUT" <<'PY'
+import json, os, sys
+path, layout = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    with open(path) as f:
+        data = json.load(f)
+data["layout"] = layout
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(path, "w") as f:
+    json.dump(data, f)
+print(f"herdr-app: layout -> {layout} (applies on next start)")
+PY
+  fi
+fi
+
 echo "Done."
