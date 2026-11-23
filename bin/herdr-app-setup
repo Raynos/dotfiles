@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+#
+# herdr-app-setup — install everything the Herdr desktop app needs from this
+# repo, then check it actually took.
+#
+#   herdr-app-setup           run the installers, then check
+#   herdr-app-setup --check   only check (exit 1 if anything is wrong)
+#
+# Installers, in order (each is idempotent):
+#   .config/install.sh         keys.json, layouts, our mods as symlinks; shown
+#                              layout; the launchd layout pin
+#   herdr-gitview/install.sh   the gitview mods (needs the app running)
+#
+# Checks:
+#   - every herdr-app item in .config/install.sh is a symlink into this repo
+#   - every mod a repo layout uses is installed. A missing one makes Herdr drop
+#     that layout at start and boot on main (see .config/herdr-app-pin-layout.sh)
+#   - `herdr-app check` passes for each of our mods
+#   - the open window is on main-folders with no file or mod errors
+#   - the launchd layout pin is loaded
+#
+# Why it exists: on 2026-11-22 a Herdr update wiped ~/.config/herdr-app, and
+# re-linking alone left gitview missing, so the app kept booting on main.
+set -uo pipefail
+
+DOTFILES="${DOTFILES:-$HOME/projects/dotfiles}"
+APP_HOME="${HERDR_APP_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/herdr-app}"
+WANT_LAYOUT=main-folders
+PIN_LABEL=dev.dotfiles.herdr-app-layout
+
+if [ ! -f "$DOTFILES/.config/install.sh" ]; then
+  echo "herdr-app-setup: no dotfiles repo at $DOTFILES (set DOTFILES)" >&2
+  exit 2
+fi
+
+case "${1:-}" in
+  "") MODE=install ;;
+  --check) MODE=check ;;
+  -h|--help) sed -n '3,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "usage: herdr-app-setup [--check]" >&2; exit 2 ;;
+esac
+
+app_up() { command -v herdr-app >/dev/null && herdr-app status >/dev/null 2>&1; }
+
+if [ "$MODE" = install ]; then
+  echo "== .config/install.sh"
+  "$DOTFILES/.config/install.sh" || exit 1
+  echo ""
+  echo "== herdr-gitview/install.sh"
+  "$DOTFILES/herdr-gitview/install.sh" || exit 1
+  echo ""
+fi
+
+echo "== checks"
+FAIL=0
+ok()  { echo "ok    $*"; }
+bad() { echo "FAIL  $*"; FAIL=1; }
+
+# Links: the herdr-app entries of .config/install.sh's ITEMS.
+while read -r item; do
+  dst="$APP_HOME/${item#herdr-app/}"
+  src="$DOTFILES/.config/$item"
+  if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+    ok "link $item"
+  else
+    bad "link $item (not a symlink to the repo; run herdr-app-setup)"
+  fi
+done < <(sed -n '/^ITEMS=(/,/^)/p' "$DOTFILES/.config/install.sh" | grep -oE 'herdr-app/[^[:space:]]+')
+
+# Mods the repo layouts use. "replaces" names the mod being swapped out, not
+# one that needs to exist, so it's skipped.
+for layout in "$DOTFILES"/.config/herdr-app/layouts/*.json; do
+  name="$(basename "$layout" .json)"
+  mods="$(python3 -I - "$layout" <<'PY'
+import json, sys
+used = set()
+def walk(node, key=None):
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if k == "replaces":
+                continue
+            if k == "mod" and isinstance(v, str):
+                used.add(v)
+            walk(v, k)
+    elif isinstance(node, list):
+        for v in node:
+            walk(v, key)
+walk(json.load(open(sys.argv[1])))
+print("\n".join(sorted(used)))
+PY
+)" || { bad "layout $name: can't read it"; continue; }
+  missing=""
+  for mod in $mods; do
+    [ -f "$APP_HOME/mods/$mod/main.js" ] || missing="$missing $mod"
+  done
+  if [ -z "$missing" ]; then
+    ok "layout $name: all $(echo "$mods" | wc -w | tr -d ' ') mods installed"
+  else
+    bad "layout $name: missing mods:$missing (Herdr will boot on main instead)"
+  fi
+done
+
+# Our own mods load.
+if command -v herdr-app >/dev/null; then
+  for dir in "$DOTFILES"/.config/herdr-app/mods/*/; do
+    mod="$(basename "$dir")"
+    if out="$(herdr-app check "$APP_HOME/mods/$mod" 2>&1)"; then
+      ok "mod $mod passes herdr-app check"
+    else
+      bad "mod $mod: $(echo "$out" | grep -v '^WARN' | tail -1)"
+    fi
+  done
+else
+  bad "herdr-app is not installed"
+fi
+
+# The open window.
+if app_up; then
+  status="$(herdr-app status)"
+  layout="$(printf '%s' "$status" | plutil -extract layout raw -o - - 2>/dev/null)"
+  [ "$layout" = "$WANT_LAYOUT" ] && ok "window on $WANT_LAYOUT" || bad "window on ${layout:-?}, not $WANT_LAYOUT"
+  errors="$(printf '%s' "$status" | plutil -extract errors json -o - - 2>/dev/null)"
+  [ "$errors" = "[]" ] && ok "window reports no errors" || bad "window errors: $errors"
+else
+  echo "skip  window checks (Herdr isn't open)"
+fi
+
+# The layout pin.
+if [ "$(uname)" = Darwin ]; then
+  launchctl print "gui/$(id -u)/$PIN_LABEL" >/dev/null 2>&1 \
+    && ok "launchd $PIN_LABEL loaded" || bad "launchd $PIN_LABEL not loaded (run herdr-app-setup)"
+fi
+
+echo ""
+if [ "$FAIL" = 0 ]; then echo "all good"; else echo "problems found"; fi
+exit "$FAIL"
