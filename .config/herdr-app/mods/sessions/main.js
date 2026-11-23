@@ -19,7 +19,11 @@
 //   { "sessions": [{ "name": "games", "theme": "vibe", "machine": "mini-ts"? }] }
 // theme: graphite, ink, moss, paper or a file in themes/ (vibe and house come
 // with the dotfiles); none leaves the theme alone. Without the file there is
-// one session, "main".
+// one session, "main". The file is read again every 5 seconds.
+//
+// An agent moves spaces between sessions by adding to the file
+//   "move": { "<space id from herdr-app ls>": "<session>" }
+// which is applied on the next read, then taken out of the file.
 //
 // Shared state: "sessions.list" (the file, while this runs) and "sessions":
 // { active, of: { spaceId: session }, last: { session: spaceId } }, kept in the
@@ -39,12 +43,14 @@ const state = () => shared("sessions") ?? {};
 const named = (name) => list().find((s) => s.name === name);
 const newSpace = (name) => { const m = named(name)?.machine; run("space.new", { machine: m ?? "" }); };
 
-async function readList() {
+// { sessions, move } from the file, or null when it's missing or unreadable.
+async function readFile() {
   const r = await exec("sh", ["-c", `cat ${FILE} 2>/dev/null`]);
   if (!r.stdout.trim()) return null;
   try {
     const d = JSON.parse(r.stdout);
-    return Array.isArray(d.sessions) && d.sessions.length ? d.sessions.filter((s) => s?.name) : null;
+    const sessions = Array.isArray(d.sessions) ? d.sessions.filter((s) => s?.name) : [];
+    return sessions.length ? { sessions, move: d.move && typeof d.move === "object" ? d.move : null } : null;
   } catch { return null; }
 }
 
@@ -65,9 +71,24 @@ export default class Sessions extends View {
     this.loaded = false; // the file has been read: until then spaces keep their sessions
     this.pressed = null; // the session being dragged
     if (checking()) return;
+    this.load(cx, true);
+    // The file is edited by hand or by an agent: read it again now and then.
+    cx.timer.every(5000, (cx) => this.load(cx, false));
+  }
+
+  load(cx, first) {
     cx.spawn(async (cx) => {
-      const read = await readList().catch(() => null);
-      setShared("sessions.list", read ?? DEFAULT);
+      const read = await readFile().catch(() => null);
+      const next = read?.sessions ?? (first ? DEFAULT : null);
+      if (next && JSON.stringify(next) !== JSON.stringify(shared("sessions.list"))) setShared("sessions.list", next);
+      if (read?.move) {
+        const s = state(), of = { ...(s.of ?? {}) };
+        for (const [id, name] of Object.entries(read.move)) if (read.sessions.some((k) => k.name === name)) of[id] = name;
+        // The space in front moved: its new session comes in front with it.
+        const front = spaces().find((x) => x.active);
+        setShared("sessions", { ...s, of, active: front && read.move[front.id] ? of[front.id] : s.active });
+        saveList(read.sessions); // the file again, without "move"
+      }
       this.loaded = true;
       cx.notify();
     });
