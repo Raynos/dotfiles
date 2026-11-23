@@ -13,6 +13,7 @@
 //
 // LOCAL CHANGE (dotfiles): only the spaces of the session in front (mods/sessions)
 // show, and only the other machines that have one of them or that session claims.
+// A folder shows where it has spaces, and while empty in the session it was made in.
 // Rows keep their place in spaces(), so drags and space.move are unchanged.
 
 import { View, div, svg } from "gpui-kit";
@@ -502,7 +503,7 @@ export default class Spaces extends View {
     const { id, machine, fresh, overlay } = this.editing, f = folders(machine);
     const name = this.name.value().trim(), path = this.path.value().trim() || null, match = this.match.value().trim() || null;
     // A folder deleted while its dialog was open isn't made again; a new one is made now.
-    const list = fresh && !f.list.some((x) => x.id === id) ? [...f.list, { id, name: NEW_FOLDER, folded: false }] : f.list;
+    const list = fresh && !f.list.some((x) => x.id === id) ? [...f.list, { id, name: NEW_FOLDER, folded: false, session: sessions()?.active }] : f.list;
     saveFolders(machine, { ...f, list: list.map((x) => x.id === id ? { ...x, name: name || x.name, path, match } : x) });
     closeOverlay(overlay);
   }
@@ -545,6 +546,10 @@ export default class Spaces extends View {
         const inside = placed.filter((r) => r.folder === f.id);
         const visitors = guests.filter((g) => g.folder === f.id);
         const counted = [...inside, ...visitors.flatMap((g) => g.rows)];
+        // LOCAL CHANGE (dotfiles): a folder shows in the sessions it has spaces
+        // in, and while empty in the one it was made in.
+        const x = sessions();
+        if (x?.active && !counted.length && f.session !== x.active) return [];
         const away = hidden || f.folded;
         return [
           ...(hidden ? [] : [this.folderHead(f, n, machine, counted, t, collapsed, nested)]),
