@@ -8,8 +8,9 @@
 [[ $- == *i* ]] || return 0
 
 
-# Core please
-ulimit -c unlimited
+# Core dumps capped at 1 GB (Jake, 2026-11-22). bash counts -c in 1 KiB blocks. macOS skips the dump entirely when
+# the process's VM map exceeds the limit, so node / V8 (tens of GB mapped) no longer dumps; small native tools still do.
+ulimit -c 1048576
 
 
 # Load the shell dotfiles, and then some:
