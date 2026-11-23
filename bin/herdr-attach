@@ -36,6 +36,7 @@ SESSIONS=(
     "house:House"
     "localai:Vibe"
     "wildshard:Wildshard"
+    "mini:Default"
 )
 
 session_names() {
@@ -114,6 +115,21 @@ cwd_watcher="$HOME/.config/herdr/herdr-cwd-labels.sh"
 if [ -x "$cwd_watcher" ]; then
     nohup "$cwd_watcher" --session "$session" --watch >/dev/null 2>&1 < /dev/null &
     disown 2>/dev/null || true
+fi
+
+# Per-session saved machines. herdr keeps its SSH machine list (`herdr machine`)
+# in $XDG_STATE_HOME/herdr/client/endpoints.json, shared by every local session,
+# so by default every session shows every remote. If
+# ~/.local/state/herdr-scoped/<session>/ exists, attach this session's client
+# with XDG_STATE_HOME pointed there instead: its herdr/client/ is a private
+# machine list, and its other herdr/ subdirs symlink back to the shared ones.
+# Manage that list with:
+#     XDG_STATE_HOME=~/.local/state/herdr-scoped/<session> herdr machine ...
+# .bashrc unsets the variable again inside panes, in case this attach is what
+# starts the session's server and its shells would otherwise inherit it.
+scoped_state="$HOME/.local/state/herdr-scoped/$session"
+if [ -d "$scoped_state/herdr/client" ]; then
+    export XDG_STATE_HOME="$scoped_state"
 fi
 
 # `command` so the interactive herdr() guard in .bashrc can never shadow this —

@@ -139,6 +139,14 @@ herdr() {
 
     command herdr "$@"
 }
+
+# herdr-attach points XDG_STATE_HOME at ~/.local/state/herdr-scoped/<session>
+# to give a session its own saved-machine list. That is meant for the herdr
+# client only; if the attach also started the server, its panes inherit it and
+# every XDG-aware tool would put its state there. Drop it inside panes.
+case "${XDG_STATE_HOME:-}" in
+    "$HOME"/.local/state/herdr-scoped/*) unset XDG_STATE_HOME ;;
+esac
 # ===== end herdr auto-create guard =====
 
 # >>> grok installer >>>
