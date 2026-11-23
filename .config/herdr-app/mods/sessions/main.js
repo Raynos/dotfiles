@@ -69,7 +69,9 @@ export default class Sessions extends View {
     this.front = null; // the space in front at the last render
     this.applied = null; // the theme last set
     this.loaded = false; // the file has been read: until then spaces keep their sessions
-    this.pressed = null; // the session being dragged
+    this.pressed = null; // the session pressed, maybe about to be dragged
+    this.drag = null; // once it moves: { x: pointer in the bar, grab: where in the tab it was held }
+    this.over = null; // the session under the pointer while dragging
     if (checking()) return;
     this.load(cx, true);
     // The file is edited by hand or by an agent: read it again now and then.
@@ -169,29 +171,47 @@ export default class Sessions extends View {
     const sp = spaces(), n = this.counts(of);
     const shown = list().filter((k) => n[k.name] || k.name === active);
     const empty = list().filter((k) => !shown.some((x) => x.name === k.name));
-    const tab = (k) => {
+    const order = shown.map((k) => k.name);
+    const dragging = this.pressed !== null && this.drag !== null;
+    // What a tab shows; the dragged copy shows the same.
+    const content = (el, k, on) => {
       const status = sp.filter((x) => of[x.id] === k.name).map((x) => x.status)
         .reduce((a, b) => ((RANK[b] ?? 0) > (RANK[a] ?? 0) ? b : a), null);
-      const on = k.name === active, dragged = this.pressed === k.name;
       const dot = status === "blocked" ? t.blocked : status === "done" ? t.done : null;
-      return h_flex().id(`session-${k.name}`).h(26).px(12).gap(7).items_center().rounded(7).cursor_pointer()
-        .text_size(12.5).text_color(on ? t.foreground : t.muted)
-        .when(on, (el) => el.bg(t.selected).font_semibold())
-        .when(!on, (el) => el.hover((s) => s.bg(t.hover).text_color(t.foreground)))
-        .when(dragged, (el) => el.opacity(0.5))
-        .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.pressed = k.name; cx.notify(); })
-        .on_mouse_up("left", (_e, cx) => {
-          const from = this.pressed; this.pressed = null;
-          if (from && from !== k.name) this.reorder(from, k.name);
-          else this.go(k.name);
-          cx.notify();
-        })
-        .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "sessions", kind: "popup", width: 260, height: 160, props: { menu: k.name } }); })
+      return el.h(26).px(12).gap(7).items_center().rounded(7).text_size(12.5)
         .when(Boolean(k.machine), (el) => el.child(svg("mods/workspace-chrome/server.svg").size(12).flex_none()))
         .child(k.name)
         .when(Boolean(n[k.name]), (el) => el.child(div().text_size(11.5).text_color(on ? t.muted : t.dim).child(String(n[k.name]))))
         .when(status === "working", (el) => el.child(svg("mods/workspace-chrome/spinner.svg").size(11).flex_none().text_color(t.working).spin(900)))
         .when(Boolean(dot), (el) => el.child(div().size(7).rounded(4).flex_none().bg(dot)));
+    };
+    const endDrag = () => { this.pressed = null; this.drag = null; this.over = null; };
+    const tab = (k) => {
+      const on = k.name === active, held = this.pressed === k.name;
+      // Where the dragged tab would land: a line on the side it would go.
+      const target = dragging && this.over === k.name && !held;
+      const right = target && order.indexOf(this.pressed) < order.indexOf(k.name);
+      return content(h_flex().id(`session-${k.name}`).relative().flex_none(), k, on)
+        .cursor_pointer().text_color(on ? t.foreground : t.muted)
+        .when(on, (el) => el.bg(t.selected).font_semibold())
+        .when(!on && !dragging, (el) => el.hover((s) => s.bg(t.hover).text_color(t.foreground)))
+        .when(held && dragging, (el) => el.opacity(0.35))
+        .when(target, (el) => el.child(div().absolute().top(3).bottom(3).w(2).rounded(1).bg(t.accent)
+          .when(right, (l) => l.right(-3)).when(!right, (l) => l.left(-3))))
+        .on_mouse_down("left", (e, cx) => {
+          cx.stop_propagation();
+          this.pressed = k.name;
+          this.down = { x: e.position.x, grab: e.local_position?.x ?? 20 };
+        })
+        .on_mouse_move((_e, cx) => { if (dragging && this.over !== k.name) { this.over = k.name; cx.notify(); } })
+        .on_mouse_up("left", (_e, cx) => {
+          const from = this.pressed, moved = this.drag !== null;
+          endDrag();
+          if (!moved) this.go(k.name);
+          else if (from && from !== k.name) this.reorder(from, k.name);
+          cx.notify();
+        })
+        .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "sessions", kind: "popup", width: 260, height: 160, props: { menu: k.name } }); });
     };
     const stop = (_e, cx) => cx.stop_propagation();
     const more = h_flex().id("session-more").h(26).px(10).gap(6).flex_none().items_center().rounded(7).cursor_pointer()
@@ -199,12 +219,26 @@ export default class Sessions extends View {
       .on_mouse_down("left", stop)
       .on_click(() => openOverlay({ mod: "sessions", kind: "popup", width: 220, height: 44 + 30 * empty.length, props: { more: true } }))
       .child(`${empty.length} more`).child(svg("mods/workspace-chrome/chevron-down.svg").size(11));
+    const held = dragging && shown.find((k) => k.name === this.pressed);
     // The window's buttons sit at the top left: start after them (not in full screen).
     const lights = window()?.fullscreen ? 12 : 84;
-    return h_flex().id("sessions").size_full().pl(lights).pr(10).gap(4).items_center().bg(t.chrome)
-      .on_mouse_up("left", (_e, cx) => { if (this.pressed !== null) { this.pressed = null; cx.notify(); } })
+    return h_flex().id("sessions").relative().size_full().pl(lights).pr(10).gap(4).items_center().bg(t.chrome)
+      .when(dragging, (el) => el.cursor_grabbing())
+      // A press becomes a drag once the pointer has moved a few pixels.
+      .on_mouse_move((e, cx) => {
+        if (this.pressed === null) return;
+        if (this.drag === null && Math.abs(e.position.x - (this.down?.x ?? e.position.x)) < 4) return;
+        this.drag = { x: e.local_position.x, grab: this.down?.grab ?? 20 };
+        cx.notify();
+      })
+      .on_mouse_up("left", (_e, cx) => { if (this.pressed !== null) { endDrag(); cx.notify(); } })
+      // Let go outside the bar: no drop.
+      .on_hover((hovered, cx) => { if (!hovered && this.pressed !== null) { endDrag(); cx.notify(); } })
       .children(shown.map(tab))
-      .when(empty.length > 0, (el) => el.child(more));
+      .when(empty.length > 0, (el) => el.child(more))
+      // The dragged copy, following the pointer.
+      .when(Boolean(held), (el) => el.child(content(h_flex().absolute().top(6).left(this.drag.x - this.drag.grab), held, true)
+        .bg(t.raised).border_1().border_color(t.accent).text_color(t.foreground).font_semibold().shadow_lg().opacity(0.95)));
   }
 
   // The sessions without agents (the "more" menu); right-click one for its menu.
