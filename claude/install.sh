@@ -29,6 +29,7 @@ ITEMS=(
   set-label.sh
   session-label-remind.sh
   statusline.sh
+  statusline-chain.sh
   hooks
   skills/handoff
   skills/herdr
