@@ -181,7 +181,10 @@ export default class Sessions extends View {
       return el.h(26).px(12).gap(7).items_center().rounded(7).text_size(12.5)
         .when(Boolean(k.machine), (el) => el.child(svg("mods/workspace-chrome/server.svg").size(12).flex_none()))
         .child(k.name)
-        .when(Boolean(n[k.name]), (el) => el.child(div().text_size(11.5).text_color(on ? t.muted : t.dim).child(String(n[k.name]))))
+        // The agent count, as a badge: a bare number next to the name read like a tab number.
+        .when(Boolean(n[k.name]), (el) => el.child(div().h(17).min_w(17).px(5).flex().flex_none().items_center().justify_center()
+          .rounded(9).border_1().border_color(on ? t.muted : t.border).bg(on ? t.raised : t.chrome)
+          .text_size(10.5).font_semibold().text_color(on ? t.foreground : t.muted).child(String(n[k.name]))))
         .when(status === "working", (el) => el.child(svg("mods/workspace-chrome/spinner.svg").size(11).flex_none().text_color(t.working).spin(900)))
         .when(Boolean(dot), (el) => el.child(div().size(7).rounded(4).flex_none().bg(dot)));
     };
