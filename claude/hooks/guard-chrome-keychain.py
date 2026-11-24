@@ -46,6 +46,11 @@ def verdict(cmd):
             return "agent-browser --args / AGENT_BROWSER_ARGS replaces the config's --mute-audio and lacks it"
         if runs and re.search(r"(?:--user-agent\b|\bAGENT_BROWSER_USER_AGENT=)", seg) and missing_actor(seg):
             return "a Wildshard browser user-agent override needs WildshardAgent/1 or an ?agent= navigation"
+    # Jake, 2026-11-24: "NEVER FUCKING SOUND SOUND OFF" - the iOS Simulator plays game audio through the Mac's
+    # speakers and has no command-line mute, so no agent boots one (phone proof is headless, muted Playwright WebKit)
+    if re.search(r"\bsimctl\s+(?:boot|launch|openurl)\b|\bopen\s+(?:-\w+\s+)*-a\s+['\"]?Simulator\b|\bidb\s+(?:boot|launch|open)\b|"
+                 r"Simulator\.app", cmd):
+        return "the iOS Simulator plays sound on Jake's speakers; use headless, muted Playwright WebKit instead"
     if not (BROWSER.search(cmd) and LAUNCH.search(cmd)):
         return None
     missing = [f for f in FLAGS if f not in cmd]
