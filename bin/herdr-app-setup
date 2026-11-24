@@ -8,15 +8,16 @@
 #
 # Installers, in order (each is idempotent):
 #   .config/install.sh         keys.json, layouts, our mods as symlinks; shown
-#                              layout
+#                              layout; the launchd layout pin
 #   herdr-gitview/install.sh   the gitview mods (needs the app running)
 #
 # Checks:
 #   - every herdr-app item in .config/install.sh is a symlink into this repo
 #   - every mod a repo layout uses is installed. A missing one makes Herdr drop
-#     that layout at start and boot on main, and save "main" over the choice
+#     that layout at start and boot on main (see .config/herdr-app-pin-layout.sh)
 #   - `herdr-app check` passes for each of our mods
 #   - the open window is on main-folders with no file or mod errors
+#   - the launchd layout pin is loaded
 #
 # Why it exists: on 2026-11-22 a Herdr update wiped ~/.config/herdr-app, and
 # re-linking alone left gitview missing, so the app kept booting on main.
@@ -25,6 +26,7 @@ set -uo pipefail
 DOTFILES="${DOTFILES:-$HOME/projects/dotfiles}"
 APP_HOME="${HERDR_APP_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/herdr-app}"
 WANT_LAYOUT=main-folders
+PIN_LABEL=dev.dotfiles.herdr-app-layout
 
 if [ ! -f "$DOTFILES/.config/install.sh" ]; then
   echo "herdr-app-setup: no dotfiles repo at $DOTFILES (set DOTFILES)" >&2
@@ -121,6 +123,12 @@ if app_up; then
   [ "$errors" = "[]" ] && ok "window reports no errors" || bad "window errors: $errors"
 else
   echo "skip  window checks (Herdr isn't open)"
+fi
+
+# The layout pin.
+if [ "$(uname)" = Darwin ]; then
+  launchctl print "gui/$(id -u)/$PIN_LABEL" >/dev/null 2>&1 \
+    && ok "launchd $PIN_LABEL loaded" || bad "launchd $PIN_LABEL not loaded (run herdr-app-setup)"
 fi
 
 echo ""
