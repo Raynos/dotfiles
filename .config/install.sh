@@ -137,40 +137,16 @@ PY
   fi
 fi
 
-# herdr-app: keep it on that one layout. A launchd agent runs
-# herdr-app-pin-layout.sh when shared.json changes (a restart, the palette,
-# another agent switching layouts) and every 30s, and switches back.
-# Remove: launchctl bootout gui/$(id -u)/dev.dotfiles.herdr-app-layout
+# herdr-app: the launchd layout pin (dev.dotfiles.herdr-app-layout) is gone. It
+# ran every 30s and on every shared.json change to switch the window back to
+# main-folders; turned off 2026-11-24. Unload it where an earlier install left it.
 if [ "$(uname)" = "Darwin" ]; then
   PIN_LABEL=dev.dotfiles.herdr-app-layout
   PIN_PLIST="$HOME/Library/LaunchAgents/$PIN_LABEL.plist"
-  PIN_TMP="$(mktemp)"
-  cat >"$PIN_TMP" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key><string>$PIN_LABEL</string>
-  <key>ProgramArguments</key>
-  <array><string>/bin/bash</string><string>$REPO_DIR/herdr-app-pin-layout.sh</string></array>
-  <key>WatchPaths</key>
-  <array><string>$CONFIG_DIR/herdr-app/shared.json</string></array>
-  <key>StartInterval</key><integer>30</integer>
-  <key>RunAtLoad</key><true/>
-  <key>StandardOutPath</key><string>$HOME/Library/Logs/herdr-app-pin-layout.log</string>
-  <key>StandardErrorPath</key><string>$HOME/Library/Logs/herdr-app-pin-layout.log</string>
-</dict>
-</plist>
-PLIST
-  mkdir -p "$(dirname "$PIN_PLIST")"
-  if cmp -s "$PIN_TMP" "$PIN_PLIST" && launchctl print "gui/$(id -u)/$PIN_LABEL" >/dev/null 2>&1; then
-    rm -f "$PIN_TMP"
-    echo "ok    launchd $PIN_LABEL"
-  else
+  if launchctl print "gui/$(id -u)/$PIN_LABEL" >/dev/null 2>&1 || [ -e "$PIN_PLIST" ]; then
     launchctl bootout "gui/$(id -u)/$PIN_LABEL" >/dev/null 2>&1 || true
-    mv "$PIN_TMP" "$PIN_PLIST"
-    launchctl bootstrap "gui/$(id -u)" "$PIN_PLIST"
-    echo "load  launchd $PIN_LABEL"
+    rm -f "$PIN_PLIST"
+    echo "unload launchd $PIN_LABEL"
   fi
 fi
 
