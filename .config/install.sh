@@ -54,6 +54,7 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 ITEMS=(
   herdr/config.toml
   herdr/herdr-cwd-labels.sh
+  herdr-app/AGENTS.local.md
   herdr-app/keys.json
   herdr-app/layouts/main-folders.json
   herdr-app/mods/space-folders
