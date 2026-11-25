@@ -96,6 +96,11 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/clear-herdr-tag.sh\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/commit-trailer-rule.sh\"",
+            "timeout": 5
           }
         ]
       }
@@ -156,6 +161,9 @@
   "cleanupPeriodDays": 36500,
   "effortLevel": "high",
   "askUserQuestionTimeout": "10m",
+  "attribution": {
+    "commit": ""
+  },
   "tui": "fullscreen",
   "theme": "dark",
   "preferredNotifChannel": "notifications_disabled",
