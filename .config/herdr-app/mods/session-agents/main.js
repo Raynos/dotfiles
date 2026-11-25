@@ -30,6 +30,12 @@ const SCOPES = [
 const LIFETIME = "lifetime";
 const isLong = (t) => t?.labels?.[LIFETIME] === "long";
 
+// LOCAL CHANGE (dotfiles): an agent's goal is its terminal's label goal=<tag>,
+// written by Claude's ~/.claude/set-label.sh (`hc label <t> goal=<tag>`). The
+// row reads it instead of the agent's title unless someone named the tab, and
+// it works for agents on the mini, whose tabs set-label.sh can't rename.
+const GOAL = "goal";
+
 // LOCAL CHANGE (dotfiles): the panel's text is this much bigger than Herdr's own
 // sizes (the sort menu keeps its own). Same knob in space-folders.
 const FONT = 1.2;
@@ -358,9 +364,12 @@ export default class Agents extends View {
     // Read the pane snapshot once: every host read copies the whole list into JS.
     const leads = leadPanes(panes());
     const tabs = new Map(spaces().flatMap(s => s.tabs).map(tab => [tab.id, tab]));
+    const goals = new Map(all.filter((t) => t.labels?.[GOAL]).map((t) => [t.address, t.labels[GOAL]]));
     const labels = new Map(list.map(a => {
       const tab = tabs.get(a.tab);
       const many = tabCounts.get(a.tab) > 1;
+      const goal = goals.get(a.address);
+      if (goal && (!tab || many || !tab.named || tab.name === goal)) return [a.address, goal];
       return [a.address, tab ? title(many ? { ...tab, named: false } : tab, many ? a : leads.get(a.tab)) : (a.title || a.program?.name || "")];
     }));
     const label = (a) => labels.get(a.address);
