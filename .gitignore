@@ -17,3 +17,6 @@ __pycache__/
 .config/herdr-app/mods/*/gpui-kit.d.ts
 .config/herdr-app/mods/*/herdr.d.ts
 .config/herdr-app/mods/*/jsconfig.json
+
+# Written into every Claude Code mod folder by the engine on load; regenerated
+claude/mods/*/.claude-plugin/types/

@@ -26,6 +26,7 @@ Runtime state in `~/.claude` is never touched.
 | `usage-log.sh`             | Hourly cron (`17 * * * *`, symlinked to `~/.claude/usage-log.sh`): appends OpenUsage limits per account + the active login email to `~/.claude/usage-log/<ISO week>.jsonl` |
 | `hooks/`                   | `herdr-agent-state.sh`, `clear-herdr-tag.sh`            |
 | `skills/herdr/`            | The custom `herdr` skill                                |
+| `mods/inline-images/`      | Claude Code mod: draws images sent with `SendUserFile` as pictures under their `[image]` row (kitty graphics, e.g. Herdr). Not linked: loaded in place via `CLAUDE_CODE_PLUGIN_DIRS` in `settings.managed.json`. macOS only (`sips`); PNG thumbnails cached in `/private/tmp/claude-inline-images/` |
 | `sounds/`                  | Notification-sound scripts + `warcraft3-en/` wav assets; see [sounds/README.md](sounds/README.md) |
 
 ### Why `settings.json` is merged, not symlinked

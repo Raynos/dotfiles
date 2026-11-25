@@ -1,0 +1,1 @@
+{ "name": "inline-images", "version": "0.1.0", "description": "Draws images Claude sends with SendUserFile inline under their [image] rows, in terminals with kitty graphics." }

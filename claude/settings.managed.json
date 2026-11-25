@@ -163,6 +163,7 @@
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "400000",
     "CLAUDE_STATUSLINE_CHAIN": "/Users/raynos/.claude/statusline-chain.sh",
+    "CLAUDE_CODE_PLUGIN_DIRS": "/Users/raynos/projects/dotfiles/claude/mods/inline-images",
     "GOMAXPROCS": "4"
   }
 }
