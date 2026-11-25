@@ -15,6 +15,13 @@ function inSession(spaceId) {
   return !s?.active || (s.of?.[spaceId] ?? s.active) === s.active;
 }
 
+// LOCAL CHANGE (dotfiles): the footer's toggle shows the session's agents (the
+// default) or every agent, kept across restarts.
+const SCOPES = [
+  { id: "session", label: "Session", tip: "Agents in this session's spaces" },
+  { id: "all", label: "All", tip: "Every agent, in every session" },
+];
+
 // LOCAL CHANGE (dotfiles): the panel's text is this much bigger than Herdr's own
 // sizes (the sort menu keeps its own). Same knob in space-folders.
 const FONT = 1.2;
@@ -101,6 +108,7 @@ export default class Agents extends View {
   init(_props, cx) {
     if (props()?.sortMenu) return;
     this.folded = new Set();
+    try { this.scope = localStorage.getItem("scope") === "all" ? "all" : "session"; } catch { this.scope = "session"; }
     // Each agent's last state and when it changed (ms), kept across restarts.
     try { this.changed = JSON.parse(localStorage.getItem("changed") ?? "{}"); } catch { this.changed = {}; }
     if (!this.changed || typeof this.changed !== "object" || Array.isArray(this.changed)) this.changed = {};
@@ -182,6 +190,42 @@ export default class Agents extends View {
         .when(s.id === on, (el) => el.child(svg("mods/workspace-chrome/check.svg").size(14).flex_none().text_color(t.foreground)))));
   }
 
+  // The footer's Session | All switch, bottom left.
+  scopeToggle(t) {
+    return h_flex()
+      .px(16)
+      .h(34)
+      .flex_none()
+      .items_center()
+      .child(h_flex()
+        .p(2)
+        .gap(2)
+        .rounded(7)
+        .bg(t.raised)
+        .text_size(fs(10.5))
+        .children(SCOPES.map((s) => {
+          const on = s.id === this.scope;
+          return div()
+            .id(`scope-${s.id}`)
+            .px(8)
+            .h(20)
+            .flex()
+            .items_center()
+            .rounded(5)
+            .cursor_pointer()
+            .text_color(on ? t.foreground : t.dim)
+            .when(on, (el) => el.bg(t.selected))
+            .when(!on, (el) => el.hover((h) => h.text_color(t.foreground)))
+            .tooltip(s.tip)
+            .on_click((_e, cx) => {
+              this.scope = s.id;
+              try { localStorage.setItem("scope", s.id); } catch {}
+              cx.notify();
+            })
+            .child(s.label);
+        })));
+  }
+
   peek(addr) {
     run("terminal.peek", { terminal: addr });
   }
@@ -240,7 +284,9 @@ export default class Agents extends View {
     if (props()?.sortMenu) return this.sortMenu(t);
     const collapsed = narrow();
     const sort = sortOf();
-    let list = agents().filter((a) => inSession(a.space));
+    const everyone = this.scope === "all";
+    const every = agents();
+    let list = every.filter((a) => everyone || inSession(a.space));
     this.listed = new Map(list.map((a) => [a.address, a.status]));
     const all = terminals();
     this.migratePins(all);
@@ -452,7 +498,7 @@ export default class Agents extends View {
             .flex_none()
             .items_center()
             .justify_between()
-            .child(div().text_size(fs(11.5)).font_medium().text_color(t.dim).child("Agents"))
+            .child(div().text_size(fs(11.5)).font_medium().text_color(t.dim).child(`Agents (${every.length})`))
             .child(
               div()
                 .id("ag-sort")
@@ -469,6 +515,7 @@ export default class Agents extends View {
         el.child(div().px(12).text_size(fs(12)).text_color(t.dim).child("No agent status yet. Agents show up here when they report their status. Older versions and agents inside tmux may not.")),
       )
       .child(v_flex().id("ag-list").flex_1().min_h(0).px(collapsed ? 0 : 8).overflow_y_scrollbar().mode("always").children(rows))
+      .when(!collapsed, (el) => el.child(this.scopeToggle(t)))
       .when(collapsed, (el) =>
         el.child(
           h_flex()
