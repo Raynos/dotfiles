@@ -26,6 +26,7 @@ BACKUP_DIR="$CLAUDE_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 # of following it — it broke twice, see the .dotfiles-backup-* dirs. It is merged
 # key-by-key instead, at the bottom of this script.
 ITEMS=(
+  CLAUDE.md
   set-label.sh
   session-label-remind.sh
   statusline.sh
@@ -71,9 +72,9 @@ for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
 
-# There is no global rules file (~/.claude/CLAUDE.md) on purpose: it grew to 9KB
-# loaded into every session. The one rule worth keeping, setting the session
-# label, is injected by session-label-remind.sh when the label is unset or stale.
+# The global rules file (~/.claude/CLAUDE.md) is loaded into every session, so it
+# stays a short bullet list; the old one grew to 9KB. The session-label rule is
+# injected by session-label-remind.sh when the label is unset or stale.
 
 # Merge the managed subset of settings.json in place, leaving app-owned keys
 # (model, theme, enabledPlugins, ...) exactly as Claude Code left them.
