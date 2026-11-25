@@ -15,7 +15,7 @@ function inSession(spaceId) {
   return !s?.active || (s.of?.[spaceId] ?? s.active) === s.active;
 }
 
-// LOCAL CHANGE (dotfiles): the footer's toggle shows the session's agents (the
+// LOCAL CHANGE (dotfiles): the header's toggle shows the session's agents (the
 // default) or every agent, kept across restarts.
 const SCOPES = [
   { id: "session", label: "Session", tip: "Agents in this session's spaces" },
@@ -190,14 +190,10 @@ export default class Agents extends View {
         .when(s.id === on, (el) => el.child(svg("mods/workspace-chrome/check.svg").size(14).flex_none().text_color(t.foreground)))));
   }
 
-  // The footer's Session | All switch, bottom left.
+  // The header's Session | All switch, next to "Agents (N)".
   scopeToggle(t) {
     return h_flex()
-      .px(16)
-      .h(34)
-      .flex_none()
-      .items_center()
-      .child(h_flex()
+        .flex_none()
         .p(2)
         .gap(2)
         .rounded(7)
@@ -223,7 +219,7 @@ export default class Agents extends View {
               cx.notify();
             })
             .child(s.label);
-        })));
+        }));
   }
 
   peek(addr) {
@@ -498,7 +494,9 @@ export default class Agents extends View {
             .flex_none()
             .items_center()
             .justify_between()
-            .child(div().text_size(fs(11.5)).font_medium().text_color(t.dim).child(`Agents (${every.length})`))
+            .child(h_flex().gap(8).items_center()
+              .child(div().text_size(fs(11.5)).font_medium().text_color(t.dim).child(`Agents (${every.length})`))
+              .child(this.scopeToggle(t)))
             .child(
               div()
                 .id("ag-sort")
@@ -515,7 +513,6 @@ export default class Agents extends View {
         el.child(div().px(12).text_size(fs(12)).text_color(t.dim).child("No agent status yet. Agents show up here when they report their status. Older versions and agents inside tmux may not.")),
       )
       .child(v_flex().id("ag-list").flex_1().min_h(0).px(collapsed ? 0 : 8).overflow_y_scrollbar().mode("always").children(rows))
-      .when(!collapsed, (el) => el.child(this.scopeToggle(t)))
       .when(collapsed, (el) =>
         el.child(
           h_flex()
