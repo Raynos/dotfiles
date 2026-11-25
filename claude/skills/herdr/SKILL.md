@@ -20,9 +20,11 @@ the `herdr` CLI.
 
 ## This setup
 
-- The window runs on the MacBook. The Mac mini (`mini`) only runs herdr-core,
-  reached by the MacBook's window over SSH, so `herdr-app` commands fail on
-  the mini. Drive it with `hc` there, or `hc --on mini ...` from the MacBook.
+- Jake's main window is on the MacBook; it reaches the Mac mini's herdr-core
+  (`mini`) over SSH. `herdr-app` talks to the window on the machine it runs
+  on, so where no window is open it fails: use `hc` there, or
+  `hc --on mini ...` from the MacBook. Over non-interactive SSH, `herdr-app`
+  and `hc` are in `~/.local/bin`, not on PATH.
 - Codex always runs as `codex --no-daemon` under hc.
 - Our layouts, mods, themes and `keys.json` are symlinks into
   `~/projects/dotfiles/.config/herdr-app/`: edit them there and commit.

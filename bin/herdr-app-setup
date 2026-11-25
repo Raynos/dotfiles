@@ -40,7 +40,23 @@ case "${1:-}" in
   *) echo "usage: herdr-app-setup [--check]" >&2; exit 2 ;;
 esac
 
-app_up() { command -v herdr-app >/dev/null && herdr-app status >/dev/null 2>&1; }
+# herdr-app lives in ~/.local/bin, which a non-interactive SSH shell leaves
+# off PATH: look there too, or the checks report it missing when it isn't.
+HERDR_APP="$(command -v herdr-app || true)"
+if [ -z "$HERDR_APP" ] && [ -x "$HOME/.local/bin/herdr-app" ]; then
+  HERDR_APP="$HOME/.local/bin/herdr-app"
+fi
+APP_STATUS=""
+APP_ERR="herdr-app is not installed"
+if [ -n "$HERDR_APP" ]; then
+  if APP_STATUS="$("$HERDR_APP" status 2>&1)"; then
+    APP_ERR=""
+  else
+    APP_ERR="$(printf '%s' "$APP_STATUS" | tail -1)"
+    APP_STATUS=""
+  fi
+fi
+app_up() { [ -n "$APP_STATUS" ]; }
 
 if [ "$MODE" = install ]; then
   echo "== .config/install.sh"
@@ -96,15 +112,18 @@ PY
   if [ -z "$missing" ]; then
     ok "layout $name: all $(echo "$mods" | wc -w | tr -d ' ') mods installed"
   else
-    bad "layout $name: missing mods:$missing (Herdr will boot on main instead)"
+    hint="Herdr will boot on main instead"
+    # gitview and the shipped mods are installed by a running window.
+    app_up || hint="$hint; open Herdr on this machine, then run herdr-app-setup"
+    bad "layout $name: missing mods:$missing ($hint)"
   fi
 done
 
 # Our own mods load.
-if command -v herdr-app >/dev/null; then
+if [ -n "$HERDR_APP" ]; then
   for dir in "$DOTFILES"/.config/herdr-app/mods/*/; do
     mod="$(basename "$dir")"
-    if out="$(herdr-app check "$APP_HOME/mods/$mod" 2>&1)"; then
+    if out="$("$HERDR_APP" check "$APP_HOME/mods/$mod" 2>&1)"; then
       ok "mod $mod passes herdr-app check"
     else
       bad "mod $mod: $(echo "$out" | grep -v '^WARN' | tail -1)"
@@ -116,13 +135,13 @@ fi
 
 # The open window.
 if app_up; then
-  status="$(herdr-app status)"
+  status="$APP_STATUS"
   layout="$(printf '%s' "$status" | plutil -extract layout raw -o - - 2>/dev/null)"
   [ "$layout" = "$WANT_LAYOUT" ] && ok "window on $WANT_LAYOUT" || bad "window on ${layout:-?}, not $WANT_LAYOUT"
   errors="$(printf '%s' "$status" | plutil -extract errors json -o - - 2>/dev/null)"
   [ "$errors" = "[]" ] && ok "window reports no errors" || bad "window errors: $errors"
 else
-  echo "skip  window checks (Herdr isn't open)"
+  echo "skip  window checks (no Herdr window here: $APP_ERR)"
 fi
 
 # The layout pin.

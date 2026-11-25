@@ -5,10 +5,12 @@ here by `.config/install.sh`. Edit the repo copy and commit it.
 
 ## Machines
 
-- **MacBook** runs the window (`herdr-app`) and its own herdr-core.
-- **Mac mini** (`mini`, `ssh mini`) runs herdr-core only. The MacBook's
-  window reaches it over SSH, so `herdr-app` commands fail on the mini (no
-  window socket); that is expected. Use `hc` there, or `hc --on mini ...`.
+- **MacBook** runs Jake's main window (`herdr-app`) and its own herdr-core.
+- **Mac mini** (`mini`, `ssh mini`) runs herdr-core, which the MacBook's
+  window reaches over SSH (`hc --on mini ...`). It may have its own window
+  open too. `herdr-app` only talks to a window on the machine it runs on;
+  with none open it fails, so use `hc`. Over non-interactive SSH,
+  `herdr-app` and `hc` are in `~/.local/bin`, not on PATH.
 
 ## Ours vs shipped
 
