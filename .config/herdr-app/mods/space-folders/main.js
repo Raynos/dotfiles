@@ -755,12 +755,15 @@ export default class Spaces extends View {
     const branch = same(raw) || raw === "master" || raw === "main" ? "" : raw;
     const repo = tree || same(g.name) ? "" : g.name;
     const where = [repo, branch].filter(Boolean).join(" \u00b7 ");
-    // LOCAL CHANGE (dotfiles): the counts sit beside the tail, not in it, so a
-    // narrow sidebar truncates the name instead of drawing them over it; big
-    // ones shorten (8680 -> 8.7k).
-    const short = (n) => (n < 1000 ? String(n) : `${Math.round(n / 100) / 10}k`);
-    const count = (n, color, arrow) => div().flex_none().text_size(fs(11.5)).text_color(color).child(`${arrow}${short(n)}`);
-    return [h_flex()
+    // LOCAL CHANGE (dotfiles): the name comes first. The tail only gets the room
+    // the name leaves: the repo/branch truncates first, then the counts go
+    // whole (never cut, never drawn over the name). They're compact: ↑8k↓8k.
+    const short = (n) => (n < 1000 ? String(n) : `${Math.floor(n / 1000)}k`);
+    const counts = [
+      g.ahead > 0 && div().flex_none().text_color(t.ansi2).child(`\u2191${short(g.ahead)}`),
+      g.behind > 0 && div().flex_none().text_color(t.ansi5).child(`\u2193${short(g.behind)}`),
+    ].filter(Boolean);
+    return h_flex()
       .flex_1()
       .min_w(0)
       .gap(5)
@@ -768,9 +771,14 @@ export default class Spaces extends View {
       .items_center()
       .text_size(fs(11.5))
       .text_color(t.dim)
-      .when(Boolean(where), (el) => el.child(div().min_w(0).truncate().child(where))),
-      ...(g.ahead > 0 ? [count(g.ahead, t.ansi2, "\u2191")] : []),
-      ...(g.behind > 0 ? [count(g.behind, t.ansi5, "\u2193")] : [])];
+      .when(Boolean(where), (el) => el.child(div().flex_shrink(100).min_w(0).truncate().child(where)))
+      // A wrapping line one row high: the counts wrap below it (out of sight)
+      // when they don't fit. The empty first item keeps them from staying on
+      // the line and being clipped part way.
+      .when(counts.length > 0, (el) => el.child(h_flex().flex_shrink(1).min_w(0).h(fs(16)).overflow_hidden()
+        .flex_wrap().justify_end().items_center()
+        .child(div().w(0).h(fs(16)))
+        .child(h_flex().flex_none().gap(2).items_center().children(counts))));
   }
 
   row({ w, i, g, tree, folder, nested }, t) {
@@ -825,9 +833,9 @@ export default class Spaces extends View {
           .items_center()
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).text_color(t.dim)))
           .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(fs(10.5)).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
-          .child(div().min_w(0).max_w(150).truncate().text_color(t.foreground).child(w.name))
+          .child(div().flex_shrink(1).min_w(0).max_w(150).truncate().text_color(t.foreground).child(w.name))
           .when(Boolean(this.agentsIn?.[w.id]), (el) => el.child(div().flex_none().ml(-5).text_color(t.dim).child(`(${this.agentsIn[w.id]})`)))
-          .children(g ? this.gitTail(g, tree, w.name, t) : [div().flex_1()]),
+          .child(g ? this.gitTail(g, tree, w.name, t) : div().flex_1()),
       );
   }
 
