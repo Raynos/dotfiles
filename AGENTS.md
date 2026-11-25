@@ -13,6 +13,8 @@ What this repo is
     claude/, codex/, .config/, agents/, pnpm/ ...); bootstrap.sh runs them all.
  - Herdr app mods: .config/herdr-app/mods/. Reload one with: 
     rm ~/.config/herdr-app/mods/<name> && ./.config/install.sh
+ - Herdr = the app (herdr-app) + herdr-core (hc); the old herdr TUI is gone.
+    Setup notes for agents: .config/herdr-app/AGENTS.local.md.
 
 Git hygiene
 
