@@ -318,7 +318,8 @@ export default class Agents extends View {
     const urgency = new Map(list.map((a) => [a.address, Math.max(this.rank(a), ...this.tree(all, a.address).map((s) => kidRank(s.t)))]));
     const rankOf = (a) => urgency.get(a.address);
     // Long-living agents get their own Bots section under Idle, unless one needs you.
-    const bot = (a) => longs.has(a.address) && rankOf(a) !== RANK.blocked;
+    // Only in All: the Session view sorts them by state like any other agent.
+    const bot = (a) => everyone && longs.has(a.address) && rankOf(a) !== RANK.blocked;
     if (byPriority) list = [...list].sort((x, y) => bot(x) - bot(y) || rankOf(y) - rankOf(x) || this.since(y) - this.since(x) || y.seq - x.seq);
     const pinned = list.filter((a) => a.pinned);
     const rest = list.filter((a) => !a.pinned);
