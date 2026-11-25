@@ -25,7 +25,8 @@ const SCOPES = [
 // LOCAL CHANGE (dotfiles): an agent is a finite task unless its terminal has the
 // label lifetime=long (a bot that never ends). The row's ∞ button sets it, as
 // does `hc label <t> lifetime=long` (`lifetime=` clears it). Like a pin, it's
-// kept with the terminal and ends with it. The header counts both kinds.
+// kept with the terminal and ends with it. The header counts both kinds,
+// "Agents (4 3)": tasks in the foreground color, long-living in the accent.
 const LIFETIME = "lifetime";
 const isLong = (t) => t?.labels?.[LIFETIME] === "long";
 
@@ -399,7 +400,7 @@ export default class Agents extends View {
         .px(3)
         .rounded(4)
         .text_size(fs(12))
-        .text_color(long ? t.foreground : t.dim)
+        .text_color(long ? t.accent : t.dim)
         .cursor_pointer()
         .hover((s) => s.bg(t.hover).text_color(t.foreground))
         .tooltip(long ? "Long-living: mark as a finite task" : "Mark as long-living")
@@ -458,7 +459,7 @@ export default class Agents extends View {
           .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
         .when(Boolean(machine), el => el.child(div().text_size(fs(10)).text_color(t.dim).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
-        .when(this.hovered !== a.address && long, el => el.child(div().flex_none().text_size(fs(12)).text_color(t.dim).child("\u221e")))
+        .when(this.hovered !== a.address && long, el => el.child(div().flex_none().text_size(fs(12)).text_color(t.accent).child("\u221e")))
         .when(this.hovered === a.address, el => el.child(lifetime).child(pin))
         .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(fs(11)).text_color(t.dim).child(duration(now - when))))
         .child(this.status(t, a, byPriority && !isPinned));
@@ -524,7 +525,11 @@ export default class Agents extends View {
             .justify_between()
             .child(h_flex().gap(8).items_center()
               .child(div().id("ag-count").text_size(fs(11.5)).font_medium().text_color(t.dim).tooltip(`${nTask} finite task${nTask === 1 ? "" : "s"}, ${nLong} long-living, in every session`)
-                .child(`Agents (${nTask}${nLong ? ` + ${nLong}\u221e` : ""})`))
+                .child(h_flex().items_center()
+                  .child("Agents (")
+                  .child(div().text_color(t.foreground).child(String(nTask)))
+                  .when(nLong > 0, (el) => el.child(div().ml(4).text_color(t.accent).child(String(nLong))))
+                  .child(")")))
               .child(this.scopeToggle(t)))
             .child(
               div()
