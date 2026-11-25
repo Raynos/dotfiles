@@ -6,6 +6,8 @@
 //
 // The sessions with agents are tabs, in the order you drag them into; the
 // rest wait in the menu on the right (the one in front is always a tab).
+// A pinned session is always a tab, agents or not, and pinned ones come first
+// (top left), in file order.
 // Click a session to go to it (the space you were last in there, or a new one
 // if it has none: on its machine, if it names one). Right-click one to move
 // the space in front into it, or to edit or delete it. New sessions are rare:
@@ -16,7 +18,7 @@
 // The sessions are this computer's own, not the repo's: every machine using
 // these dotfiles names its own. They live in ~/.config/herdr-sessions.json,
 // outside the app's folder so a Herdr update can't wipe them:
-//   { "sessions": [{ "name": "games", "theme": "vibe", "machine": "mini-ts"? }] }
+//   { "sessions": [{ "name": "games", "theme": "vibe", "machine": "mini-ts"?, "pinned": true? }] }
 // theme: graphite, ink, moss, paper or a file in themes/ (vibe and house come
 // with the dotfiles); none leaves the theme alone. Without the file there is
 // one session, "main". The file is read again every 5 seconds.
@@ -41,6 +43,8 @@ const RANK = { blocked: 3, done: 2, working: 1 };
 const list = () => shared("sessions.list") ?? DEFAULT;
 const state = () => shared("sessions") ?? {};
 const named = (name) => list().find((s) => s.name === name);
+// Pinned sessions first, each group in file order.
+const ordered = () => [...list().filter((s) => s.pinned), ...list().filter((s) => !s.pinned)];
 const newSpace = (name) => { const m = named(name)?.machine; run("space.new", { machine: m ?? "" }); };
 
 // { sessions, move } from the file, or null when it's missing or unreadable.
@@ -153,7 +157,8 @@ export default class Sessions extends View {
   // A dragged session goes where the one it's dropped on is.
   reorder(from, to) {
     const all = list(), k = all.find((x) => x.name === from);
-    if (!k || from === to || !all.some((x) => x.name === to)) return;
+    // Pinned ones stay first: a drag only reorders within its own group.
+    if (!k || from === to || !all.some((x) => x.name === to) || !k.pinned !== !named(to).pinned) return;
     const after = all.findIndex((x) => x.name === from) < all.findIndex((x) => x.name === to);
     const rest = all.filter((x) => x.name !== from);
     const i = rest.findIndex((x) => x.name === to) + (after ? 1 : 0);
@@ -169,8 +174,8 @@ export default class Sessions extends View {
     const { active, of } = ready ? this.sync() : { active: state().active, of: state().of ?? {} };
     if (ready) this.applyTheme(active);
     const sp = spaces(), n = this.counts(of);
-    const shown = list().filter((k) => n[k.name] || k.name === active);
-    const empty = list().filter((k) => !shown.some((x) => x.name === k.name));
+    const shown = ordered().filter((k) => k.pinned || n[k.name] || k.name === active);
+    const empty = ordered().filter((k) => !shown.some((x) => x.name === k.name));
     const order = shown.map((k) => k.name);
     const dragging = this.pressed !== null && this.drag !== null;
     // What a tab shows; the dragged copy shows the same.
@@ -248,7 +253,7 @@ export default class Sessions extends View {
   moreView(t) {
     const { overlay } = this.more;
     const of = state().of ?? {}, n = this.counts(of), active = state().active;
-    const empty = list().filter((k) => !n[k.name] && k.name !== active);
+    const empty = ordered().filter((k) => !k.pinned && !n[k.name] && k.name !== active);
     return v_flex().id("session-more-menu").size_full().p(5).gap(1).bg(t.popover).text_color(t.foreground).text_size(12.5)
       .child(div().px(10).pt(4).pb(4).text_size(11).text_color(t.dim).child("No agents running"))
       .children(empty.map((k) => h_flex().id(`more-${k.name}`).h(30).px(10).gap(7).items_center().rounded(6).cursor_pointer()
@@ -310,7 +315,8 @@ export default class Sessions extends View {
     const name = this.name.value().trim(), machine = this.machine.value().trim() || undefined;
     if (!name) { this.error = "Give it a name."; return; }
     if (name !== was && named(name)) { this.error = `There is already a session called ${name}.`; return; }
-    const entry = { name, ...(this.theme ? { theme: this.theme } : {}), ...(machine ? { machine } : {}) };
+    const old = (was && named(was)) || {};
+    const entry = { name, ...(this.theme ? { theme: this.theme } : {}), ...(machine ? { machine } : {}), ...(old.pinned ? { pinned: true } : {}) };
     const all = list();
     saveList(was ? all.map((k) => (k.name === was ? entry : k)) : [...all, entry]);
     // A renamed session keeps its spaces.
