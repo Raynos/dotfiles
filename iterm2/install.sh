@@ -9,8 +9,8 @@
 # philosophy as the symlink installers, via iTerm2's supported path (iTerm2
 # rewrites its plist wholesale, so a symlink would not survive).
 #
-# The plist is the full settings file: profiles (Default / Vibe / House —
-# bin/herdr-attach depends on those names), global key maps, pointer actions,
+# The plist is the full settings file: profiles (Default / Vibe / House),
+# global key maps, pointer actions,
 # and appearance. Machine noise (window frames, updater state, NoSync* keys)
 # was stripped at export time and iTerm2 does not write NoSync* keys to
 # custom folders.

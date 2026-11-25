@@ -1,23 +1,22 @@
 #!/usr/bin/env bash
 cd "$(dirname "${BASH_SOURCE}")"
 git pull origin master
-# NOTE: .config/herdr/ is excluded because it is symlink-managed by
+# NOTE: .config/herdr-app/ is excluded because it is symlink-managed by
 # .config/install.sh, not copy-managed. rsync transfers a regular file by renaming
-# a temp into place, which would replace ~/.config/herdr/config.toml (a symlink
-# back into this repo) with a real copy — silently un-tracking it and
+# a temp into place, which would replace a symlink back into this repo (e.g.
+# ~/.config/herdr-app/keys.json) with a real copy — silently un-tracking it and
 # reintroducing drift. Run ./.config/install.sh instead.
 #
 # pnpm/ is excluded for the same reason: pnpm/install.sh symlinks the managed
 # global rc into pnpm's globalconfig path (Library/Preferences on macOS).
 #
-# Deliberately scoped to herdr, NOT all of .config/: .config/terminator/config is
+# Deliberately scoped to herdr-app, NOT all of .config/: .config/terminator/config is
 # still copy-managed and must keep being rsynced. ("install.sh" below is
 # unanchored, so it already keeps .config/install.sh out of ~.)
 function doIt() {
 	rsync --exclude ".git/" \
     --exclude ".gitignore" \
     --exclude ".DS_Store" \
-    --exclude ".config/herdr/" \
     --exclude ".config/herdr-app/" \
     --exclude "pnpm/" \
     --exclude "agent-browser/" \
@@ -44,7 +43,7 @@ function doIt() {
 # ~/.codex, ~/.grok and ~/.config, merge the managed subset of settings.json, or sync
 # plugins — that is what the per-tool installers do. Nothing used to call them,
 # so a fresh machine following the README got every dotfile and none of the
-# agent tooling, silently: no hooks, no statusline, no herdr config.
+# agent tooling, silently: no hooks, no statusline, no Herdr app config.
 #
 # Each installer is idempotent (they print "ok" for anything already linked), so
 # re-running on every bootstrap is cheap. Failures are reported and stepped over

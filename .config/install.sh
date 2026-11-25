@@ -19,23 +19,8 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 
 # Curated items, path-relative to BOTH this dir and ~/.config.
 #
-# Link individual FILES, never whole app dirs. ~/.config/herdr also holds pure
-# runtime state — herdr.sock, herdr-server.log, sessions/, plugins/ — that must
-# stay local to the machine and out of git.
-#
-# Symlinking config.toml is safe because herdr rewrites it IN PLACE rather than
-# via the atomic rename-into-place that would replace the symlink with a real
-# file. Verified 2026-07-26 on herdr 0.7.5: with the symlink installed, a real
-# config write (`herdr config reset-keys` removing a [keys] block) followed the
-# link and landed in the repo file, inode unchanged. This is exactly the failure
-# mode that forced claude/settings.json out of claude/install.sh, so re-verify
-# after a major herdr upgrade:
-#
-#   ls -la ~/.config/herdr/config.toml   # still a symlink?
-#
-#
-# herdr-app (the Herdr desktop app) keeps the same split: only what's ours is
-# linked. Its own files there (AGENTS.md, *.d.ts, the shipped layouts/ and mods/,
+# Link individual FILES, never whole app dirs. herdr-app (the Herdr desktop
+# app) keeps a split: only what's ours is linked. Its own files there (AGENTS.md, *.d.ts, the shipped layouts/ and mods/,
 # frame/, icons/, data/, shared.json, view.json, layouts/.state/) are rewritten by
 # the app on every start and stay local. Personal layouts and mods are ours.
 # settings.json stays local as well: the app saves the window zoom into it on
@@ -52,8 +37,6 @@ BACKUP_DIR="$CONFIG_DIR/.dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 # (verified 2026-11-19 on herdr-app 0.1.16):
 #   rm ~/.config/herdr-app/mods/<name> && ./.config/install.sh
 ITEMS=(
-  herdr/config.toml
-  herdr/herdr-cwd-labels.sh
   herdr-app/AGENTS.local.md
   herdr-app/keys.json
   herdr-app/layouts/main-folders.json
@@ -100,16 +83,6 @@ echo "Linking config into $CONFIG_DIR"
 for item in "${ITEMS[@]}"; do
   link_one "$item"
 done
-
-# herdr reads config.toml at startup; a running server needs a nudge to pick up
-# a freshly linked file. Harmless when no server is running.
-if command -v herdr >/dev/null; then
-  echo ""
-  herdr config check || true
-  herdr server reload-config >/dev/null 2>&1 \
-    && echo "herdr: reloaded running server" \
-    || echo "herdr: no running server to reload (config applies on next start)"
-fi
 
 # herdr-app: make main-folders the shown layout. The app remembers the shown
 # layout as "layout" in its own shared.json, which it reset to "main" on the

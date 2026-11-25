@@ -19,13 +19,12 @@ Runtime state in `~/.claude` is never touched.
 | Item                       | What it is                                              |
 | -------------------------- | ------------------------------------------------------- |
 | `settings.managed.json`    | The subset of `settings.json` this repo owns (merged, not linked) |
-| `set-label.sh`             | Sets the status-line goal label (+ herdr tag)           |
+| `set-label.sh`             | Sets the status-line goal label (+ Herdr tag)           |
 | `session-label-remind.sh`  | `UserPromptSubmit` hook: nudge to refresh a stale label |
 | `statusline.sh`            | Status-line goal + usage cache; the first widget of [ccstatusline](../ccstatusline/settings.json) |
 | `statusline-chain.sh`      | Runs ccstatusline inside repos whose own `statusLine` overrides ours (depscan); `CLAUDE_STATUSLINE_CHAIN` points at it |
 | `usage-log.sh`             | Hourly cron (`17 * * * *`, symlinked to `~/.claude/usage-log.sh`): appends OpenUsage limits per account + the active login email to `~/.claude/usage-log/<ISO week>.jsonl` |
-| `hooks/`                   | `herdr-agent-state.sh`, `clear-herdr-tag.sh`            |
-| `skills/herdr/`            | The custom `herdr` skill                                |
+| `skills/herdr/`            | `herdr` skill: points at `hc --skill`, `herdr-app --skill` |
 | `mods/inline-images/`      | Claude Code mod: draws images sent with `SendUserFile` as pictures under their `[image]` row (kitty graphics, e.g. Herdr). Not linked: loaded in place via `CLAUDE_CODE_PLUGIN_DIRS` in `settings.managed.json`. macOS only (`sips`); PNG thumbnails cached in `/private/tmp/claude-inline-images/` |
 | `sounds/`                  | Notification-sound scripts + `warcraft3-en/` wav assets; see [sounds/README.md](sounds/README.md) |
 

@@ -6,10 +6,9 @@ defaults, and install/check the shared tool capability inventory.
 
 ## What is managed
 
-- `hooks.json` — the Codex Herdr `SessionStart` adapter, plus the PreToolUse
-  guards shared with Claude Code: `dcg`, `guard-chrome-keychain.py` and
+- `hooks.json` — the PreToolUse guards shared with Claude Code: `dcg`, `guard-chrome-keychain.py` and
   `guard-rm.py` (the scripts live in `../claude/hooks/`). Sounds, the session
-  label reminder, `clear-herdr-tag.sh` and `auto-deny.sh` stay Claude-only;
+  label reminder and `auto-deny.sh` stay Claude-only;
   the reasons are in `../agents/parity.json`.
 - `rules/safety.rules` — Codex execpolicy refusals, generated with Claude's
   `permissions.deny` from `../agent-common/safety.json` by repo-kit's
@@ -20,10 +19,7 @@ defaults, and install/check the shared tool capability inventory.
 in `../agents/parity.json`. Changing a hook's text changes Codex's trust hash:
 open `codex` once and choose "Trust all and continue".
 Hook commands use `$HOME`, never a literal home path, so the same file works
-for every user. `herdr integration install codex` does not recognise the
-`$HOME` form and appends a second `SessionStart` entry with this machine's
-absolute path (written through the symlink into this repo): delete that
-entry, keep the `$HOME` one, and never commit it.
+for every user.
 - `config.managed.toml` — model and permission defaults. `approval_policy =
   "never"` plus `sandbox_mode = "danger-full-access"` intentionally mirrors
   the approved Claude Code bypass-permissions behavior. It also enables the
@@ -46,9 +42,11 @@ versioned.
 
 Export variables before starting a new CLI session, for example run
 `export MY_FLAG=1` and then `codex`. With no shared daemon running, CLI
-sessions execute locally and inherit Herdr-provided variables such as
-`HERDR_ENV` from the launching pane. No shell alias or command wrapper is
-installed.
+sessions execute locally and inherit the launching terminal's variables,
+such as herdr-core's `HC_TERMINAL_ID`. No shell alias or command wrapper is
+installed. Under herdr-core always run `codex --no-daemon` (the Herdr app's
+launcher already does): a shared daemon would give later sessions the first
+terminal's identity and stop with it.
 
 Disabling automatic startup does not bypass a daemon that is already running.
 Use `codex --no-daemon` or `codex --no-daemon resume <session-id>` to bypass
@@ -59,8 +57,9 @@ are tracked in [Codex #24638](https://github.com/openai/codex/issues/24638)
 and [Herdr #4649](https://github.com/herdrdev/herdr/issues/4649).
 
 Codex has no documented equivalent of Claude Code's terminal status line or
-`Notification` lifecycle hook. The existing Herdr `SessionStart` integration
-is shared; notification sounds and status labels remain Claude-specific.
+`Notification` lifecycle hook; notification sounds and status labels remain
+Claude-specific. Herdr needs no hook: Codex reports its own state to
+herdr-core (`hc get <t>` shows `status.app=codex`).
 
 Run `node ../agent-common/sync-agent-tooling.mjs check` to detect a missing
 capability. `export` refreshes the credential-free Codex MCP commands in the
