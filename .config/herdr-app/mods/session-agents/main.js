@@ -6,7 +6,7 @@
 
 import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { agents, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout } from "herdr";
+import { agents, hc, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout } from "herdr";
 
 // The session in front (mods/sessions): whether a space is in it. Without the
 // sessions mod (another layout), every space is.
@@ -21,6 +21,13 @@ const SCOPES = [
   { id: "session", label: "Session", tip: "Agents in this session's spaces" },
   { id: "all", label: "All", tip: "Every agent, in every session" },
 ];
+
+// LOCAL CHANGE (dotfiles): an agent is a finite task unless its terminal has the
+// label lifetime=long (a bot that never ends). The row's ∞ button sets it, as
+// does `hc label <t> lifetime=long` (`lifetime=` clears it). Like a pin, it's
+// kept with the terminal and ends with it. The header counts both kinds.
+const LIFETIME = "lifetime";
+const isLong = (t) => t?.labels?.[LIFETIME] === "long";
 
 // LOCAL CHANGE (dotfiles): the panel's text is this much bigger than Herdr's own
 // sizes (the sort menu keeps its own). Same knob in space-folders.
@@ -285,6 +292,9 @@ export default class Agents extends View {
     let list = every.filter((a) => everyone || inSession(a.space));
     this.listed = new Map(list.map((a) => [a.address, a.status]));
     const all = terminals();
+    const longs = new Set(all.filter(isLong).map((t) => t.address));
+    const nLong = every.filter((a) => longs.has(a.address)).length;
+    const nTask = every.length - nLong;
     this.migratePins(all);
     const shown = focused()?.agent;
     const now = Date.now();
@@ -382,6 +392,23 @@ export default class Agents extends View {
       const when = this.since(a);
       const idle = a.status === "idle" && !a.focused;
       const isPinned = a.pinned;
+      const long = longs.has(a.address);
+      const lifetime = div()
+        .id(`life-${a.address}`)
+        .flex_none()
+        .px(3)
+        .rounded(4)
+        .text_size(fs(12))
+        .text_color(long ? t.foreground : t.dim)
+        .cursor_pointer()
+        .hover((s) => s.bg(t.hover).text_color(t.foreground))
+        .tooltip(long ? "Long-living: mark as a finite task" : "Mark as long-living")
+        .on_click((_e, cx) => {
+          cx.stop_propagation();
+          hc(["label", a.address, `${LIFETIME}=${long ? "" : "long"}`]).catch(() => {});
+          cx.notify();
+        })
+        .child("\u221e");
       const pin = div()
         .id(`pin-${a.address}`)
         .flex_none()
@@ -431,7 +458,8 @@ export default class Agents extends View {
           .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
         .when(Boolean(machine), el => el.child(div().text_size(fs(10)).text_color(t.dim).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
-        .when(this.hovered === a.address, el => el.child(pin))
+        .when(this.hovered !== a.address && long, el => el.child(div().flex_none().text_size(fs(12)).text_color(t.dim).child("\u221e")))
+        .when(this.hovered === a.address, el => el.child(lifetime).child(pin))
         .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(fs(11)).text_color(t.dim).child(duration(now - when))))
         .child(this.status(t, a, byPriority && !isPinned));
     };
@@ -495,7 +523,8 @@ export default class Agents extends View {
             .items_center()
             .justify_between()
             .child(h_flex().gap(8).items_center()
-              .child(div().text_size(fs(11.5)).font_medium().text_color(t.dim).child(`Agents (${every.length})`))
+              .child(div().id("ag-count").text_size(fs(11.5)).font_medium().text_color(t.dim).tooltip(`${nTask} finite task${nTask === 1 ? "" : "s"}, ${nLong} long-living, in every session`)
+                .child(`Agents (${nTask}${nLong ? ` + ${nLong}\u221e` : ""})`))
               .child(this.scopeToggle(t)))
             .child(
               div()
