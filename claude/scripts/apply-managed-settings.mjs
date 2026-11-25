@@ -35,6 +35,18 @@ const target = arguments_.find((argument) => argument !== "--check") ??
   join(process.env.HOME, ".claude", "settings.json");
 
 const managed = JSON.parse(readFileSync(join(root, "settings.managed.json"), "utf8"));
+
+// env values reach Claude Code verbatim (no shell), so a path written as
+// /Users/<name>/... only works on one machine. Expand $HOME and $DOTFILES (this
+// repo's root) here instead. Hook commands are left alone: a shell runs them.
+const dotfiles = dirname(root);
+for (const [key, value] of Object.entries(managed.env ?? {})) {
+  if (typeof value === "string") {
+    managed.env[key] = value
+      .replaceAll("$DOTFILES", dotfiles)
+      .replaceAll("$HOME", process.env.HOME);
+  }
+}
 const current = existsSync(target) ? JSON.parse(readFileSync(target, "utf8")) : {};
 
 // Spreading first keeps existing keys in their existing positions; only genuinely
