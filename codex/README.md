@@ -7,7 +7,7 @@ defaults, and install/check the shared tool capability inventory.
 ## What is managed
 
 - `hooks.json` — the PreToolUse guards shared with Claude Code: `dcg`, `guard-chrome-keychain.py` and
-  `guard-rm.py` (the scripts live in `../claude/hooks/`). Sounds, the session
+  `guard-rm.py` (the scripts live in `../claude/hooks/`). The session
   label reminder and `auto-deny.sh` stay Claude-only;
   the reasons are in `../agents/parity.json`.
 - `rules/safety.rules` — Codex execpolicy refusals, generated with Claude's
@@ -57,7 +57,7 @@ are tracked in [Codex #24638](https://github.com/openai/codex/issues/24638)
 and [Herdr #4649](https://github.com/herdrdev/herdr/issues/4649).
 
 Codex has no documented equivalent of Claude Code's terminal status line or
-`Notification` lifecycle hook; notification sounds and status labels remain
+`Notification` lifecycle hook; status labels remain
 Claude-specific. Herdr needs no hook: Codex reports its own state to
 herdr-core (`hc get <t>` shows `status.app=codex`).
 

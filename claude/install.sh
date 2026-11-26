@@ -35,7 +35,6 @@ ITEMS=(
   skills/handoff
   skills/herdr
   skills/find-skills
-  sounds
 )
 
 link_one() {

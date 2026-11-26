@@ -73,16 +73,6 @@
         ]
       }
     ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/sounds/notify.sh\""
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "matcher": "*",
@@ -91,16 +81,6 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/commit-trailer-rule.sh\"",
             "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/sounds/stop-if-idle.sh\""
           }
         ]
       }

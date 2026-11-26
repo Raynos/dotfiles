@@ -2,8 +2,6 @@
   "accept": {
     "skills:blow-by-blow": "turns Claude Code session transcripts into a PDF; it reads Claude's own session files",
     "skills:whatsapp-local-data": "lives in the house repo and is linked into ~/.claude/skills by hand; link it into ~/.agents/skills when Codex needs it",
-    "hooks:Notification .claude/sounds/notify.sh": "sounds stay Claude-only (MA8): Codex has no Notification event",
-    "hooks:Stop .claude/sounds/stop-if-idle.sh": "sounds stay Claude-only (MA8): the job's-done chime pairs with the Notification one, which Codex cannot fire",
     "hooks:PermissionRequest .claude/hooks/auto-deny.sh": "Codex runs approval_policy never, so no permission dialog ever opens to deny",
     "hooks:UserPromptSubmit .claude/session-label-remind.sh": "the status-line label reminder; Codex has no status line",
     "settings:env:CLAUDE_CODE_AUTO_COMPACT_WINDOW": "a Claude Code setting; Codex has its own compaction",
@@ -18,7 +16,7 @@
     "settings:askUserQuestionTimeout": "a Claude Code tool setting",
     "settings:skipDangerousModePermissionPrompt": "Claude bypass-mode prompt; Codex runs approval_policy never",
     "settings:theme": "Claude Code UI",
-    "settings:preferredNotifChannel": "Claude Code notifications; sounds are Claude-only",
+    "settings:preferredNotifChannel": "Claude Code notifications",
     "settings:autoScrollEnabled": "Claude Code UI, app-written",
     "settings:autoMode": "Claude Code mode, app-written",
     "settings:approvals_reviewer": "Codex approval reviewer",
