@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""herdr-resume: bring Claude sessions back into their Herdr terminals.
+
+After a reboot (or a herdr-core restart that lost programs), `hc keep`
+terminals come back as bare shells. claude/hooks/herdr-session-label.sh
+labels every terminal running Claude with claude_session=<id> and
+claude_cwd=<folder>; this finds the terminals whose label is set but whose
+shell sits at its prompt, and types `cd <folder> && claude --resume <id>`
+into each. The `claude` shell function adds Remote Control as usual.
+
+Covers every machine `hc ls` lists (the mini too).
+
+Usage:
+  herdr-resume            resume every terminal that lost its Claude
+  herdr-resume t4 t8      only these terminals (mini-ts/t3 for the mini)
+  herdr-resume -n         list what it would resume, change nothing
+"""
+import json
+import shlex
+import subprocess
+import sys
+
+
+def hc(*args):
+    out = subprocess.run(["hc", *args, "--json"], capture_output=True, text=True)
+    if out.returncode != 0:
+        raise RuntimeError((out.stderr or out.stdout).strip())
+    return json.loads(out.stdout)
+
+
+def main(argv):
+    if any(a in ("-h", "--help") for a in argv):
+        print(__doc__.strip())
+        return 0
+    dry = any(a in ("-n", "--dry-run") for a in argv)
+    wanted = [a for a in argv if not a.startswith("-")]
+
+    try:
+        listing = hc("ls")
+    except Exception as e:  # noqa: BLE001
+        print(f"herdr-resume: hc ls failed: {e}", file=sys.stderr)
+        return 1
+
+    addresses = [t["address"] for t in listing.get("terminals", [])]
+    if wanted:
+        missing = [w for w in wanted if w not in addresses]
+        if missing:
+            print(f"herdr-resume: no live terminal {', '.join(missing)}", file=sys.stderr)
+            return 1
+        addresses = wanted
+
+    todo, running, failed = [], [], []
+    for addr in addresses:
+        try:
+            t = hc("get", addr)
+        except Exception as e:  # noqa: BLE001
+            failed.append(f"{addr}: {e}")
+            continue
+        labels = t.get("labels") or {}
+        sid, cwd = labels.get("claude_session"), labels.get("claude_cwd")
+        if not sid or not cwd:
+            continue
+        fg = (t.get("foreground") or {}).get("argv")
+        at_prompt = fg == t.get("argv") and t.get("state") == "live"
+        if not at_prompt or (t.get("status") or {}).get("app") == "claude-code":
+            running.append(f"{addr} (busy: {' '.join(fg or ['?'])})")
+            continue
+        where = labels.get("where") or labels.get("goal") or ""
+        todo.append((addr, sid, cwd, where))
+
+    for addr, sid, cwd, where in todo:
+        cmd = f"cd {shlex.quote(cwd)} && claude --resume {sid}"
+        print(f"{addr:14} {where}\n{'':14} {cmd}")
+        if dry:
+            continue
+        r = subprocess.run(["hc", "send", addr, cmd], capture_output=True, text=True)
+        if r.returncode != 0:
+            failed.append(f"{addr}: {(r.stderr or r.stdout).strip()}")
+
+    if not todo:
+        print("herdr-resume: nothing to resume")
+    for line in running:
+        print(f"skipped {line}")
+    for line in failed:
+        print(f"failed {line}", file=sys.stderr)
+    if dry and todo:
+        print("(dry run: nothing sent)")
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

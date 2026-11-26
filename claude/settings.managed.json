@@ -81,6 +81,23 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/commit-trailer-rule.sh\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/herdr-session-label.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/herdr-session-label.sh\"",
+            "timeout": 5
           }
         ]
       }

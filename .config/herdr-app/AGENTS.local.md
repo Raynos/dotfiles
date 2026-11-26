@@ -40,3 +40,11 @@ local to this machine. `bin/herdr-app-setup` in dotfiles checks the setup.
 - `claude` is a shell function (`.functions`) that adds Remote Control;
   the app's launcher runs shell functions, so menu-started agents get it.
 - The old Herdr TUI (`herdr`) is retired; don't use it.
+
+## Resuming Claude after a reboot
+
+`hc keep` brings a lost terminal back as a bare shell, not the program.
+`claude/hooks/herdr-session-label.sh` labels each Claude terminal with
+`claude_session=<id>` and `claude_cwd=<folder>` (cleared on /exit), and
+`herdr-resume` (`-n` to preview, or name terminals) types
+`cd <folder> && claude --resume <id>` into every one now sitting at a shell.
