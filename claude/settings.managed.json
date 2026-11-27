@@ -128,6 +128,11 @@
     "command": "ccstatusline"
   },
   "extraKnownMarketplaces": {},
+  "deniedMcpServers": [
+    {
+      "serverName": "claude.ai Google Drive"
+    }
+  ],
   "skipDangerousModePermissionPrompt": true,
   "model": "opus",
   "cleanupPeriodDays": 36500,
