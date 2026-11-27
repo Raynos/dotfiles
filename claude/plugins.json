@@ -12,10 +12,6 @@
       "scope": "user"
     },
     {
-      "id": "code-review@claude-plugins-official",
-      "scope": "user"
-    },
-    {
       "id": "context7@claude-plugins-official",
       "scope": "user"
     },
