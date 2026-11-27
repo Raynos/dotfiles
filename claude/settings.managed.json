@@ -13,8 +13,6 @@
       "WebSearch",
       "Agent",
       "mcp__context7__*",
-      "mcp__playwright__*",
-      "mcp__chrome-devtools__*",
       "mcp__linear-server__*",
       "Skill",
       "SendUserFile",
@@ -129,20 +127,7 @@
     "type": "command",
     "command": "ccstatusline"
   },
-  "extraKnownMarketplaces": {
-    "chrome-devtools-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "ChromeDevTools/chrome-devtools-mcp"
-      }
-    },
-    "cloudflare": {
-      "source": {
-        "source": "github",
-        "repo": "cloudflare/skills"
-      }
-    }
-  },
+  "extraKnownMarketplaces": {},
   "skipDangerousModePermissionPrompt": true,
   "model": "opus",
   "cleanupPeriodDays": 36500,
