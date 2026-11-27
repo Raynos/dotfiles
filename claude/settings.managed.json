@@ -129,11 +129,19 @@
   },
   "extraKnownMarketplaces": {},
   "skillOverrides": {
-    "anthropic-skills:google-workspace": "off"
+    "anthropic-skills:google-workspace": "off",
+    "anthropic-skills:docx": "off",
+    "anthropic-skills:pptx": "off",
+    "anthropic-skills:xlsx": "off",
+    "anthropic-skills:morning": "off",
+    "anthropic-skills:import-memory": "off"
   },
   "deniedMcpServers": [
     {
       "serverName": "claude.ai Google Drive"
+    },
+    {
+      "serverName": "claude.ai Claude Docs"
     }
   ],
   "skipDangerousModePermissionPrompt": true,
